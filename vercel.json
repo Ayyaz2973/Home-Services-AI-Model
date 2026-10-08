@@ -11,6 +11,10 @@
     {
       "source": "/terms",
       "destination": "/terms.html"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon.svg"
     }
   ],
   "headers": [

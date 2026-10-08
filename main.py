@@ -474,6 +474,16 @@ def page_admin():
     return FileResponse(os.path.join(BASE, "static", "admin.html"))
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+@app.get("/favicon.svg", include_in_schema=False)
+def page_favicon():
+    return FileResponse(
+        os.path.join(BASE, "static", "favicon.svg"),
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
 @app.get("/api/meta")
 def meta():
     return {"categories": CATEGORIES, "commission_pct": COMMISSION_PCT}

@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f8f7">
+<title>Operations dashboard | HomeServe</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <b>⌂ HomeServe <span class="header-context">OPERATIONS</span></b>
+  <span><a href="/">Customer site</a><a href="/tech">Technician portal</a></span>
+</header>
+<main>
+  <div id="portalIntro" class="portal-intro"><div class="eyebrow">HomeServe operations</div><h1>Every job. One clear view.</h1><p>Your service overview, technician network, and payment activity—all in one place.</p></div>
+  <div id="loginView" class="card login-card">
+    <div class="login-mark" aria-hidden="true">◈</div>
+    <h2>Administrator sign in</h2>
+    <p>Use your admin key to access the service operations dashboard.</p>
+    <label for="key">Admin key</label><input id="key" type="password" autocomplete="current-password">
+    <button onclick="login()">Open dashboard</button>
+    <div id="lmsg" aria-live="polite"></div>
+  </div>
+
+  <div id="appView" class="hide">
+    <div class="section-heading"><div><div class="eyebrow">Live overview</div><h2>Operations dashboard</h2></div><p>Updates automatically every 15 seconds</p></div>
+    <div class="stats" id="stats"></div>
+    <div class="tabs">
+      <button id="t_req" class="on" onclick="tab('req')">Requests</button>
+      <button id="t_tech" onclick="tab('tech')">Technicians</button>
+      <button id="t_catalog" onclick="tab('catalog')">Price catalogue</button>
+      <button id="t_pay" onclick="tab('pay')">Payments</button>
+    </div>
+    <div class="card" id="p_req"></div>
+    <div class="card hide" id="p_tech"></div>
+    <div class="card hide" id="p_catalog"></div>
+    <div class="card hide" id="p_pay"></div>
+    <dialog id="technicianDialog" class="tech-dialog">
+      <form onsubmit="saveTech(event)">
+        <div class="section-heading"><div><div class="eyebrow">Technician profile</div><h2>Edit technician</h2></div><button class="alt small" type="button" onclick="closeTechEditor()">Close</button></div>
+        <input id="editTechId" type="hidden">
+        <div class="row">
+          <div><label for="editName">Name</label><input id="editName" required></div>
+          <div><label for="editPhone">Phone number</label><input id="editPhone" type="tel" required></div>
+        </div>
+        <div class="row">
+          <div><label for="editCategory">Service</label><select id="editCategory" required></select></div>
+          <div><label for="editArea">Area</label><input id="editArea" placeholder="F-10"></div>
+        </div>
+        <label for="editPin">New PIN <small>(leave blank to keep the current PIN)</small></label><input id="editPin" type="password" autocomplete="new-password" minlength="4" placeholder="At least 4 characters">
+        <div id="editTechMsg" aria-live="polite"></div>
+        <button id="saveTechBtn" type="submit">Save changes</button>
+      </form>
+    </dialog>
+    <dialog id="catalogDialog" class="tech-dialog">
+      <form onsubmit="saveCatalogItem(event)">
+        <div class="section-heading"><div><div class="eyebrow">Price catalogue</div><h2>Edit service price</h2></div><button class="alt small" type="button" onclick="closeCatalogEditor()">Close</button></div>
+        <input id="editCatalogId" type="hidden">
+        <label for="editCatalogName">Service name</label><input id="editCatalogName" required maxlength="100">
+        <div class="row">
+          <div><label for="editCatalogCategory">Category</label><select id="editCatalogCategory"></select></div>
+          <div><label for="editCatalogPrice">Service price (Rs)</label><input id="editCatalogPrice" type="number" min="0" step="0.01" required></div>
+        </div>
+        <label for="editCatalogVisit">Visit fee (Rs)</label><input id="editCatalogVisit" type="number" min="0" step="0.01" required>
+        <label for="editCatalogDescription">What's included</label><textarea id="editCatalogDescription" maxlength="500"></textarea>
+        <label class="consent-label"><input id="editCatalogActive" type="checkbox"> Show for customer bookings</label>
+        <div id="editCatalogMsg" aria-live="polite"></div>
+        <button id="saveCatalogBtn" type="submit">Save price</button>
+      </form>
+    </dialog>
+    <dialog id="adminPhotoDialog" class="photo-dialog"><button class="alt small" type="button" onclick="closeAdminPhoto()">Close</button><img id="adminPhotoPreview" alt="Job photo preview"></dialog>
+  </div>
+  <footer class="portal-footer">HomeServe operations · Keep every service moving</footer>
+</main>
+<script src="/static/common.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let key = sessionStorage.getItem('admin_key');
+let data = null;
+const H = () => ({ 'X-Admin-Key': key });
+
+async function login() {
+  key = $('key').value;
+  try {
+    await api('/api/admin/dashboard', {}, H());
+    sessionStorage.setItem('admin_key', key);
+    start();
+  } catch (e) { flash($('lmsg'), e.message, false); }
+}
+
+function start() {
+  $('loginView').classList.add('hide');
+  $('portalIntro').classList.add('hide');
+  $('appView').classList.remove('hide');
+  load();
+  setInterval(load, 15000);
+}
+
+function tab(n) {
+  ['req', 'tech', 'catalog', 'pay'].forEach(x => {
+    $('p_' + x).classList.toggle('hide', x !== n);
+    $('t_' + x).classList.toggle('on', x === n);
+  });
+}
+
+async function load() {
+  try {
+    data = await api('/api/admin/dashboard', {}, H());
+    const applications = await api('/api/admin/applications', {}, H());
+    data.applications = applications.applications;
+  } catch (e) {
+    sessionStorage.removeItem('admin_key');
+    return location.reload();
+  }
+  const s = data.stats;
+  $('stats').innerHTML = [
+    ['Open jobs', s.open], ['Unassigned', s.unassigned], ['Awaiting customer', s.awaiting_customer],
+    ['Disputed', s.disputed], ['Payouts due', money(s.payout_due)], ['Commission', money(s.commission_earned)],
+  ].map(x => `<div class="stat"><b>${x[1]}</b>${x[0]}</div>`).join('');
+  renderReq(); renderTech(); renderPay();
+  renderCatalog();
+}
+
+function renderReq() {
+  const techOpts = data.technicians.filter(t => t.active)
+    .map(t => `<option value="${t.id}">${esc(t.name)} (${esc(t.category)}, ${esc(t.area)})</option>`).join('');
+  const rows = data.requests.map(r => {
+    const open = ['new', 'unassigned', 'assigned', 'accepted'].includes(r.status);
+    let a = '';
+    if (open) {
+      a += `<select id="as${r.id}" style="width:150px">${techOpts}</select>
+            <button class="small" onclick="assign(${r.id})">Assign</button>
+            <button class="small alt" onclick="post('/api/admin/requests/${r.id}/auto')">Auto</button>
+            <button class="small red" onclick="resolve(${r.id},'cancel')">Close</button>`;
+    }
+    if (r.status === 'work_done' || r.status === 'disputed') {
+      a += `<button class="small" onclick="resolve(${r.id},'release')">Release payment</button>
+            <button class="small red" onclick="resolve(${r.id},'cancel')">Void</button>`;
+    }
+    const link = location.origin + '/?t=' + r.token;
+    a += `<a class="btn" target="_blank" href="${waLink(r.customer_phone,
+      'HomeServe request #' + r.id + '. Track it and confirm the work here: ' + link)}">WhatsApp customer</a>`;
+    let locationCell = '—';
+    if (r.status === 'accepted') {
+      if (r.location_latitude !== null && r.location_latitude !== undefined) {
+        const lat = Number(r.location_latitude);
+        const lon = Number(r.location_longitude);
+        const mapUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
+        locationCell = `<a target="_blank" rel="noopener noreferrer" href="${mapUrl}">View live map</a><br><small>Updated ${esc(new Date(r.location_updated_at).toLocaleTimeString())}</small>`;
+      } else {
+        locationCell = '<small>Waiting for technician to share</small>';
+      }
+    }
+    let arrivalCell = '—';
+    if (r.arrival_checked_in_at) {
+      const lat = Number(r.arrival_latitude);
+      const lon = Number(r.arrival_longitude);
+      const checkinUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=17/${lat}/${lon}`;
+      arrivalCell = `<a target="_blank" rel="noopener noreferrer" href="${checkinUrl}">View check-in</a><br>
+        <small>${esc(r.arrival_checked_in_at.replace('T', ' '))}<br>GPS accuracy ~${Math.round(r.arrival_accuracy)} m</small>`;
+    }
+    const photos = (r.photos || []).map(photo => `<button class="small alt" onclick="showAdminPhoto(${photo.id})">${photo.phase === 'before' ? 'Before' : 'After'} photo</button>`).join(' ');
+    return `<tr><td>#${r.id}<br><small>${esc(r.created_at.replace('T', ' '))}</small></td>
+      <td>${esc(r.customer_name)}<br>${esc(r.customer_phone)}<br><small>${esc(r.area)} · ${esc(r.address)}</small></td>
+      <td><b>${esc(r.category)}</b> ${r.urgency !== 'normal' ? badge(r.urgency) : ''}<br><small>${esc(r.ai_summary)}</small></td>
+      <td>${badge(r.status)}<br>${r.amount ? money(r.amount) : ''}</td>
+      <td>${esc(r.tech_name || '—')}</td><td>${arrivalCell}</td><td>${locationCell}</td><td>${photos || '—'}</td><td>${a}</td></tr>`;
+  }).join('');
+  $('p_req').innerHTML = `<h2>Requests</h2><p><small>Fresh map locations are available only during accepted jobs and expire after two minutes without an update. Arrival check-in is a separate, one-time device GPS record.</small></p><table><tr><th>ID</th><th>Customer</th><th>Service</th><th>Status</th><th>Technician</th><th>Arrival check-in</th><th>Live location</th><th>Job photos</th><th>Actions</th></tr>${rows}</table>`;
+}
+
+function renderTech() {
+  const cats = ['Electric Work', 'Plumbing', 'Air Conditioning', 'Solar Solutions', 'Home Cleaning', 'Pest Control',
+    'Washing Machine', 'Fridge Repair', 'Geyser Repair', 'Carpentry', 'Painting', 'Locksmith', 'CCTV Installation',
+    'Water Filter / RO', 'Welding Work', 'Labour', 'Other'];
+  const rows = data.technicians.map(t => `<tr class="${t.active ? '' : 'tech-archived'}"><td><b>${esc(t.name)}</b>${t.active ? '' : `<br>${badge('archived')}`}</td><td>${esc(t.phone)}</td><td>${esc(t.category)}</td>
+    <td>${esc(t.area)}</td><td>${t.available && t.active ? 'Available' : 'Unavailable'}</td><td>⭐ ${t.rating} (${t.jobs_done} jobs)</td>
+    <td>${money(t.wallet)}</td>
+    <td><button class="small alt" onclick="editTech(${t.id})">Edit</button>
+    <button class="small ${t.active ? 'red' : ''}" onclick="toggleTech(${t.id},${t.active})">${t.active ? 'Remove' : 'Restore'}</button></td></tr>`).join('');
+  const applicationRows = (data.applications || []).map(application => {
+    const docs = application.documents.map(doc => `<button class="small alt" onclick="downloadApplicationDocument(${application.id},${doc.id})">${esc(doc.document_type.replaceAll('_',' '))}</button>`).join(' ');
+    const reviewActions = application.status === 'pending'
+      ? `<button class="small" onclick="reviewApplication(${application.id},'approve')">Approve</button><button class="small red" onclick="reviewApplication(${application.id},'reject')">Reject</button>`
+      : '';
+    return `<tr><td><b>${esc(application.name)}</b><br><small>${esc(application.phone)}</small><br>${badge(application.status)}<br><small>${esc(application.created_at)}</small></td><td>${esc(application.category)}<br>${esc(application.area)}</td><td>${esc(application.experience || 'No experience notes supplied')}</td><td>${docs || 'No documents'}</td><td>${esc(application.review_note || '—')}</td><td>${reviewActions}</td></tr>`;
+  }).join('');
+  $('p_tech').innerHTML = `<div class="section-heading"><div><div class="eyebrow">Provider quality</div><h2>Technician applications</h2></div><p>Review documents privately and verify out-of-band before approving.</p></div>
+    <div class="table-scroll"><table><tr><th>Applicant</th><th>Service</th><th>Experience</th><th>Private documents</th><th>Review note</th><th>Decision</th></tr>${applicationRows || '<tr><td colspan="6">No technician applications yet.</td></tr>'}</table></div>
+    <div class="section-heading"><div><div class="eyebrow">Team management</div><h2>Technicians</h2></div><p>Removed technicians are archived; job and payment history is preserved.</p></div>
+    <table><tr><th>Name</th><th>Phone</th><th>Service</th><th>Area</th><th>Availability</th><th>Rating</th><th>Wallet</th><th>Actions</th></tr>${rows}</table>
+    <div class="add-tech-panel"><h3>Add a technician</h3><p>Create a technician account. They can sign in with their phone number and PIN.</p>
+    <div class="row"><div><label for="n_name">Name</label><input id="n_name" autocomplete="name"></div><div><label for="n_phone">Phone</label><input id="n_phone" type="tel" autocomplete="tel"></div></div>
+    <div class="row"><div><label for="n_cat">Service</label><select id="n_cat">${cats.map(c => `<option>${esc(c)}</option>`).join('')}</select></div>
+    <div><label for="n_area">Area</label><input id="n_area" placeholder="F-10"></div></div>
+    <label for="n_pin">Initial PIN</label><input id="n_pin" type="password" autocomplete="new-password" minlength="4" placeholder="At least 4 characters">
+    <button onclick="addTech()">Add technician</button><div id="tmsg" aria-live="polite"></div></div>`;
+  $('editCategory').innerHTML = cats.map(c => `<option>${esc(c)}</option>`).join('');
+  $('editCatalogCategory').innerHTML = cats.map(c => `<option>${esc(c)}</option>`).join('');
+}
+
+function renderCatalog() {
+  const rows = (data.catalog || []).map(item => `<tr><td><b>${esc(item.service_name)}</b><br><small>${esc(item.description)}</small></td>
+    <td>${esc(item.category)}</td><td>${money(item.price)}</td><td>${money(item.visit_fee)}</td><td>${item.active ? badge('active') : badge('inactive')}</td>
+    <td><button class="small alt" onclick="editCatalog(${item.id})">Edit</button></td></tr>`).join('');
+  $('p_catalog').innerHTML = `<div class="section-heading"><div><div class="eyebrow">Transparent pricing</div><h2>Price catalogue</h2></div><p>Only active services are shown to customers. Estimates are stored with each booking.</p></div>
+    <div class="table-scroll"><table><tr><th>Service</th><th>Category</th><th>Price</th><th>Visit fee</th><th>Status</th><th>Actions</th></tr>${rows || '<tr><td colspan="6">No services listed. Add your launch prices below.</td></tr>'}</table></div>
+    <div class="add-tech-panel"><h3>Add a fixed-price service</h3><div class="row">
+      <div><label for="newCatalogName">Service name</label><input id="newCatalogName" maxlength="100" placeholder="AC service"></div>
+      <div><label for="newCatalogCategory">Category</label><select id="newCatalogCategory">${['Electric Work','Plumbing','Air Conditioning','Solar Solutions','Home Cleaning','Pest Control','Washing Machine','Fridge Repair','Geyser Repair','Carpentry','Painting','Locksmith','CCTV Installation','Water Filter / RO','Welding Work','Labour','Other'].map(c => `<option>${esc(c)}</option>`).join('')}</select></div>
+    </div><div class="row">
+      <div><label for="newCatalogPrice">Service price (Rs)</label><input id="newCatalogPrice" type="number" min="0" step="0.01" required></div>
+      <div><label for="newCatalogVisit">Visit fee (Rs)</label><input id="newCatalogVisit" type="number" min="0" step="0.01" value="0" required></div>
+    </div><label for="newCatalogDescription">What's included</label><textarea id="newCatalogDescription" maxlength="500" placeholder="Describe what this fixed price includes."></textarea>
+    <button onclick="addCatalogItem()">Add to customer catalogue</button><div id="catalogMsg" aria-live="polite"></div></div>`;
+}
+
+async function downloadApplicationDocument(applicationId, documentId) {
+  try {
+    const response = await fetch(`/api/admin/applications/${applicationId}/documents/${documentId}`, { headers: H() });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.detail || 'Could not download the document');
+    }
+    const url = URL.createObjectURL(await response.blob());
+    const link = document.createElement('a');
+    link.href = url;
+    const disposition = response.headers.get('Content-Disposition') || '';
+    const filename = disposition.match(/filename="([^"]+)"/i)?.[1];
+    link.download = filename || `application-${applicationId}-document-${documentId}`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error) { alert(error.message); }
+}
+
+async function reviewApplication(id, action) {
+  let review_note = '';
+  if (action === 'approve' && !confirm('Approve only after you have verified the applicant and documents. Continue?')) return;
+  if (action === 'reject') {
+    review_note = prompt('Enter the reason for rejecting this application:');
+    if (!review_note || !review_note.trim()) return;
+  }
+  try {
+    await api(`/api/admin/applications/${id}/review`, {
+      method: 'POST', body: { action, review_note },
+    }, H());
+    await load();
+  } catch (error) { alert(error.message); }
+}
+
+async function addCatalogItem() {
+  try {
+    await api('/api/admin/catalog', {
+      method: 'POST',
+      body: {
+        service_name: $('newCatalogName').value,
+        category: $('newCatalogCategory').value,
+        price: Number($('newCatalogPrice').value),
+        visit_fee: Number($('newCatalogVisit').value),
+        description: $('newCatalogDescription').value,
+        active: true,
+      },
+    }, H());
+    flash($('catalogMsg'), 'Fixed-price service added.', true);
+    await load();
+  } catch (error) { flash($('catalogMsg'), error.message, false); }
+}
+
+function editCatalog(id) {
+  const item = data.catalog.find(entry => entry.id === id);
+  if (!item) return;
+  $('editCatalogId').value = item.id;
+  $('editCatalogName').value = item.service_name;
+  $('editCatalogCategory').value = item.category;
+  $('editCatalogPrice').value = item.price;
+  $('editCatalogVisit').value = item.visit_fee;
+  $('editCatalogDescription').value = item.description;
+  $('editCatalogActive').checked = Boolean(item.active);
+  $('editCatalogMsg').innerHTML = '';
+  $('catalogDialog').showModal();
+}
+
+function closeCatalogEditor() { $('catalogDialog').close(); }
+
+async function saveCatalogItem(event) {
+  event.preventDefault();
+  const button = $('saveCatalogBtn');
+  button.disabled = true;
+  try {
+    await api(`/api/admin/catalog/${$('editCatalogId').value}`, {
+      method: 'PUT',
+      body: {
+        service_name: $('editCatalogName').value,
+        category: $('editCatalogCategory').value,
+        price: Number($('editCatalogPrice').value),
+        visit_fee: Number($('editCatalogVisit').value),
+        description: $('editCatalogDescription').value,
+        active: $('editCatalogActive').checked,
+      },
+    }, H());
+    closeCatalogEditor();
+    await load();
+  } catch (error) {
+    flash($('editCatalogMsg'), error.message, false);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function showAdminPhoto(photoId) {
+  try {
+    const response = await fetch(`/api/admin/job-photos/${photoId}`, { headers: H() });
+    if (!response.ok) throw new Error('Could not load this job photo');
+    $('adminPhotoPreview').src = URL.createObjectURL(await response.blob());
+    $('adminPhotoDialog').showModal();
+  } catch (error) { alert(error.message); }
+}
+
+function closeAdminPhoto() {
+  URL.revokeObjectURL($('adminPhotoPreview').src);
+  $('adminPhotoPreview').removeAttribute('src');
+  $('adminPhotoDialog').close();
+}
+
+function renderPay() {
+  const rows = data.payments.map(p => `<tr><td>#${p.request_id}</td><td>${esc(p.tech_name)}<br><small>${esc(p.tech_phone)}</small></td>
+    <td>${money(p.amount)}</td><td>${money(p.commission)}</td><td><b>${money(p.payout)}</b></td>
+    <td>${badge(p.status)}</td><td>${p.collected ? '✅ collected' : '❌ not collected'}</td>
+    <td>${!p.collected && p.status !== 'void' ? `<button class="small" onclick="post('/api/admin/payments/${p.id}/collected')">Mark collected</button>` : ''}
+    ${p.status === 'released' ? `<button class="small" onclick="payout(${p.id})">Pay out</button>` : ''}
+    <small>${esc(p.reference || '')}</small></td></tr>`).join('');
+  $('p_pay').innerHTML = `<h2>Payments ledger</h2>
+    <p><small>Flow: technician marks done → customer confirms (released) → you mark customer money collected → you pay the technician (JazzCash / Easypaisa / bank) and record the reference.</small></p>
+    <table><tr><th>Job</th><th>Technician</th><th>Amount</th><th>Commission</th><th>Payout</th><th>Status</th><th>Customer money</th><th>Action</th></tr>${rows}</table>`;
+}
+
+async function post(path, body) {
+  try { await api(path, { method: 'POST', body }, H()); load(); } catch (e) { alert(e.message); }
+}
+function assign(id) { post(`/api/admin/requests/${id}/assign`, { technician_id: parseInt($('as' + id).value) }); }
+function resolve(id, action) {
+  if (confirm(action === 'release' ? 'Release payment to technician?' : 'Close/void this request?'))
+    post(`/api/admin/requests/${id}/resolve`, { action });
+}
+function payout(id) {
+  const reference = prompt('Transfer reference (JazzCash/Easypaisa/bank txn ID):');
+  if (reference !== null) post(`/api/admin/payments/${id}/payout`, { reference });
+}
+async function addTech() {
+  try {
+    await api('/api/admin/technicians', {
+      method: 'POST',
+      body: { name: $('n_name').value, phone: $('n_phone').value, category: $('n_cat').value, area: $('n_area').value, pin: $('n_pin').value },
+    }, H());
+    $('n_name').value = '';
+    $('n_phone').value = '';
+    $('n_area').value = '';
+    $('n_pin').value = '';
+    flash($('tmsg'), 'Technician added.', true);
+    await load();
+  } catch (e) { flash($('tmsg'), e.message, false); }
+}
+
+function editTech(id) {
+  const tech = data.technicians.find(t => t.id === id);
+  if (!tech) return;
+  $('editTechId').value = tech.id;
+  $('editName').value = tech.name;
+  $('editPhone').value = tech.phone;
+  $('editCategory').value = tech.category;
+  $('editArea').value = tech.area || '';
+  $('editPin').value = '';
+  $('editTechMsg').innerHTML = '';
+  $('technicianDialog').showModal();
+}
+
+function closeTechEditor() { $('technicianDialog').close(); }
+
+async function saveTech(event) {
+  event.preventDefault();
+  const id = $('editTechId').value;
+  const button = $('saveTechBtn');
+  button.disabled = true;
+  try {
+    await api(`/api/admin/technicians/${id}`, {
+      method: 'PUT',
+      body: {
+        name: $('editName').value,
+        phone: $('editPhone').value,
+        category: $('editCategory').value,
+        area: $('editArea').value,
+        pin: $('editPin').value || null,
+      },
+    }, H());
+    closeTechEditor();
+    await load();
+  } catch (e) {
+    flash($('editTechMsg'), e.message, false);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function toggleTech(id, active) {
+  const message = active
+    ? 'Remove this technician from active work? Their account will be disabled, but past jobs and payment history will be kept.'
+    : 'Restore this technician account?';
+  if (confirm(message)) post(`/api/admin/technicians/${id}/toggle`);
+}
+
+if (key) start();
+</script>
+</body>
+</html>

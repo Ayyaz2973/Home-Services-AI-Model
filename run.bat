@@ -11,6 +11,7 @@ copy /Y index.html static\index.html >nul
 copy /Y tech.html static\tech.html >nul
 copy /Y admin.html static\admin.html >nul
 copy /Y terms.html static\terms.html >nul
+copy /Y favicon.svg static\favicon.svg >nul
 copy /Y style.css static\style.css >nul
 copy /Y common.js static\common.js >nul
 set ADMIN_KEY=change-me-now

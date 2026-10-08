@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f8f7">
+<title>Technician portal | HomeServe</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header>
+  <b>⌂ HomeServe <span class="header-context">PRO PORTAL</span></b>
+  <span><a href="/">Customer site</a><a href="/tech">Technician</a></span>
+</header>
+<main>
+  <div id="portalIntro" class="portal-intro"><div class="eyebrow">Technician workspace</div><h1>Good work starts here.</h1><p>Manage your availability, stay on top of active jobs, and keep your work history in one place.</p></div>
+  <div id="loginView" class="card login-card">
+    <div class="login-mark" aria-hidden="true">↗</div>
+    <h2>Welcome back</h2>
+    <p>Sign in with the phone number and PIN provided by your HomeServe administrator.</p>
+    <label for="phone">Phone number</label><input id="phone" type="tel" autocomplete="username" placeholder="03001110001">
+    <label for="pin">PIN</label><input id="pin" type="password" autocomplete="current-password" placeholder="Enter your PIN">
+    <button onclick="login()">Sign in to your portal</button>
+    <div id="lmsg" aria-live="polite"></div>
+    <p class="signup-prompt">New to HomeServe? <button class="link-button" type="button" onclick="showSignup()">Apply to join</button></p>
+  </div>
+  <div id="signupView" class="card signup-card hide">
+    <div class="eyebrow">Provider onboarding</div>
+    <h2>Apply to join HomeServe</h2>
+    <p>Submit your details and documents. You can sign in after Admin reviews and approves the application.</p>
+    <form id="applicationForm" onsubmit="submitApplication(event)">
+      <div class="row">
+        <div><label for="appName">Full legal name</label><input id="appName" name="name" required autocomplete="name" maxlength="120"></div>
+        <div><label for="appPhone">Phone number</label><input id="appPhone" name="phone" type="tel" required autocomplete="tel"></div>
+      </div>
+      <div class="row">
+        <div><label for="appPin">Create portal PIN</label><input id="appPin" name="pin" type="password" required minlength="8" autocomplete="new-password"><small>Use at least 8 characters.</small></div>
+        <div><label for="appCategory">Primary service</label><select id="appCategory" name="category" required></select></div>
+      </div>
+      <label for="appArea">Service area</label><input id="appArea" name="area" required placeholder="For example, F-10 and F-11">
+      <label for="appExperience">Experience and skills</label><textarea id="appExperience" name="experience" maxlength="2000" placeholder="Describe relevant experience, training, and services you can perform."></textarea>
+      <div class="upload-grid">
+        <div><label for="cnicFront">CNIC front (JPEG, PNG, WebP, or PDF)</label><input id="cnicFront" name="cnic_front" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf" required></div>
+        <div><label for="cnicBack">CNIC back (JPEG, PNG, WebP, or PDF)</label><input id="cnicBack" name="cnic_back" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf" required></div>
+        <div><label for="profilePhoto">Recent profile photo (image)</label><input id="profilePhoto" name="profile_photo" type="file" accept="image/jpeg,image/png,image/webp" required></div>
+        <div><label for="skillCertificate">Skill certificate (optional)</label><input id="skillCertificate" name="skill_certificate" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf"></div>
+        <div><label for="policeCertificate">Police verification (optional)</label><input id="policeCertificate" name="police_certificate" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf"></div>
+      </div>
+      <p class="privacy-note">Identity documents are private and can only be viewed by an authenticated HomeServe administrator. They are stored on the server and are not shown on your public profile.</p>
+      <label class="consent-label"><input type="checkbox" name="terms_accepted" required> I have read and agree to the <a href="/terms#technician" target="_blank" rel="noopener">draft provider terms</a>.</label>
+      <label class="consent-label"><input type="checkbox" name="privacy_accepted" required> I have read the <a href="/terms#privacy" target="_blank" rel="noopener">privacy and document-handling notice</a>.</label>
+      <button id="applicationSubmit" type="submit">Submit application</button>
+      <button class="alt" type="button" onclick="showLogin()">Back to sign in</button>
+      <div id="applicationMsg" aria-live="polite"></div>
+    </form>
+  </div>
+
+  <div id="appView" class="hide">
+    <div class="card" id="profile"></div>
+    <div class="card"><h2>Active jobs</h2><p>Requests that need your attention.</p><div id="active"></div></div>
+    <div class="card"><h2>Job history</h2><p>Your completed and past requests.</p><div id="history"></div></div>
+  </div>
+  <dialog id="photoDialog" class="photo-dialog"><button class="alt small" type="button" onclick="closePhoto()">Close</button><img id="photoPreview" alt="Job photo preview"></dialog>
+  <footer class="portal-footer">Need help? Contact your HomeServe administrator.</footer>
+</main>
+<script src="/static/common.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let auth = JSON.parse(sessionStorage.getItem('tech_auth') || 'null');
+const H = () => ({ 'X-Phone': auth.phone, 'X-Pin': auth.pin });
+let locationWatchId = null;
+let trackingJobId = null;
+let locationUpdateInFlight = false;
+let lastLocationSentAt = 0;
+
+async function login() {
+  auth = { phone: $('phone').value, pin: $('pin').value };
+  try {
+    await api('/api/tech/me', {}, H());
+    sessionStorage.setItem('tech_auth', JSON.stringify(auth));
+    start();
+  } catch (e) { flash($('lmsg'), e.message, false); }
+}
+
+async function loadApplicationCategories() {
+  try {
+    const response = await api('/api/meta');
+    $('appCategory').innerHTML = response.categories
+      .filter(category => category !== 'Other')
+      .map(category => `<option value="${esc(category)}">${esc(category)}</option>`).join('');
+  } catch (error) {
+    flash($('applicationMsg'), `Could not load service categories: ${error.message}`, false);
+  }
+}
+
+async function showSignup() {
+  $('loginView').classList.add('hide');
+  $('signupView').classList.remove('hide');
+}
+
+function showLogin() {
+  $('signupView').classList.add('hide');
+  $('loginView').classList.remove('hide');
+}
+
+async function submitApplication(event) {
+  event.preventDefault();
+  const form = $('applicationForm');
+  const data = new FormData(form);
+  data.set('terms_accepted', String(form.elements.terms_accepted.checked));
+  data.set('privacy_accepted', String(form.elements.privacy_accepted.checked));
+  $('applicationSubmit').disabled = true;
+  flash($('applicationMsg'), 'Submitting your application…', true);
+  try {
+    const response = await fetch('/api/technician-applications', { method: 'POST', body: data });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Application could not be submitted');
+    form.reset();
+    flash($('applicationMsg'), 'Application submitted. Admin will review it before you can sign in.', true);
+  } catch (error) {
+    flash($('applicationMsg'), error.message, false);
+  } finally {
+    $('applicationSubmit').disabled = false;
+  }
+}
+
+async function logout() {
+  if (trackingJobId !== null) {
+    try {
+      await api(`/api/tech/jobs/${trackingJobId}/location`, { method: 'DELETE' }, H());
+    } catch (e) {
+      alert(`Could not stop server-side location sharing: ${e.message}`);
+    }
+  }
+  stopLocationWatch();
+  sessionStorage.removeItem('tech_auth');
+  location.reload();
+}
+
+function stopLocationWatch() {
+  if (locationWatchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(locationWatchId);
+  }
+  locationWatchId = null;
+  trackingJobId = null;
+  locationUpdateInFlight = false;
+  lastLocationSentAt = 0;
+}
+
+function setLocationMessage(jid, text, isError = false) {
+  const message = $(`locationMsg${jid}`);
+  if (!message) return;
+  message.textContent = text;
+  message.classList.toggle('err', isError);
+  message.classList.toggle('ok', !isError);
+}
+
+function startLocationSharing(jid) {
+  if (!navigator.geolocation) {
+    setLocationMessage(jid, 'This browser does not support location sharing.', true);
+    return;
+  }
+  if (!window.isSecureContext) {
+    setLocationMessage(jid, 'Location sharing requires HTTPS, or localhost during development.', true);
+    return;
+  }
+  if (locationWatchId !== null) {
+    if (trackingJobId === jid) return;
+    stopLocationWatch();
+  }
+  trackingJobId = jid;
+  lastLocationSentAt = 0;
+  setLocationMessage(jid, 'Waiting for GPS permission and a location fix…');
+  locationWatchId = navigator.geolocation.watchPosition(async position => {
+    if (trackingJobId !== jid || locationUpdateInFlight || Date.now() - lastLocationSentAt < 15000) return;
+    locationUpdateInFlight = true;
+    try {
+      await api(`/api/tech/jobs/${jid}/location`, {
+        method: 'POST',
+        body: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        },
+      }, H());
+      lastLocationSentAt = Date.now();
+      setLocationMessage(jid, `Sharing your live location with this customer and admin · GPS accuracy about ${Math.round(position.coords.accuracy)} m.`);
+    } catch (e) {
+      setLocationMessage(jid, `Could not share your location: ${e.message}`, true);
+    } finally {
+      locationUpdateInFlight = false;
+    }
+  }, async error => {
+    const message = error.code === 1
+      ? 'Location permission was denied. Allow location access in your browser to share it.'
+      : error.code === 2
+        ? 'Your device could not determine its location. Check GPS/location settings.'
+        : 'Location request timed out. Check GPS/location settings and try again.';
+    setLocationMessage(jid, message, true);
+    if (error.code === 1) {
+      try {
+        await api(`/api/tech/jobs/${jid}/location`, { method: 'DELETE' }, H());
+      } catch (e) {
+        setLocationMessage(jid, `${message} Could not clear the last shared location: ${e.message}`, true);
+      }
+      stopLocationWatch();
+    }
+  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 20000 });
+}
+
+async function stopLocationSharing(jid) {
+  stopLocationWatch();
+  try {
+    await api(`/api/tech/jobs/${jid}/location`, { method: 'DELETE' }, H());
+    await load();
+  } catch (e) {
+    setLocationMessage(jid, `Could not clear shared location: ${e.message}`, true);
+  }
+}
+
+function start() {
+  $('loginView').classList.add('hide');
+  $('portalIntro').classList.add('hide');
+  $('appView').classList.remove('hide');
+  load();
+  setInterval(load, 10000);
+}
+
+async function load() {
+  try {
+    const d = await api('/api/tech/me', {}, H());
+    const m = d.me;
+    $('profile').innerHTML = `<h2>${esc(m.name)}</h2>
+      <p>${esc(m.category)} · ${esc(m.area)} · ⭐ ${m.rating} · ${m.jobs_done} jobs done<br>
+      Wallet (payout due to you): <b>${money(m.wallet)}</b></p>
+      <label><input type="checkbox" style="width:auto" ${m.available ? 'checked' : ''} onchange="setAvail(this.checked)">
+      I am available for new jobs</label>
+      <button class="alt small" onclick="logout()">Logout</button>`;
+    const open = ['assigned', 'accepted'];
+    const act = d.jobs.filter(j => open.includes(j.status));
+    const hist = d.jobs.filter(j => !open.includes(j.status));
+    const sharedJob = act.find(j => j.status === 'accepted' && j.location_shared);
+    if (sharedJob && locationWatchId === null) startLocationSharing(sharedJob.id);
+    else if (!sharedJob && locationWatchId !== null) stopLocationWatch();
+    $('active').innerHTML = act.length ? act.map(jobCard).join('') : '<p>No active jobs. Stay available.</p>';
+    $('history').innerHTML = hist.length ? hist.map(jobCard).join('') : '<p>Nothing yet.</p>';
+  } catch (e) {
+    if (e.message.includes('Wrong')) logout();
+  }
+}
+
+function jobCard(j) {
+  let h = `<div class="job"><b>#${j.id} · ${esc(j.category)}</b> ${badge(j.status)} ${j.urgency !== 'normal' ? badge(j.urgency) : ''}
+    <br>${esc(j.ai_summary || j.description)}
+    <br><small>${esc(j.area)} · ${esc(j.address)}</small>`;
+  if (j.customer_name) h += `<br>Customer: ${esc(j.customer_name)} · <a href="tel:${esc(j.customer_phone)}">${esc(j.customer_phone)}</a>`;
+  const beforePhotos = (j.photos || []).filter(photo => photo.phase === 'before');
+  const afterPhotos = (j.photos || []).filter(photo => photo.phase === 'after');
+  if (beforePhotos.length || afterPhotos.length) {
+    h += '<div class="job-photo-list"><b>Job photos</b>';
+    for (const photo of beforePhotos.concat(afterPhotos)) {
+      h += `<button class="small alt" onclick="showJobPhoto(${j.id},${photo.id})">${photo.phase === 'before' ? 'Before' : 'After'} photo</button>`;
+    }
+    h += '</div>';
+  }
+  if (j.status === 'assigned') {
+    h += `<br><button onclick="jobAct(${j.id},'accept')">Accept</button>
+          <button class="red" onclick="jobAct(${j.id},'decline')">Decline</button>`;
+  }
+  if (j.status === 'accepted') {
+    const checkedIn = Boolean(j.arrival_checked_in_at);
+    const canComplete = checkedIn && beforePhotos.length > 0 && afterPhotos.length > 0 && !j.pending_extra_charge;
+    h += `<div class="arrival-checkin ${checkedIn ? 'checked-in' : ''}">
+      <b>Arrival check-in</b>
+      ${checkedIn
+        ? `<p class="msg ok">GPS check-in recorded ${esc(j.arrival_checked_in_at.replace('T', ' '))} · accuracy about ${Math.round(j.arrival_accuracy)} m.</p>`
+        : `<p>When you arrive, record a one-time GPS check-in. The GPS fix must report accuracy of 150 m or better. This saves reported coordinates; it does not independently verify the service address.</p>
+           <button id="checkin${j.id}" class="small" onclick="checkInAtJob(${j.id})">GPS check in at arrival</button>`}
+    </div>
+    <div class="location-share">
+      <b>Live location sharing</b>
+      <p id="locationMsg${j.id}" class="msg ${j.location_shared ? 'ok' : ''}">${j.location_shared
+        ? 'Your live location is shared with this customer and admin while this job is active.'
+        : 'Sharing is off. Start it to let the customer and admin see your location on a map.'}</p>
+      ${j.location_shared
+        ? `<button class="alt small" onclick="stopLocationSharing(${j.id})">Stop sharing</button>`
+        : `<button class="small" onclick="startLocationSharing(${j.id})">Share my live location</button>`}
+      <small>Allow browser location access and keep this portal open. Use HTTPS outside localhost. Sharing stops when you stop it or mark the job done.</small>
+    </div>
+    <div class="row"><div><label>Amount charged (Rs)</label><input id="amt${j.id}" type="number"></div>
+          <div><label>Work note</label><input id="note${j.id}"></div></div>
+          <div class="job-photo-upload"><b>Before-and-after photos</b>
+          <p>At least one before-work and one after-work photo are required to finish this job. Uploaded: before ${beforePhotos.length}/5 · after ${afterPhotos.length}/5.</p><div class="row">
+            <div><label for="beforePhoto${j.id}">Before photo</label><input id="beforePhoto${j.id}" type="file" accept="image/*" capture="environment" onchange="uploadJobPhoto(${j.id},'before',this)"></div>
+            <div><label for="afterPhoto${j.id}">After photo</label><input id="afterPhoto${j.id}" type="file" accept="image/*" capture="environment" onchange="uploadJobPhoto(${j.id},'after',this)"></div>
+          </div><div id="photoMsg${j.id}" aria-live="polite"></div></div>
+          ${j.quoted_price !== null && j.quoted_price !== undefined
+            ? `<p class="price-summary">Customer estimate: ${money(j.quoted_price + (j.visit_fee || 0))}. Approved extra work: ${money(j.approved_extra_amount || 0)}.</p>`
+            : ''}
+          ${j.pending_extra_charge ? '<p class="msg">An extra-work price proposal is awaiting customer review.</p>' : `<button class="alt small" onclick="proposeExtra(${j.id})">Request approval for extra work</button>`}
+          ${canComplete ? '' : '<p class="msg">To finish, check in at the job, upload both required photos, and wait for any extra-work decision.</p>'}
+          <button ${canComplete ? '' : 'disabled'} onclick="done(${j.id})">Mark work done</button>`;
+  }
+  if (j.status === 'work_done') h += `<br>Waiting for customer to confirm ${money(j.amount)}.`;
+  if (j.status === 'confirmed') h += `<br>Confirmed. ${money(j.amount)} charged.`;
+  if (j.status === 'disputed') h += '<br>Customer reported a problem. Admin will contact you.';
+  return h + '</div>';
+}
+
+async function checkInAtJob(jid) {
+  const button = $(`checkin${jid}`);
+  if (!navigator.geolocation) {
+    alert('This browser does not support GPS check-in.');
+    return;
+  }
+  if (!window.isSecureContext) {
+    alert('GPS check-in requires HTTPS, or localhost during development.');
+    return;
+  }
+  button.disabled = true;
+  navigator.geolocation.getCurrentPosition(async position => {
+    try {
+      await api(`/api/tech/jobs/${jid}/check-in`, {
+        method: 'POST',
+        body: {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        },
+      }, H());
+      await load();
+    } catch (error) {
+      alert(`Could not record GPS check-in: ${error.message}`);
+      if (button.isConnected) button.disabled = false;
+    }
+  }, error => {
+    const message = error.code === 1
+      ? 'Location permission was denied. Allow location access to check in.'
+      : error.code === 2
+        ? 'Your device could not determine its location. Check GPS/location settings.'
+        : 'GPS check-in timed out. Check location settings and try again.';
+    alert(message);
+    if (button.isConnected) button.disabled = false;
+  }, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+}
+
+async function uploadJobPhoto(jid, phase, input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const message = $(`photoMsg${jid}`);
+  message.textContent = `Uploading ${phase} photo…`;
+  const form = new FormData();
+  form.append('file', file);
+  input.disabled = true;
+  try {
+    const response = await fetch(`/api/tech/jobs/${jid}/photos/${phase}`, {
+      method: 'POST', headers: H(), body: form,
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(typeof result.detail === 'string' ? result.detail : 'Photo upload failed');
+    message.textContent = `${phase === 'before' ? 'Before' : 'After'} photo uploaded.`;
+    await load();
+  } catch (error) {
+    message.textContent = error.message;
+    message.classList.add('err');
+  } finally {
+    input.disabled = false;
+    input.value = '';
+  }
+}
+
+async function proposeExtra(jid) {
+  const reason = prompt('Describe why additional work is needed:');
+  if (!reason) return;
+  const amountText = prompt('Additional amount in Rs:');
+  if (amountText === null) return;
+  try {
+    await api(`/api/tech/jobs/${jid}/extra-charges`, {
+      method: 'POST',
+      body: { amount: Number(amountText), reason },
+    }, H());
+    await load();
+  } catch (error) { alert(error.message); }
+}
+
+async function showJobPhoto(jid, photoId) {
+  try {
+    const response = await fetch(`/api/tech/jobs/${jid}/photos/${photoId}`, { headers: H() });
+    if (!response.ok) throw new Error('Could not load this job photo');
+    $('photoPreview').src = URL.createObjectURL(await response.blob());
+    $('photoDialog').showModal();
+  } catch (error) { alert(error.message); }
+}
+
+function closePhoto() {
+  URL.revokeObjectURL($('photoPreview').src);
+  $('photoPreview').removeAttribute('src');
+  $('photoDialog').close();
+}
+
+async function setAvail(v) {
+  await api('/api/tech/availability', { method: 'POST', body: { available: v } }, H());
+  load();
+}
+async function jobAct(id, what) {
+  try { await api(`/api/tech/jobs/${id}/${what}`, { method: 'POST' }, H()); load(); }
+  catch (e) { alert(e.message); }
+}
+async function done(id) {
+  try {
+    await api(`/api/tech/jobs/${id}/done`, {
+      method: 'POST',
+      body: { amount: parseFloat($('amt' + id).value), note: $('note' + id).value },
+    }, H());
+    if (trackingJobId === id) stopLocationWatch();
+    load();
+  } catch (e) { alert(e.message); }
+}
+
+loadApplicationCategories();
+if (auth) start();
+</script>
+</body>
+</html>
