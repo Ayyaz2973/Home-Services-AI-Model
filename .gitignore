@@ -1,0 +1,8 @@
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+homeserve.db*
+private_uploads/
+.env
+.env.*

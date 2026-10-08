@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f5f8f7">
+<title>Terms and privacy | HomeServe</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header><b>⌂ HomeServe</b><span><a href="/">Customer site</a><a href="/tech">Technician portal</a></span></header>
+<main class="terms-main">
+  <div class="eyebrow">Draft terms and privacy notice</div>
+  <h1>Terms and privacy</h1>
+  <div class="msg err"><b>Draft only — not legal advice.</b> Have a qualified Pakistani lawyer review these terms and complete the provider details before relying on or publishing them as binding terms.</div>
+  <p><b>Provider:</b> [Legal business name] · <b>Address:</b> [Business address] · <b>Support:</b> [Email and phone]</p>
+
+  <section id="customer" class="card">
+    <h2>Customer terms</h2>
+    <p>HomeServe helps customers submit home-service requests and coordinate with service professionals. A request is not a guarantee that a provider is available, a particular arrival time can be met, or a job will be accepted.</p>
+    <p>Provide a correct phone number, service address, and description. Before work begins, agree with the technician on the scope, price, materials, and extra charges. An estimate in the portal is not a payment or a guarantee for work outside its stated scope.</p>
+    <p>Customers can cancel while a request is new, unassigned, or assigned. Contact [support contact] for an accepted job or a service concern. After completion, review the amount, work note, and required before/after photos. Confirm or report a problem within 24 hours. If no problem is reported in that period, the app automatically confirms the job and records the release in its payment ledger. It does not automatically charge or transfer money.</p>
+    <p>The current app does not collect card or wallet payments, hold money, or process refunds. Payment is handled separately using a method agreed with the service provider.</p>
+    <p>A one-time GPS arrival check-in is required before a technician can mark a job complete. The device must report GPS accuracy of 150 m or better. Its device-reported coordinates and accuracy are visible to the customer holding that job's private tracking link and to the administrator; they do not independently prove that the technician is at the service address. Separate live technician location sharing is optional and appears only after the technician starts sharing it for an accepted job. Stale live updates are hidden after two minutes. GPS can be inaccurate and does not prove completed work. Do not publish or misuse the tracking link.</p>
+    <p>HomeServe's provider screening, provider relationship, service guarantee, insurance, and any limits or remedies must be described by the provider and reviewed by local counsel before launch. Nothing here removes rights that cannot legally be excluded.</p>
+  </section>
+
+  <section id="technician" class="card">
+    <h2>Technician / provider terms</h2>
+    <p>Applicants submit their name, phone, service area, experience, chosen PIN, CNIC front and back, profile photo, and optional skill or police-verification documents. Submission is not approval. An administrator must review the application and verify documents before activating a portal account. The technician portal is unavailable until approval.</p>
+    <p>Applicants must provide accurate information and protect their PIN. Approved technicians must only mark themselves available when ready to accept work, communicate with customers, agree scope and price before starting, perform work safely and lawfully, and enter an accurate completion amount and note.</p>
+    <p>For an accepted job, technicians must record a one-time GPS arrival check-in before marking the job complete. The recorded coordinates and accuracy are device-reported and do not independently verify that the technician is at the service address. Live location sharing remains separately optional; it can be stopped at any time. Technicians must use customer contact, address, photos, and other information only for the service request and lawful duties.</p>
+    <p>At least one before-work photo and one after-work photo are required to mark a job complete. The customer must approve a proposed extra charge before the technician proceeds with or bills that extra work. The technician may not mark an amount above the estimate plus customer-approved extra work as complete.</p>
+    <p>Customers have 24 hours after completion to confirm or report a problem. If no problem is reported, the app automatically confirms the job and updates its internal payment ledger. The app does not automatically collect or transfer real money.</p>
+    <p>The provider must complete local rules for worker/contractor status, document verification, eligibility, safety training, insurance, commission, tax, payouts, suspension, complaints, appeals, and final payment. This draft does not establish a technician's employment or contractor status.</p>
+  </section>
+
+  <section id="privacy" class="card">
+    <h2>Privacy and document-handling notice</h2>
+    <p>Customer contact details and addresses are used to coordinate service requests. Technician applicants' contact details, service information, hashed PIN, acceptance record, and uploaded documents are used for account review and onboarding. For active jobs, the one-time arrival GPS coordinates and accuracy are stored with the request and exposed to its tracking-link holder and the administrator.</p>
+    <p>CNIC and verification documents are stored under a server-side private storage folder, not the public website folder. The app provides document downloads only to an authenticated administrator. Images are normalized to remove embedded metadata. PDF documents are downloaded as attachments. Keep the server, backups, and operating-system account access secure; do not host the private folder publicly.</p>
+    <p>The current release does not provide an automated deletion/retention schedule or a full privacy-request workflow. The provider must set a lawful retention period, access/backup policy, privacy contact, and process for access, correction, deletion, and incident response before onboarding real users.</p>
+    <p>Job photos are normalized images stored privately and served only through the request's tracking link, an authenticated assigned technician, or an authenticated administrator. Do not upload CNICs or unrelated sensitive information as job photos.</p>
+    <p>Map tiles are provided by OpenStreetMap when the map is displayed. The customer portal's tracking link is a bearer secret: anyone possessing it may access that job's tracking information and job photos. Keep it private.</p>
+  </section>
+
+  <section class="card">
+    <h2>Before launch</h2>
+    <ul>
+      <li>Replace bracketed business details and publish a separate contactable privacy policy.</li>
+      <li>Have all customer/provider terms reviewed by qualified Pakistani legal counsel.</li>
+      <li>Set a document retention and secure backup/deletion policy for `private_uploads` and the database.</li>
+      <li>Use HTTPS, a strong unique Admin key, access controls, and secure server backups.</li>
+      <li>Confirm prices, visit fees, commission, taxes, collection duties, payout terms, and automatic-confirmation rules before displaying them.</li>
+    </ul>
+    <p><a href="/terms">HomeServe draft terms</a> · <a href="/">Return to the customer portal</a></p>
+  </section>
+</main>
+</body>
+</html>
