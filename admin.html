@@ -11,7 +11,7 @@
 <body>
 <header>
   <b>⌂ HomeServe <span class="header-context">OPERATIONS</span></b>
-  <span><a href="/">Customer site</a><a href="/tech">Technician portal</a></span>
+  <span><a href="/">Customer site</a><a href="/tech">Technician portal</a><a href="#" id="logoutBtn" class="hide" onclick="logout();return false;">Sign out</a></span>
 </header>
 <main>
   <div id="portalIntro" class="portal-intro"><div class="eyebrow">HomeServe operations</div><h1>Every job. One clear view.</h1><p>Your service overview, technician network, and payment activity—all in one place.</p></div>
@@ -25,7 +25,7 @@
   </div>
 
   <div id="appView" class="hide">
-    <div class="section-heading"><div><div class="eyebrow">Live overview</div><h2>Operations dashboard</h2></div><p>Updates automatically every 15 seconds</p></div>
+    <div class="section-heading"><div><div class="eyebrow">Live overview</div><h2>Operations dashboard</h2></div><div><p style="margin:0 0 6px">Updates automatically every 15 seconds</p><button class="small alt" type="button" onclick="logout()">Sign out</button></div></div>
     <div class="stats" id="stats"></div>
     <div class="tabs">
       <button id="t_req" class="on" onclick="tab('req')">Requests</button>
@@ -79,6 +79,7 @@
 const $ = id => document.getElementById(id);
 let key = sessionStorage.getItem('admin_key');
 let data = null;
+let refreshTimer = null;
 const H = () => ({ 'X-Admin-Key': key });
 
 async function login() {
@@ -90,12 +91,30 @@ async function login() {
   } catch (e) { flash($('lmsg'), e.message, false); }
 }
 
+function logout() {
+  sessionStorage.removeItem('admin_key');
+  key = null;
+  data = null;
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+  $('appView').classList.add('hide');
+  $('loginView').classList.remove('hide');
+  $('portalIntro').classList.remove('hide');
+  $('logoutBtn')?.classList.add('hide');
+  $('key').value = '';
+  flash($('lmsg'), 'Signed out successfully.', true);
+}
+
 function start() {
   $('loginView').classList.add('hide');
   $('portalIntro').classList.add('hide');
   $('appView').classList.remove('hide');
+  $('logoutBtn')?.classList.remove('hide');
   load();
-  setInterval(load, 15000);
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(load, 15000);
 }
 
 function tab(n) {
@@ -111,8 +130,8 @@ async function load() {
     const applications = await api('/api/admin/applications', {}, H());
     data.applications = applications.applications;
   } catch (e) {
-    sessionStorage.removeItem('admin_key');
-    return location.reload();
+    logout();
+    return;
   }
   const s = data.stats;
   $('stats').innerHTML = [

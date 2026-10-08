@@ -442,9 +442,21 @@ def test_ac34_role_isolation(client):
     bad_admin = client.get("/api/admin/dashboard", headers={"X-Admin-Key": "wrong_key"})
     assert bad_admin.status_code == 401
 
+    # Attempt admin endpoints with no key at all -> 401
+    no_key_admin = client.get("/api/admin/dashboard")
+    assert no_key_admin.status_code == 401
+    no_key_apps = client.get("/api/admin/applications")
+    assert no_key_apps.status_code == 401
+
     # Attempt tech endpoint without valid credentials -> 401
     bad_tech = client.get("/api/tech/me", headers={"X-Phone": "03001110003", "X-Pin": "9999"})
     assert bad_tech.status_code == 401
+
+    # AC-01 / Role isolation: customer site must not expose unhidden admin portal link
+    index_res = client.get("/")
+    assert index_res.status_code == 200
+    assert '<a href="/admin">Admin</a>' not in index_res.text
+    assert 'id="adminNavLink" class="hide"' in index_res.text
 
 
 # ==============================================================================

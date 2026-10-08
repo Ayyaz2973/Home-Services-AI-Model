@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header><b>⌂ HomeServe</b><span><a href="/">Customer site</a><a href="/tech">Technician portal</a></span></header>
+<header><b>⌂ HomeServe</b><span><a href="/">Customer site</a><a href="/tech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a></span></header>
 <main class="terms-main">
   <div class="eyebrow">Draft terms and privacy notice</div>
   <h1>Terms and privacy</h1>
@@ -57,5 +57,11 @@
     <p><a href="/terms">HomeServe draft terms</a> · <a href="/">Return to the customer portal</a></p>
   </section>
 </main>
+<script>
+if (sessionStorage.getItem('admin_key')) {
+  var el = document.getElementById('adminNavLink');
+  if (el) el.classList.remove('hide');
+}
+</script>
 </body>
 </html>

@@ -12,7 +12,7 @@
 <body>
 <header>
   <b>⌂ HomeServe</b>
-  <span><a href="/">Home</a><a href="#services">Services</a><a href="/terms">Terms</a><a href="/tech">Technician portal</a><a href="/admin">Admin</a></span>
+  <span><a href="/">Home</a><a href="#services">Services</a><a href="/terms">Terms</a><a href="/tech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a></span>
 </header>
 <main>
   <section id="hero" class="hero">
@@ -87,6 +87,10 @@ const $ = id => document.getElementById(id);
 let renderedTrackState = null;
 
 async function init() {
+  if (sessionStorage.getItem('admin_key')) {
+    const adminNav = $('adminNavLink');
+    if (adminNav) adminNav.classList.remove('hide');
+  }
   const [meta, catalog] = await Promise.all([api('/api/meta'), api('/api/catalog')]);
   $('cat').innerHTML = '<option value="">Auto-detect from problem (no fixed-price estimate)</option>' +
     meta.categories.map(category => `<option value="category:${esc(category)}">${esc(category)} · no fixed-price estimate</option>`).join('') +
