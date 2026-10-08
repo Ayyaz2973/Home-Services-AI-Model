@@ -29,7 +29,12 @@ module.exports = async function handler(req, res) {
     if (backend.protocol !== "https:") {
       throw new Error("BACKEND_URL must use HTTPS");
     }
-    target = new URL(req.url, backend);
+    let reqPath = req.url || "/";
+    // Ensure the forwarded path starts with /api
+    if (!reqPath.startsWith("/api")) {
+      reqPath = "/api" + (reqPath.startsWith("/") ? reqPath : "/" + reqPath);
+    }
+    target = new URL(reqPath, backend);
     if (target.origin !== backend.origin) {
       throw new Error("Invalid backend request target");
     }
