@@ -4,5 +4,6 @@ __pycache__/
 *.py[cod]
 homeserve.db*
 private_uploads/
+cloudflared.exe
 .env
 .env.*
