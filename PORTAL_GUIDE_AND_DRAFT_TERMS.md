@@ -42,10 +42,14 @@ the backend; browser requests remain same-origin with the portal.
 4. Generate a public Railway domain and wait for `https://<railway-domain>/api/meta`
    to return JSON. The database and private uploads persist only if the Railway
    volume is mounted at `/data`.
-5. In Vercel, import the same repository as an **Other** static project. Set
-   `BACKEND_URL` to the Railway HTTPS origin only, for example
-   `https://your-service.up.railway.app` (do not add `/api`). Deploy or
-   redeploy after setting the variable.
+5. In Vercel, import the same repository. In **Project Settings → Build and
+   Deployment**, set **Root Directory** to `static` and **Framework Preset**
+   to **Other**. This is required: the repository root contains `main.py`,
+   which Vercel otherwise detects and starts as a FastAPI function. The static
+   project root contains the portal pages and the `/api` proxy, not the Python
+   backend. Set `BACKEND_URL` to the Railway HTTPS origin only, for example
+   `https://your-service.up.railway.app` (do not add `/api`). Leave the build
+   and output-directory overrides empty, then redeploy.
 6. Test the Vercel URL at `/`, `/tech`, and `/admin`. Admin access uses the
    Railway `ADMIN_KEY`. Add test technicians through Admin or submit an
    application; production Railway instances do not receive the local demo

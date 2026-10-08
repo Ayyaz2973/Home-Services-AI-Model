@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f5f8f7">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Technician portal | HomeServe</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -106,6 +107,12 @@ function showLogin() {
 async function submitApplication(event) {
   event.preventDefault();
   const form = $('applicationForm');
+  const totalUploadBytes = Array.from(form.querySelectorAll('input[type="file"]'))
+    .reduce((total, input) => total + Array.from(input.files || []).reduce((sum, file) => sum + file.size, 0), 0);
+  if (totalUploadBytes > 4 * 1024 * 1024) {
+    flash($('applicationMsg'), 'For this test portal, keep all application files together under 4 MB.', false);
+    return;
+  }
   const data = new FormData(form);
   data.set('terms_accepted', String(form.elements.terms_accepted.checked));
   data.set('privacy_accepted', String(form.elements.privacy_accepted.checked));
@@ -348,6 +355,12 @@ async function uploadJobPhoto(jid, phase, input) {
   const file = input.files && input.files[0];
   if (!file) return;
   const message = $(`photoMsg${jid}`);
+  if (file.size > 4 * 1024 * 1024) {
+    message.textContent = 'For this test portal, each photo must be under 4 MB.';
+    message.classList.add('err');
+    input.value = '';
+    return;
+  }
   message.textContent = `Uploading ${phase} photo…`;
   const form = new FormData();
   form.append('file', file);
