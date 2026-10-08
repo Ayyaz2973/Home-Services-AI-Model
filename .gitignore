@@ -8,3 +8,4 @@ cloudflared.exe
 .env
 .env.*
 .vercel
+.env*
