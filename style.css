@@ -192,6 +192,11 @@ input[type=file]{padding:9px;font-size:12px}
 .coords-tag{font-family:monospace;font-size:11px;color:var(--muted,#64748b);background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:4px}
 .map-note{font-size:11px;color:var(--muted,#64748b);margin-top:8px}
 .request-location-badge{display:inline-block;padding:6px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:13px;color:#166534;margin:8px 0}
+#pilotStatusText,.pilot-status-active{color:#059669;font-weight:500}
+.pilot-status-warning{color:#d97706;font-weight:500}
+.popup-select-btn{margin-top:6px;width:100%}
+.w-auto{width:auto}
+.w-150{width:150px}
 
 .portal-footer{text-align:center;color:#7d8d88;font-size:11px;padding:24px 12px}
 @media(max-width:760px){

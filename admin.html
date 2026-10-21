@@ -148,7 +148,7 @@ function renderReq() {
     const open = ['new', 'unassigned', 'assigned', 'accepted'].includes(r.status);
     let a = '';
     if (open) {
-      a += `<select id="as${r.id}" style="width:150px">${techOpts}</select>
+      a += `<select id="as${r.id}" class="w-150">${techOpts}</select>
             <button class="small" onclick="assign(${r.id})">Assign</button>
             <button class="small alt" onclick="post('/api/admin/requests/${r.id}/auto')">Auto</button>
             <button class="small red" onclick="resolve(${r.id},'cancel')">Close</button>`;

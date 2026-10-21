@@ -239,7 +239,7 @@ async function load() {
     $('profile').innerHTML = `<h2>${esc(m.name)}</h2>
       <p>${esc(m.category)} · ${esc(m.area)} · ⭐ ${m.rating} · ${m.jobs_done} jobs done<br>
       Wallet (payout due to you): <b>${money(m.wallet)}</b></p>
-      <label><input type="checkbox" style="width:auto" ${m.available ? 'checked' : ''} onchange="setAvail(this.checked)">
+      <label><input type="checkbox" class="w-auto" ${m.available ? 'checked' : ''} onchange="setAvail(this.checked)">
       I am available for new jobs</label>
       <button class="alt small" onclick="logout()">Logout</button>`;
     const open = ['assigned', 'accepted'];

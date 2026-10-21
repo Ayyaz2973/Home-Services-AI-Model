@@ -153,7 +153,7 @@
     <div class="map-selected-banner">
       <div>
         <span id="selectedAreaText">📍 Selected Area: <b>Jinnah Garden (Hub)</b></span> ·
-        <span id="pilotStatusText" style="color: #059669; font-weight: 500;">⚡ Active squad on-call (15-25 min dispatch)</span>
+        <span id="pilotStatusText">⚡ Active squad on-call (15-25 min dispatch)</span>
       </div>
       <div>
         <span id="selectedCoordsText" class="coords-tag">33.5682° N, 73.1553° E</span>
@@ -291,7 +291,7 @@ function initMap() {
 
       L.marker([zone.lat, zone.lng], { title: zone.name })
         .addTo(leafletMap)
-        .bindPopup(`<b>${esc(zone.name)} ${zone.isHub ? '(Hub)' : ''}</b><br>${esc(zone.desc)}<br><button class="btn small" style="margin-top:6px;width:100%" onclick="selectZone('${esc(zone.name)}')">Select this area</button>`);
+        .bindPopup(`<b>${esc(zone.name)} ${zone.isHub ? '(Hub)' : ''}</b><br>${esc(zone.desc)}<br><button class="btn small popup-select-btn" onclick="selectZone('${esc(zone.name)}')">Select this area</button>`);
     });
 
     currentPin = L.marker([33.5682, 73.1553], { draggable: true }).addTo(leafletMap);
@@ -355,10 +355,10 @@ function onLocationPicked(lat, lng) {
       btn.classList.toggle('active', btn.dataset.zone === nearest.name);
     });
     if ($('selectedAreaText')) $('selectedAreaText').innerHTML = `📍 Pinned near: <b>${esc(nearest.name)}</b>`;
-    if ($('pilotStatusText')) $('pilotStatusText').innerHTML = `<span style="color:#059669">⚡ Inside pilot coverage belt (${esc(nearest.name)})</span>`;
+    if ($('pilotStatusText')) $('pilotStatusText').innerHTML = `<span class="pilot-status-active">⚡ Inside pilot coverage belt (${esc(nearest.name)})</span>`;
   } else {
     if ($('selectedAreaText')) $('selectedAreaText').innerHTML = `📍 Custom Pin Location`;
-    if ($('pilotStatusText')) $('pilotStatusText').innerHTML = `<span style="color:#d97706">⚠️ Outside core pilot belt (technicians will verify route)</span>`;
+    if ($('pilotStatusText')) $('pilotStatusText').innerHTML = `<span class="pilot-status-warning">⚠️ Outside core pilot belt (technicians will verify route)</span>`;
   }
 }
 
