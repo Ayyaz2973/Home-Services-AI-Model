@@ -25,6 +25,8 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps, UnidentifiedImageError
 from pydantic import BaseModel, Field
 
+import gemini_helper
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv("DATABASE_PATH", os.path.join(BASE, "homeserve.db"))
 PRIVATE_STORAGE = Path(os.getenv("PRIVATE_STORAGE_DIR", os.path.join(BASE, "private_uploads"))).resolve()
@@ -387,95 +389,12 @@ def ai_analyze_gemini(text: str) -> Optional[dict]:
     """Tier 1 AI triage using Google Gemini Free API."""
     if not GEMINI_API_KEY:
         return None
-    prompt = f"""You are an expert AI dispatcher for HomeServe, a home services provider in Islamabad, Pakistan (covering Jinnah Garden, Naval Anchorage, Soan Gardens, PWD, Korang Town, Pakistan Town).
-The customer issue description may be in Urdu (اردو), Roman Urdu (e.g. "bijli ka breaker trip ho raha hai", "nal tap leak hai pani beh raha hai", "AC thandi hawa nahi de raha"), or English.
-
-Your instructions:
-1. Select exactly ONE category from this allowed list only:
-{', '.join(CATEGORIES)}
-2. Determine urgency:
-- "emergency": Active danger (sparking, smoke, fire hazard, pipe burst / active flooding, gas leak, electric shock risk).
-- "urgent": Needs urgent same-day resolution (e.g. main fridge stopped cooling in summer, water tank motor broke down, main toilet blocked).
-- "normal": Routine repairs, installations, servicing, minor issues.
-3. Write a clear, concise one-sentence English summary for the technician explaining the specific problem.
-
-Customer message: {text}
-
-Respond ONLY with valid JSON with this exact structure:
-{{"category": "<one of the allowed categories>", "urgency": "<normal|urgent|emergency>", "summary": "<concise English summary under 140 chars>"}}"""
-
-    headers = {
-        "x-goog-api-key": GEMINI_API_KEY,
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "contents": [
-            {
-                "parts": [
-                    {"text": prompt}
-                ]
-            }
-        ],
-        "generationConfig": {
-            "temperature": 0.1,
-            "responseMimeType": "application/json",
-        },
-    }
-
-    # Fast multi-model fallback (max 2 attempts, tight timeout so user requests never hang)
-    candidate_models = [GEMINI_MODEL] if GEMINI_MODEL else []
-    for fallback_model in ("gemini-3.1-flash-lite", "gemini-flash-latest", "gemma-4-26b-a4b-it"):
-        if fallback_model not in candidate_models:
-            candidate_models.append(fallback_model)
-    candidate_models = candidate_models[:2]
-
-    for model_name in candidate_models:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
-        try:
-            with httpx.Client(timeout=3.5) as client:
-                resp = client.post(url, headers=headers, json=payload)
-                if resp.status_code != 200:
-                    continue
-                data = resp.json()
-                candidates = data.get("candidates", [])
-                if not candidates:
-                    continue
-                parts = candidates[0].get("content", {}).get("parts", [])
-                if not parts:
-                    continue
-                raw_json_str = parts[0].get("text", "").strip()
-                # Clean optional markdown code fences if model wrapped it
-                if raw_json_str.startswith("```"):
-                    raw_json_str = re.sub(r"^```(?:json)?\s*", "", raw_json_str)
-                    raw_json_str = re.sub(r"\s*```$", "", raw_json_str)
-                parsed = json.loads(raw_json_str)
-                cat = parsed.get("category", "")
-                urg = parsed.get("urgency", "normal")
-                summary = parsed.get("summary", text.strip()[:140])
-
-                matched_cat = None
-                if cat in CATEGORIES:
-                    matched_cat = cat
-                else:
-                    for c in CATEGORIES:
-                        if c.lower() in cat.lower() or cat.lower() in c.lower():
-                            matched_cat = c
-                            break
-                if not matched_cat:
-                    matched_cat = "Other"
-
-                if urg not in ("normal", "urgent", "emergency"):
-                    urg = "normal"
-
-                return {
-                    "category": matched_cat,
-                    "urgency": urg,
-                    "summary": str(summary)[:200].strip(),
-                    "engine": f"gemini ({model_name})",
-                }
-        except Exception:
-            continue
-    return None
+    return gemini_helper.gemini_triage(
+        text=text,
+        categories=CATEGORIES,
+        api_key=GEMINI_API_KEY,
+        model=GEMINI_MODEL or "gemini-2.5-flash",
+    )
 
 
 def ai_analyze(text: str) -> dict:
@@ -2170,4 +2089,92 @@ def test_ai(body: AITestIn, x_admin_key: str = Header(None)):
         "input": body.text,
         "result": result,
     }
+
+
+@app.get("/api/admin/daily-ai-summary")
+def get_daily_ai_summary(x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    with db() as con:
+        recent_requests = con.execute(
+            """SELECT id, category, area, status, urgency, created_at
+               FROM requests ORDER BY id DESC LIMIT 20"""
+        ).fetchall()
+        total_requests = con.execute("SELECT COUNT(*) FROM requests").fetchone()[0]
+        active_jobs = con.execute("SELECT COUNT(*) FROM requests WHERE status IN ('assigned', 'accepted')").fetchone()[0]
+        completed_jobs = con.execute("SELECT COUNT(*) FROM requests WHERE status IN ('work_done', 'confirmed')").fetchone()[0]
+        disputes_count = con.execute("SELECT COUNT(*) FROM disputes WHERE status='open'").fetchone()[0]
+        rev = con.execute("SELECT COALESCE(SUM(amount), 0) FROM payments WHERE status='released'").fetchone()[0]
+
+        stats = {
+            "total_requests": total_requests,
+            "active_jobs": active_jobs,
+            "completed_jobs": completed_jobs,
+            "disputes_count": disputes_count,
+            "total_revenue": rev,
+        }
+        jobs_list = [dict(r) for r in recent_requests]
+        summary_text = gemini_helper.generate_daily_admin_summary(jobs_list, stats, api_key=GEMINI_API_KEY)
+        return {
+            "gemini_configured": bool(GEMINI_API_KEY),
+            "stats": stats,
+            "summary": summary_text or "Daily operations summary: All squads active across Islamabad & Jinnah Garden belt. Operations normal.",
+        }
+
+
+@app.get("/api/admin/disputes/{rid}/ai-analysis")
+def get_dispute_ai_analysis(rid: int, x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    with db() as con:
+        disp = con.execute("SELECT * FROM disputes WHERE request_id=?", (rid,)).fetchone()
+        if not disp:
+            raise HTTPException(404, "Dispute not found")
+        req = con.execute("SELECT * FROM requests WHERE id=?", (rid,)).fetchone()
+        photos_count = con.execute("SELECT COUNT(*) FROM job_photos WHERE request_id=?", (rid,)).fetchone()[0]
+
+        dispute_payload = {
+            "request_id": rid,
+            "category": req["category"] if req else "Unknown",
+            "quoted_price": req["quoted_price"] if req else 0,
+            "amount": req["amount"] if req else 0,
+            "reason": disp["reason"],
+            "description": req["description"] if req else "",
+            "work_note": req["work_note"] if req else "",
+            "photo_count": photos_count,
+        }
+        analysis = gemini_helper.draft_dispute_summary(dispute_payload, api_key=GEMINI_API_KEY)
+        return {
+            "dispute_id": disp["id"],
+            "request_id": rid,
+            "ai_analysis": analysis or {
+                "assessment": "Customer disputed the service outcome or pricing. Review before/after photographic proof.",
+                "fault": "unclear",
+                "recommended_action": "partial_payout",
+                "proposed_resolution_text": "Hold payout pending direct verification with both the customer and technician.",
+            },
+        }
+
+
+@app.get("/api/track/{token}/whatsapp-draft")
+def get_whatsapp_draft(token: str):
+    with db() as con:
+        r = con.execute("SELECT * FROM requests WHERE token=?", (token,)).fetchone()
+        if not r:
+            raise HTTPException(404, "Request not found")
+        tech_name = None
+        if r["technician_id"]:
+            t = con.execute("SELECT name FROM technicians WHERE id=?", (r["technician_id"],)).fetchone()
+            if t:
+                tech_name = t["name"]
+        text = gemini_helper.draft_whatsapp_update(
+            customer_name=r["customer_name"] or "Valued Customer",
+            category=r["category"] or "Home Service",
+            status=r["status"],
+            tech_name=tech_name,
+            eta_minutes=20,
+        )
+        return {
+            "token": token,
+            "status": r["status"],
+            "whatsapp_text": text,
+        }
 
