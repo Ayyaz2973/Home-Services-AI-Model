@@ -15,9 +15,15 @@ copy /Y favicon.svg static\favicon.svg >nul
 copy /Y style.css static\style.css >nul
 copy /Y common.js static\common.js >nul
 set ADMIN_KEY=Kayani_73
+if exist .env (
+  for /f "usebackq tokens=1,2 delims==" %%A in (".env") do (
+    if "%%A"=="GEMINI_API_KEY" if "%GEMINI_API_KEY%"=="" set GEMINI_API_KEY=%%B
+    if "%%A"=="GEMINI_MODEL" if "%GEMINI_MODEL%"=="" set GEMINI_MODEL=%%B
+  )
+)
 rem Free Gemini API key from https://aistudio.google.com/app/apikey
 if "%GEMINI_API_KEY%"=="" set GEMINI_API_KEY=
-set GEMINI_MODEL=gemini-1.5-flash
+if "%GEMINI_MODEL%"=="" set GEMINI_MODEL=gemini-3.1-flash-lite
 set OLLAMA_MODEL=qwen2.5:14b
 set COMMISSION_PCT=10
 set ASSIGN_TIMEOUT_MIN=10

@@ -30,7 +30,20 @@ DB_PATH = os.getenv("DATABASE_PATH", os.path.join(BASE, "homeserve.db"))
 PRIVATE_STORAGE = Path(os.getenv("PRIVATE_STORAGE_DIR", os.path.join(BASE, "private_uploads"))).resolve()
 ADMIN_KEY = os.getenv("ADMIN_KEY", "Kayani_73")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite").strip()
+
+_env_file = os.path.join(BASE, ".env")
+if os.path.isfile(_env_file):
+    with open(_env_file, "r", encoding="utf-8") as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _v = _line.split("=", 1)
+                _k, _v = _k.strip(), _v.strip()
+                if _k == "GEMINI_API_KEY" and not GEMINI_API_KEY:
+                    GEMINI_API_KEY = _v
+                elif _k == "GEMINI_MODEL" and os.getenv("GEMINI_MODEL") is None:
+                    GEMINI_MODEL = _v
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
 COMMISSION_PCT = float(os.getenv("COMMISSION_PCT", "10"))
@@ -391,7 +404,10 @@ Customer message: {text}
 Respond ONLY with valid JSON with this exact structure:
 {{"category": "<one of the allowed categories>", "urgency": "<normal|urgent|emergency>", "summary": "<concise English summary under 140 chars>"}}"""
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    headers = {
+        "x-goog-api-key": GEMINI_API_KEY,
+        "Content-Type": "application/json",
+    }
     payload = {
         "contents": [
             {
@@ -402,51 +418,64 @@ Respond ONLY with valid JSON with this exact structure:
         ],
         "generationConfig": {
             "temperature": 0.1,
-            "responseMimeType": "application/json"
-        }
+            "responseMimeType": "application/json",
+        },
     }
-    try:
-        with httpx.Client(timeout=10.0) as client:
-            resp = client.post(url, json=payload)
-            if resp.status_code != 200:
-                print(f"[Gemini] Non-200 response ({resp.status_code}): {resp.text[:200]}")
-                return None
-            data = resp.json()
-            candidates = data.get("candidates", [])
-            if not candidates:
-                return None
-            parts = candidates[0].get("content", {}).get("parts", [])
-            if not parts:
-                return None
-            raw_json_str = parts[0].get("text", "").strip()
-            parsed = json.loads(raw_json_str)
-            cat = parsed.get("category", "")
-            urg = parsed.get("urgency", "normal")
-            summary = parsed.get("summary", text.strip()[:140])
 
-            matched_cat = None
-            if cat in CATEGORIES:
-                matched_cat = cat
-            else:
-                for c in CATEGORIES:
-                    if c.lower() in cat.lower() or cat.lower() in c.lower():
-                        matched_cat = c
-                        break
-            if not matched_cat:
-                matched_cat = "Other"
+    # Fast multi-model fallback (max 2 attempts, tight timeout so user requests never hang)
+    candidate_models = [GEMINI_MODEL] if GEMINI_MODEL else []
+    for fallback_model in ("gemini-3.1-flash-lite", "gemini-flash-latest", "gemma-4-26b-a4b-it"):
+        if fallback_model not in candidate_models:
+            candidate_models.append(fallback_model)
+    candidate_models = candidate_models[:2]
 
-            if urg not in ("normal", "urgent", "emergency"):
-                urg = "normal"
+    for model_name in candidate_models:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+        try:
+            with httpx.Client(timeout=3.5) as client:
+                resp = client.post(url, headers=headers, json=payload)
+                if resp.status_code != 200:
+                    continue
+                data = resp.json()
+                candidates = data.get("candidates", [])
+                if not candidates:
+                    continue
+                parts = candidates[0].get("content", {}).get("parts", [])
+                if not parts:
+                    continue
+                raw_json_str = parts[0].get("text", "").strip()
+                # Clean optional markdown code fences if model wrapped it
+                if raw_json_str.startswith("```"):
+                    raw_json_str = re.sub(r"^```(?:json)?\s*", "", raw_json_str)
+                    raw_json_str = re.sub(r"\s*```$", "", raw_json_str)
+                parsed = json.loads(raw_json_str)
+                cat = parsed.get("category", "")
+                urg = parsed.get("urgency", "normal")
+                summary = parsed.get("summary", text.strip()[:140])
 
-            return {
-                "category": matched_cat,
-                "urgency": urg,
-                "summary": str(summary)[:200].strip(),
-                "engine": "gemini",
-            }
-    except Exception as exc:
-        print(f"[Gemini] Error during analysis: {exc}")
-        return None
+                matched_cat = None
+                if cat in CATEGORIES:
+                    matched_cat = cat
+                else:
+                    for c in CATEGORIES:
+                        if c.lower() in cat.lower() or cat.lower() in c.lower():
+                            matched_cat = c
+                            break
+                if not matched_cat:
+                    matched_cat = "Other"
+
+                if urg not in ("normal", "urgent", "emergency"):
+                    urg = "normal"
+
+                return {
+                    "category": matched_cat,
+                    "urgency": urg,
+                    "summary": str(summary)[:200].strip(),
+                    "engine": f"gemini ({model_name})",
+                }
+        except Exception:
+            continue
+    return None
 
 
 def ai_analyze(text: str) -> dict:
@@ -482,7 +511,7 @@ Customer message: {text}"""
                     "format": "json",
                     "options": {"temperature": 0.1},
                 },
-                timeout=12,
+                timeout=2.0,
             )
             data = json.loads(r.json()["response"])
             cat = data.get("category")

@@ -298,7 +298,7 @@ def test_ai_analyze_gemini_integration(monkeypatch):
     assert res is not None
     assert res["category"] == "Air Conditioning"
     assert res["urgency"] == "urgent"
-    assert res["engine"] == "gemini"
+    assert "gemini" in res["engine"]
     assert "AC gas refill" in res["summary"]
 
 
