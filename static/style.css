@@ -13,7 +13,7 @@
 *{box-sizing:border-box}
 body{font-family:Inter,"Segoe UI",Arial,sans-serif;margin:0;background:var(--canvas);color:var(--ink);line-height:1.55}
 a{color:var(--brand);text-underline-offset:3px}
-header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);color:var(--ink);padding:0 max(24px,calc((100vw - 1160px)/2));min-height:72px;display:flex;justify-content:space-between;align-items:center;gap:20px}
+header{position:sticky;top:0;z-index:5;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);color:var(--ink);padding:0 max(24px,calc((100vw - 1160px)/2));min-height:72px;display:flex;justify-content:space-between;align-items:center;gap:20px}
 header b{font-size:17px;letter-spacing:-.4px}
 header b:first-letter{color:var(--brand)}
 header .header-context{display:inline-block;margin-left:8px;padding-left:9px;border-left:1px solid var(--line);color:var(--muted);font-size:9px;letter-spacing:.1em;vertical-align:2px}
@@ -109,7 +109,7 @@ td small,small{font-size:11px;color:var(--muted);line-height:1.55}
 .add-tech-panel>p{font-size:13px}
 .tech-archived{opacity:.65}
 .tech-dialog{width:min(600px,calc(100% - 28px));max-height:calc(100% - 32px);border:1px solid var(--line);border-radius:18px;padding:26px;color:var(--ink);box-shadow:0 24px 80px #142d2933}
-.tech-dialog::backdrop{background:#142d2970;backdrop-filter:blur(3px)}
+.tech-dialog::backdrop{background:#142d2970;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .tech-dialog .section-heading{align-items:center}
 .signup-card{max-width:760px;margin:0 auto 22px}
 .signup-card>p,.privacy-note{font-size:13px}
@@ -140,7 +140,7 @@ input[type=file]{padding:9px;font-size:12px}
 .arrival-customer>a{display:inline-block;margin:0 8px 5px 0;font-size:12px;font-weight:700}
 .arrival-customer>small{display:block}
 .photo-dialog{width:min(900px,calc(100% - 28px));max-height:calc(100% - 32px);border:1px solid var(--line);border-radius:16px;padding:16px}
-.photo-dialog::backdrop{background:#142d2970;backdrop-filter:blur(3px)}
+.photo-dialog::backdrop{background:#142d2970;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .photo-dialog img{display:block;max-width:100%;max-height:75vh;margin:12px auto 0;object-fit:contain}
 .terms-main{max-width:900px}
 .terms-main>.card{padding:28px}
