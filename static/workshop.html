@@ -26,6 +26,29 @@
 .partner-workshop-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
 .partner-badge{background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:800;padding:3px 8px;border-radius:6px}
 .status-lookup-box{background:#f8fbf9;border:1px solid #dbeae2;border-radius:14px;padding:20px;margin:28px 0}
+.hero-art-workshop{min-height:220px}
+.hero-float-top{top:18px}
+.hero-float-bottom{bottom:18px}
+.hero-house-large{font-size:52px}
+.status-lookup-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.status-lookup-subtext{margin:2px 0 0;font-size:12.5px;color:#536760}
+.status-lookup-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status-phone-input{max-width:180px;margin:0}
+.status-result-box{margin-top:12px}
+.status-result-card{background:#fff;border:1px solid #bce1d7;padding:14px;border-radius:10px}
+.status-note{margin:6px 0 0;font-size:12.5px;color:#c1121f}
+.badge-pending{background:#ffb703;color:#000}
+.badge-approved{background:#2e7d32;color:#fff}
+.badge-rejected{background:#d90429;color:#fff}
+.form-section-title{margin:22px 0 10px;font-size:16px;color:var(--brand-dark)}
+.form-consent-wrap{margin:20px 0 16px}
+.btn-submit-workshop{width:100%;padding:14px;font-size:15px}
+.form-feedback-msg{margin-top:14px}
+.partner-title{margin:0 0 4px;font-size:16px;color:var(--brand-dark)}
+.partner-sub{color:#526961}
+.partner-details{margin:8px 0;font-size:12px;color:#2f463e}
+.partner-quote{font-size:12px;margin:8px 0 0;color:#556b63;font-style:italic}
+.partner-error-msg{color:#c1121f}
 @media(max-width:768px){.workshop-hero-grid{grid-template-columns:1fr;gap:20px}.workshop-form-card{padding:20px}}
 </style>
 </head>
@@ -59,10 +82,10 @@
           <span>Fast Digital Payouts</span>
         </div>
       </div>
-      <div class="hero-art" aria-hidden="true" style="min-height:220px">
-        <div class="hero-float one" style="top:18px">Direct Squad Leads<strong>Zone 5 &amp; Islamabad</strong></div>
-        <div class="hero-house" style="font-size:52px">🏬</div>
-        <div class="hero-float two" style="bottom:18px">Verified Partner<strong>Commercial Contracts</strong></div>
+      <div class="hero-art hero-art-workshop" aria-hidden="true">
+        <div class="hero-float one hero-float-top">Direct Squad Leads<strong>Zone 5 &amp; Islamabad</strong></div>
+        <div class="hero-house hero-house-large">🏬</div>
+        <div class="hero-float two hero-float-bottom">Verified Partner<strong>Commercial Contracts</strong></div>
       </div>
     </div>
 
@@ -92,17 +115,17 @@
 
   <!-- Status Check Box -->
   <div class="status-lookup-box">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div class="status-lookup-row">
       <div>
         <b id="statusLookupTitle">🔍 Check Existing Workshop Application Status</b>
-        <p style="margin:2px 0 0;font-size:12.5px;color:#536760" id="statusLookupSub">Enter your registered workshop mobile number to view verification progress.</p>
+        <p class="status-lookup-subtext" id="statusLookupSub">Enter your registered workshop mobile number to view verification progress.</p>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <input id="lookupPhone" type="tel" placeholder="03009990001" style="max-width:180px;margin:0">
+      <div class="status-lookup-controls">
+        <input id="lookupPhone" type="tel" placeholder="03009990001" class="status-phone-input">
         <button type="button" class="small" onclick="checkStatus()">Check Status</button>
       </div>
     </div>
-    <div id="statusResult" style="margin-top:12px" aria-live="polite"></div>
+    <div id="statusResult" class="status-result-box" aria-live="polite"></div>
   </div>
 
   <!-- Registration Form -->
@@ -112,7 +135,7 @@
     <p id="formSub">Fill out your business details and upload your shop signboard photo. Our supervisor will verify your facility within 24 hours.</p>
 
     <form id="wsForm" onsubmit="submitWorkshopForm(event)">
-      <h3 style="margin:20px 0 10px;font-size:16px;color:var(--brand-dark)" id="sec1Title">1. Workshop &amp; Proprietor Identity</h3>
+      <h3 class="form-section-title" id="sec1Title">1. Workshop &amp; Proprietor Identity</h3>
       <div class="row">
         <div>
           <label for="wsName" id="lblWsName">Workshop / Business Name *</label>
@@ -144,7 +167,7 @@
         </div>
       </div>
 
-      <h3 style="margin:24px 0 10px;font-size:16px;color:var(--brand-dark)" id="sec2Title">2. Trade Specialization &amp; Fleet Size</h3>
+      <h3 class="form-section-title" id="sec2Title">2. Trade Specialization &amp; Fleet Size</h3>
       <div class="row">
         <div>
           <label for="wsCategory" id="lblWsCat">Primary Service Trade *</label>
@@ -172,7 +195,7 @@
       <label for="wsServices" id="lblWsSrv">Services &amp; Bench Testing Capabilities</label>
       <textarea id="wsServices" name="services_offered" rows="2" placeholder="Describe workshop specialties, PCB repair benches, compressor replacements, motor rewinding, inverter diagnostics, etc." maxlength="1000"></textarea>
 
-      <h3 style="margin:24px 0 10px;font-size:16px;color:var(--brand-dark)" id="sec3Title">3. Physical Workshop Location</h3>
+      <h3 class="form-section-title" id="sec3Title">3. Physical Workshop Location</h3>
       <div class="row">
         <div>
           <label for="wsArea" id="lblWsArea">Primary Hub Area *</label>
@@ -194,7 +217,7 @@
         </div>
       </div>
 
-      <h3 style="margin:24px 0 10px;font-size:16px;color:var(--brand-dark)" id="sec4Title">4. Facility Verification Photos</h3>
+      <h3 class="form-section-title" id="sec4Title">4. Facility Verification Photos</h3>
       <div class="upload-grid">
         <div>
           <label for="shopFrontPhoto" id="lblFrontPhoto">Shop Signboard / Front Photo (JPEG/PNG)</label>
@@ -208,17 +231,17 @@
         </div>
       </div>
 
-      <div style="margin:20px 0 16px">
+      <div class="form-consent-wrap">
         <label class="consent-label">
           <input id="termsAccepted" type="checkbox" name="terms_accepted" required>
           <span id="lblConsent">I have read and agree to the <a href="/terms#technician" target="_blank" rel="noopener">HomeServe Workshop &amp; Contractor Terms</a>. I confirm that all listed tools and technicians comply with safety standards.</span>
         </label>
       </div>
 
-      <button id="submitWsBtn" type="submit" style="width:100%;padding:14px;font-size:15px">
+      <button id="submitWsBtn" type="submit" class="btn-submit-workshop">
         🏬 Submit Workshop Application →
       </button>
-      <div id="wsMsg" style="margin-top:14px" aria-live="polite"></div>
+      <div id="wsMsg" class="form-feedback-msg" aria-live="polite"></div>
     </form>
   </div>
 
@@ -406,15 +429,15 @@ async function checkStatus() {
   try {
     const ws = await api(`/api/workshops/status/${encodeURIComponent(phone)}`);
     const statusMap = {
-      'pending': '<span class="badge" style="background:#ffb703;color:#000">⏳ Pending Admin Verification</span>',
-      'approved': '<span class="badge" style="background:#2e7d32;color:#fff">✅ Verified Partner Workshop</span>',
-      'rejected': '<span class="badge" style="background:#d90429;color:#fff">❌ Application Rejected</span>',
+      'pending': '<span class="badge badge-pending">⏳ Pending Admin Verification</span>',
+      'approved': '<span class="badge badge-approved">✅ Verified Partner Workshop</span>',
+      'rejected': '<span class="badge badge-rejected">❌ Application Rejected</span>',
     };
     resEl.innerHTML = `
-      <div style="background:#fff;border:1px solid #bce1d7;padding:14px;border-radius:10px">
+      <div class="status-result-card">
         <b>${esc(ws.workshop_name)}</b> (${esc(ws.category)}) · ${statusMap[ws.status] || ws.status}<br>
         <small>Owner: ${esc(ws.owner_name)} · Area: ${esc(ws.area)} · Applied: ${esc(ws.created_at.replace('T', ' '))}</small>
-        ${ws.review_note ? `<p style="margin:6px 0 0;font-size:12.5px;color:#c1121f"><b>Admin Note:</b> ${esc(ws.review_note)}</p>` : ''}
+        ${ws.review_note ? `<p class="status-note"><b>Admin Note:</b> ${esc(ws.review_note)}</p>` : ''}
       </div>`;
   } catch (err) {
     flash(resEl, err.message, false);
@@ -434,22 +457,22 @@ async function loadPublicWorkshops() {
       <div class="partner-workshop-card">
         <div class="partner-workshop-header">
           <div>
-            <h3 style="margin:0 0 4px;font-size:16px;color:var(--brand-dark)">${esc(w.workshop_name)}</h3>
-            <small style="color:#526961">📍 ${esc(w.area)} · ${esc(w.address)}</small>
+            <h3 class="partner-title">${esc(w.workshop_name)}</h3>
+            <small class="partner-sub">📍 ${esc(w.area)} · ${esc(w.address)}</small>
           </div>
           <span class="partner-badge">🛡️ Verified Partner</span>
         </div>
-        <div style="margin:8px 0;font-size:12px;color:#2f463e">
+        <div class="partner-details">
           <b>Trade:</b> ${esc(w.category)}<br>
           <b>Fleet Capacity:</b> ${w.technicians_count} Field Technicians<br>
           ${w.equipment_summary ? `<b>Equipment:</b> <small>${esc(w.equipment_summary)}</small><br>` : ''}
           <b>Rating:</b> ★ ${Number(w.rating).toFixed(1)} (${w.jobs_done} jobs completed)
         </div>
-        ${w.services_offered ? `<p style="font-size:12px;margin:8px 0 0;color:#556b63;font-style:italic">"${esc(w.services_offered)}"</p>` : ''}
+        ${w.services_offered ? `<p class="partner-quote">"${esc(w.services_offered)}"</p>` : ''}
       </div>
     `).join('');
   } catch (err) {
-    grid.innerHTML = `<p style="color:#c1121f">Could not load workshops directory: ${esc(err.message)}</p>`;
+    grid.innerHTML = `<p class="partner-error-msg">Could not load workshops directory: ${esc(err.message)}</p>`;
   }
 }
 
