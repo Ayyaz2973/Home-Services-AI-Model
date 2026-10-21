@@ -43,6 +43,7 @@ p{color:var(--muted)}
 .hero-float.two{right:18px;bottom:30px}
 .section-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:12px 0 18px}
 .section-heading p{margin:0;font-size:13px}
+.auto-refresh-note{margin:0 0 6px;font-size:13px}
 .service-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:34px}
 .service-tile{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;min-height:98px;transition:transform .18s,border-color .18s,box-shadow .18s}
 .service-tile:hover{transform:translateY(-3px);border-color:#acd9ce;box-shadow:0 10px 24px rgba(22,57,49,.06)}

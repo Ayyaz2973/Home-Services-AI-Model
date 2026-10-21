@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f5f8f7">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Operations dashboard | HomeServe</title>
 <link rel="stylesheet" href="/static/style.css">
@@ -25,7 +24,7 @@
   </div>
 
   <div id="appView" class="hide">
-    <div class="section-heading"><div><div class="eyebrow">Live overview</div><h2>Operations dashboard</h2></div><div><p style="margin:0 0 6px">Updates automatically every 15 seconds</p><button class="small alt" type="button" onclick="logout()">Sign out</button></div></div>
+    <div class="section-heading"><div><div class="eyebrow">Live overview</div><h2>Operations dashboard</h2></div><div><p class="auto-refresh-note">Updates automatically every 15 seconds</p><button class="small alt" type="button" onclick="logout()">Sign out</button></div></div>
     <div class="stats" id="stats"></div>
     <div class="tabs">
       <button id="t_req" class="on" onclick="tab('req')">Requests</button>
