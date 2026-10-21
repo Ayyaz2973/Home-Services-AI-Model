@@ -146,19 +146,19 @@ KEYWORDS = {
     "Electric Work": ["bijli", "electric", "wiring", "switch", "socket", "fan ", "breaker", "short circuit", "ups ", "بجلی"],
     "Plumbing": ["plumb", "nal ", "nalka", "pipe", "leak", "tap ", "tanki", "drain", "commode", "washroom", "نل", "پانی"],
     "Air Conditioning": [" ac ", "a/c", "air condition", "cooling", "split", "اے سی"],
-    "Solar Solutions": ["solar", "panel", "inverter", "سولر"],
+    "Solar Solutions": ["solar", "panel", "inverter", "سولر", "solar panel", "battery", "inverex", "growatt", "knox", "net metering", "plates", "plate", "solar system"],
     "Home Cleaning": ["clean", "safai", "sofa wash", "صفائی"],
-    "Pest Control": ["pest", "keera", "deemak", "termite", "cockroach", "مچھر"],
-    "Washing Machine": ["washing machine", "dryer", "kapray dhone"],
+    "Pest Control": ["pest", "keera", "deemak", "termite", "cockroach", "مچھر", "khatmal", "spray", "دیمک", "کیڑے"],
+    "Washing Machine": ["washing machine", "dryer", "kapray dhone", "واشنگ مشین", "spinner", "motor", "oven", "microwave", "fridge", "فریج"],
     "Fridge Repair": ["fridge", "refrigerator", "freezer", "فریج"],
-    "Geyser Repair": ["geyser", "gyser", "گیزر"],
-    "Carpentry": ["carpent", "lakri", "door", "wardrobe", "cupboard", "darwaza"],
-    "Painting": ["paint", "rang", "colour", "color", "polish"],
+    "Geyser Repair": ["geyser", "gyser", "گیزر", "water heater"],
+    "Carpentry": ["carpent", "lakri", "door", "wardrobe", "cupboard", "darwaza", "کارپینٹر", "دروازہ", "لاک"],
+    "Painting": ["paint", "rang", "colour", "color", "polish", "waterproof", "seepage", "chhat", "تپکن", "پینٹ", "سیم", "چھت"],
     "Locksmith": ["lock", "chabi", "key ", "تالا"],
-    "CCTV Installation": ["cctv", "camera", "dvr"],
-    "Water Filter / RO": ["water filter", " ro ", "filter"],
-    "Welding Work": ["weld", "grill", "gate", "iron"],
-    "Labour": ["labour", "mazdoor", "shifting"],
+    "CCTV Installation": ["cctv", "camera", "dvr", "nvr", "کیمرے", "سیکیورٹی", "security camera"],
+    "Water Filter / RO": ["water filter", " ro ", "filter", "فلٹر", "پانی کا فلٹر", "dispenser"],
+    "Welding Work": ["weld", "grill", "gate", "iron", "ویلڈنگ", "لوہا"],
+    "Labour": ["labour", "mazdoor", "shifting", "مزدور"],
 }
 EMERGENCY_WORDS = ["spark", "aag", "fire", "flood", "shock", "gas leak", "current lag", "pani bhar"]
 URGENT_WORDS = ["urgent", "foran", "abhi", "today", "aaj", "emergency", "jaldi"]
@@ -799,7 +799,38 @@ PRICING_CATALOG = {
     "Home Cleaning": [
         {"item": "Deep Sofa & Cushion Wash (5 Seater)", "price_range": "Rs. 2,500 - 4,000", "market_price": "Rs. 5,000", "savings": "Save Rs. 1,000+", "duration": "90 mins", "popular": True},
         {"item": "Complete Bathroom Deep Disinfection", "price_range": "Rs. 1,800 - 3,000", "market_price": "Rs. 4,000", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": True},
-    ]
+    ],
+    "Solar Solutions": [
+        {"item": "Complete Solar System Installation (3kW - 10kW On-Grid/Hybrid)", "price_range": "Rs. 25,000 - 65,000", "market_price": "Rs. 80,000", "savings": "Save Rs. 15,000+", "duration": "1-2 days", "popular": True},
+        {"item": "Solar Inverter Setup, Programming & Earthing Check", "price_range": "Rs. 3,500 - 6,000", "market_price": "Rs. 8,000", "savings": "Save Rs. 2,000+", "duration": "2 hours", "popular": True},
+        {"item": "Solar Panel Chemical Jet Wash & Dust Descaling (Up to 16 Panels)", "price_range": "Rs. 2,000 - 3,500", "market_price": "Rs. 4,500", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": True},
+        {"item": "Tubular Battery Acid Gravity Balancing & Terminal Cleanup", "price_range": "Rs. 1,500 - 2,500", "market_price": "Rs. 3,500", "savings": "Save Rs. 1,000+", "duration": "45 mins", "popular": False},
+        {"item": "Net Metering Green Meter Documentation & Pre-Inspection", "price_range": "Rs. 5,000 - 9,000", "market_price": "Rs. 15,000", "savings": "Save Rs. 6,000+", "duration": "3 hours", "popular": False},
+    ],
+    "CCTV Installation": [
+        {"item": "HD / IP Camera Installation & Angle Tuning (Per Camera)", "price_range": "Rs. 800 - 1,400", "market_price": "Rs. 1,800", "savings": "Save Rs. 400+", "duration": "45 mins", "popular": True},
+        {"item": "4/8-Channel DVR/NVR Mobile Remote Viewing Setup", "price_range": "Rs. 1,500 - 2,500", "market_price": "Rs. 3,500", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": True},
+        {"item": "Smart Video Doorbell / Intercom Fitting", "price_range": "Rs. 1,800 - 3,000", "market_price": "Rs. 4,000", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": False},
+    ],
+    "Water Filter / RO": [
+        {"item": "3-Stage Water Filter 3-Candle Replacement & Flush", "price_range": "Rs. 800 - 1,500", "market_price": "Rs. 2,000", "savings": "Save Rs. 500+", "duration": "30 mins", "popular": True},
+        {"item": "Domestic RO Plant Membrane Check & TDS Water Testing", "price_range": "Rs. 1,800 - 3,000", "market_price": "Rs. 4,000", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": True},
+        {"item": "Electric Water Cooler / Dispenser Servicing & Sanitization", "price_range": "Rs. 1,500 - 2,500", "market_price": "Rs. 3,500", "savings": "Save Rs. 1,000+", "duration": "45 mins", "popular": False},
+    ],
+    "Painting": [
+        {"item": "Roof Seepage & Leakage Treatment (Chemical Bitumen Coating)", "price_range": "Rs. 4,500 - 9,500", "market_price": "Rs. 14,000", "savings": "Save Rs. 4,500+", "duration": "4 hours", "popular": True},
+        {"item": "Single Room Paint & Putty Touch-up (Distemper/Emulsion)", "price_range": "Rs. 4,000 - 7,000", "market_price": "Rs. 10,000", "savings": "Save Rs. 3,000+", "duration": "1 day", "popular": True},
+        {"item": "Exterior Weather Sheet Coating & Crack Sealing", "price_range": "Rs. 6,000 - 12,000", "market_price": "Rs. 18,000", "savings": "Save Rs. 6,000+", "duration": "1 day", "popular": False},
+    ],
+    "Washing Machine": [
+        {"item": "Automatic Washing Machine Gear Box / Belt / Motor Repair", "price_range": "Rs. 1,500 - 3,000", "market_price": "Rs. 4,500", "savings": "Save Rs. 1,500+", "duration": "60 mins", "popular": True},
+        {"item": "Microwave Oven Magnetron / Heating Coil Replacement", "price_range": "Rs. 1,500 - 2,500", "market_price": "Rs. 3,500", "savings": "Save Rs. 1,000+", "duration": "45 mins", "popular": True},
+        {"item": "Refrigerator Gas Refilling & Thermostat Replacement", "price_range": "Rs. 3,500 - 5,500", "market_price": "Rs. 7,500", "savings": "Save Rs. 2,000+", "duration": "75 mins", "popular": False},
+    ],
+    "Pest Control": [
+        {"item": "Complete Home Anti-Termite (Deemak) Chemical Spray", "price_range": "Rs. 4,000 - 8,000", "market_price": "Rs. 12,000", "savings": "Save Rs. 4,000+", "duration": "2 hours", "popular": True},
+        {"item": "Cockroach & Bed Bug (Khatmal) Targeted Gel Treatment", "price_range": "Rs. 2,500 - 4,500", "market_price": "Rs. 6,000", "savings": "Save Rs. 1,500+", "duration": "60 mins", "popular": True},
+    ],
 }
 
 SEASONAL_PACKAGES = [

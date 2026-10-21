@@ -322,9 +322,20 @@ input[type=file]{padding:9px;font-size:12px}
 .pro-actions{display:flex;gap:8px;flex-wrap:wrap}
 .pro-action-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;cursor:pointer}
 .btn-wa{background:#25d366;color:#fff;border:0}
-.btn-wa:hover{background:#1eb857;color:#fff}
-.btn-call{background:#0284c7;color:#fff;border:0}
-.btn-call:hover{background:#0369a1;color:#fff}
+/* Language Toggle Button & Urdu RTL Styling */
+.lang-toggle-btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3);padding:5px 12px;border-radius:999px;font-size:11px;font-weight:750;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .18s ease;text-decoration:none}
+.lang-toggle-btn:hover{background:rgba(255,255,255,.3);color:#fff;border-color:rgba(255,255,255,.5)}
+.header-actions .lang-toggle-btn{background:var(--brand-soft);color:var(--brand-dark);border-color:#bce1d7}
+.header-actions .lang-toggle-btn:hover{background:var(--brand);color:#fff}
+.lang-badge{background:var(--brand-dark);color:#fff;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:800}
+
+body.lang-ur{font-family:'Segoe UI',-apple-system,'Noto Nastaliq Urdu','Noto Sans Arabic',Tahoma,sans-serif}
+body.lang-ur h1,body.lang-ur h2,body.lang-ur h3{line-height:1.45}
+body.lang-ur .top-announcement-content{direction:rtl}
+body.lang-ur .hero,body.lang-ur .pricing-section,body.lang-ur .showcase-section,body.lang-ur .seasonal-section,body.lang-ur .request-card{direction:rtl;text-align:right}
+body.lang-ur .pricing-tabs{direction:rtl}
+body.lang-ur .portal-intro,body.lang-ur .login-card,body.lang-ur #appView{direction:rtl;text-align:right}
+body.lang-ur .job{text-align:right;border-left:0;border-right:4px solid var(--brand)}
 
 .portal-footer{text-align:center;color:#7d8d88;font-size:11px;padding:24px 12px}
 @media(max-width:760px){

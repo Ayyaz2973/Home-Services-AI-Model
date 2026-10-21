@@ -9,20 +9,29 @@
 </head>
 <body>
 <header>
-  <b>⌂ HomeServe <span class="header-context">PRO PORTAL</span></b>
-  <span><a href="/">Customer site</a><a href="/admin">Operations dashboard</a><a href="/terms">Terms</a></span>
+  <b>⌂ HomeServe <span class="header-context" id="headerContext">PRO PORTAL</span></b>
+  <div class="header-actions">
+    <button type="button" class="lang-toggle-btn" id="techLangBtn" onclick="toggleTechLang()">🌐 اردو میں دیکھیں</button>
+    <a href="/" id="linkCust">Customer site</a>
+    <a href="/admin" id="linkAdmin">Operations dashboard</a>
+    <a href="/terms" id="linkTerms">Terms</a>
+  </div>
 </header>
 <main>
-  <div id="portalIntro" class="portal-intro"><div class="eyebrow">Technician workspace</div><h1>Good work starts here.</h1><p>Manage your availability, stay on top of active jobs, and keep your work history in one place.</p></div>
+  <div id="portalIntro" class="portal-intro">
+    <div class="eyebrow" id="introEyebrow">Technician workspace</div>
+    <h1 id="introTitle">Good work starts here.</h1>
+    <p id="introSub">Manage your availability, stay on top of active jobs, and keep your work history in one place.</p>
+  </div>
   <div id="loginView" class="card login-card">
     <div class="login-mark" aria-hidden="true">↗</div>
-    <h2>Welcome back</h2>
-    <p>Sign in with the phone number and PIN provided by your HomeServe administrator.</p>
-    <label for="phone">Phone number</label><input id="phone" type="tel" autocomplete="username" placeholder="03001110001">
-    <label for="pin">PIN</label><input id="pin" type="password" autocomplete="current-password" placeholder="Enter your PIN">
-    <button onclick="login()">Sign in to your portal</button>
+    <h2 id="loginTitle">Welcome back</h2>
+    <p id="loginSub">Sign in with the phone number and PIN provided by your HomeServe administrator.</p>
+    <label for="phone" id="lblPhone">Phone number</label><input id="phone" type="tel" autocomplete="username" placeholder="03001110001">
+    <label for="pin" id="lblPin">PIN</label><input id="pin" type="password" autocomplete="current-password" placeholder="Enter your PIN">
+    <button id="loginBtn" onclick="login()">Sign in to your portal</button>
     <div id="lmsg" aria-live="polite"></div>
-    <p class="signup-prompt">New to HomeServe? <button class="link-button" type="button" onclick="showSignup()">Apply to join</button></p>
+    <p class="signup-prompt" id="signupPrompt">New to HomeServe? <button class="link-button" type="button" onclick="showSignup()">Apply to join</button></p>
   </div>
   <div id="signupView" class="card signup-card hide">
     <div class="eyebrow">Provider onboarding</div>
@@ -57,8 +66,8 @@
 
   <div id="appView" class="hide">
     <div class="card" id="profile"></div>
-    <div class="card"><h2>Active jobs</h2><p>Requests that need your attention.</p><div id="active"></div></div>
-    <div class="card"><h2>Job history</h2><p>Your completed and past requests.</p><div id="history"></div></div>
+    <div class="card"><h2 id="actHeading">Active jobs</h2><p id="actSub">Requests that need your attention.</p><div id="active"></div></div>
+    <div class="card"><h2 id="histHeading">Job history</h2><p id="histSub">Your completed and past requests.</p><div id="history"></div></div>
   </div>
   <dialog id="photoDialog" class="photo-dialog"><button class="alt small" type="button" onclick="closePhoto()">Close</button><img id="photoPreview" alt="Job photo preview"></dialog>
   <footer class="portal-footer">Need help? Contact your HomeServe administrator.</footer>
@@ -72,6 +81,88 @@ let locationWatchId = null;
 let trackingJobId = null;
 let locationUpdateInFlight = false;
 let lastLocationSentAt = 0;
+
+let techLang = localStorage.getItem('hs_tech_lang') || 'ur';
+
+const UR_DICT = {
+  headerContext: 'پرو پورٹل (ٹیکنیشن)',
+  btnLang: '🌐 Switch to English',
+  btnLangUr: '🌐 اردو میں دیکھیں',
+  linkCust: 'کسٹمر سائٹ',
+  linkAdmin: 'ایڈمن پینل',
+  linkTerms: 'شرائط',
+  introEyebrow: 'کاریگر ورک اسپیس',
+  introTitle: 'شاندار کام کا آغاز یہاں سے ہوتا ہے',
+  introSub: 'اپنی آن لائن دستیابی کنٹرول کریں، نئے کام وصول کریں اور اپنی کمائی کا مکمل حساب رکھیں۔',
+  loginTitle: 'خوش آمدید (لاگ ان کریں)',
+  loginSub: 'ایڈمن کی طرف سے دیا گیا فون نمبر اور پن کوڈ درج کریں۔',
+  lblPhone: 'موبائل فون نمبر',
+  lblPin: 'پن کوڈ (PIN)',
+  loginBtn: 'پورٹل میں داخل ہوں →',
+  signupPrompt: 'ہوم سروس میں نئے کاریگر ہیں؟ <button class="link-button" type="button" onclick="showSignup()">شمولیت کی درخواست دیں</button>',
+  actHeading: 'موجودہ کام (Active Jobs)',
+  actSub: 'وہ آرڈرز جن پر فوری عمل درکار ہے۔',
+  histHeading: 'مکمل شدہ کام (Job History)',
+  histSub: 'آپ کے سابقہ اور مکمل شدہ کام۔',
+  noActive: 'فی الوقت کوئی نیا کام نہیں۔ آن لائن رہیں۔',
+  noHistory: 'ابھی تک کوئی کام مکمل نہیں ہوا۔',
+  logout: 'لاگ آؤٹ',
+  available: 'نئے کام کے لیے دستیاب ہوں (آن لائن)',
+  wallet: 'آپ کا بٹوَہ (واجب الادا کمائی):',
+  jobsDone: 'مکمل شدہ کام',
+};
+
+const CATEGORY_URDU = {
+  "Electric Work": "⚡ الیکٹریشن (Electric Work)",
+  "Plumbing": "💧 پلمبر (Plumbing)",
+  "Air Conditioning": "❄️ اے سی سروس (Air Conditioning)",
+  "Solar Solutions": "☀️ سولر سسٹم و انورٹر (Solar Solutions)",
+  "Geyser Repair": "🔥 گیزر ریپیئر (Geyser Repair)",
+  "Carpentry": "🪚 کارپینٹر / بڑھئی (Carpentry)",
+  "Home Cleaning": "🧹 صفائی سروس (Home Cleaning)",
+  "CCTV Installation": "📹 سیکیورٹی کیمرے (CCTV Installation)",
+  "Water Filter / RO": "🚰 واٹر فلٹر اور آر او (Water Filter)",
+  "Painting": "🎨 پینٹنگ و چھت واٹر پروفنگ (Painting)",
+  "Washing Machine": "🧺 واشنگ مشین و گھریلو سامان (Appliances)",
+  "Pest Control": "🪲 دیمک و کیڑے مکوڑے اسپرے (Pest Control)",
+  "Locksmith": "🔐 تالا اور چابی (Locksmith)",
+  "Welding Work": "👨‍🏭 ویلڈنگ کام (Welding)",
+  "Labour": "👷 مزدور / ہیلپر (Labour)",
+  "Fridge Repair": "🧊 فریج و ڈیپ فریزر (Fridge Repair)",
+};
+
+function applyTechLanguage() {
+  const isUr = techLang === 'ur';
+  document.body.classList.toggle('lang-ur', isUr);
+  document.documentElement.lang = isUr ? 'ur' : 'en';
+  const btn = $('techLangBtn');
+  if (btn) btn.textContent = isUr ? UR_DICT.btnLang : UR_DICT.btnLangUr;
+  const ctx = $('headerContext');
+  if (ctx) ctx.textContent = isUr ? UR_DICT.headerContext : 'PRO PORTAL';
+  if ($('linkCust')) $('linkCust').textContent = isUr ? UR_DICT.linkCust : 'Customer site';
+  if ($('linkAdmin')) $('linkAdmin').textContent = isUr ? UR_DICT.linkAdmin : 'Operations dashboard';
+  if ($('linkTerms')) $('linkTerms').textContent = isUr ? UR_DICT.linkTerms : 'Terms';
+  if ($('introEyebrow')) $('introEyebrow').textContent = isUr ? UR_DICT.introEyebrow : 'Technician workspace';
+  if ($('introTitle')) $('introTitle').textContent = isUr ? UR_DICT.introTitle : 'Good work starts here.';
+  if ($('introSub')) $('introSub').textContent = isUr ? UR_DICT.introSub : 'Manage your availability, stay on top of active jobs, and keep your work history in one place.';
+  if ($('loginTitle')) $('loginTitle').textContent = isUr ? UR_DICT.loginTitle : 'Welcome back';
+  if ($('loginSub')) $('loginSub').textContent = isUr ? UR_DICT.loginSub : 'Sign in with the phone number and PIN provided by your HomeServe administrator.';
+  if ($('lblPhone')) $('lblPhone').textContent = isUr ? UR_DICT.lblPhone : 'Phone number';
+  if ($('lblPin')) $('lblPin').textContent = isUr ? UR_DICT.lblPin : 'PIN';
+  if ($('loginBtn')) $('loginBtn').textContent = isUr ? UR_DICT.loginBtn : 'Sign in to your portal';
+  if ($('signupPrompt')) $('signupPrompt').innerHTML = isUr ? UR_DICT.signupPrompt : 'New to HomeServe? <button class="link-button" type="button" onclick="showSignup()">Apply to join</button>';
+  if ($('actHeading')) $('actHeading').textContent = isUr ? UR_DICT.actHeading : 'Active jobs';
+  if ($('actSub')) $('actSub').textContent = isUr ? UR_DICT.actSub : 'Requests that need your attention.';
+  if ($('histHeading')) $('histHeading').textContent = isUr ? UR_DICT.histHeading : 'Job history';
+  if ($('histSub')) $('histSub').textContent = isUr ? UR_DICT.histSub : 'Your completed and past requests.';
+}
+
+function toggleTechLang() {
+  techLang = techLang === 'ur' ? 'en' : 'ur';
+  localStorage.setItem('hs_tech_lang', techLang);
+  applyTechLanguage();
+  if (auth) load();
+}
 
 async function login() {
   auth = { phone: $('phone').value, pin: $('pin').value };
@@ -87,7 +178,7 @@ async function loadApplicationCategories() {
     const response = await api('/api/meta');
     $('appCategory').innerHTML = response.categories
       .filter(category => category !== 'Other')
-      .map(category => `<option value="${esc(category)}">${esc(category)}</option>`).join('');
+      .map(category => `<option value="${esc(category)}">${CATEGORY_URDU[category] || esc(category)}</option>`).join('');
   } catch (error) {
     flash($('applicationMsg'), `Could not load service categories: ${error.message}`, false);
   }
@@ -236,77 +327,95 @@ async function load() {
   try {
     const d = await api('/api/tech/me', {}, H());
     const m = d.me;
+    const isUr = techLang === 'ur';
     $('profile').innerHTML = `<h2>${esc(m.name)}</h2>
-      <p>${esc(m.category)} · ${esc(m.area)} · ⭐ ${m.rating} · ${m.jobs_done} jobs done<br>
-      Wallet (payout due to you): <b>${money(m.wallet)}</b></p>
+      <p>${CATEGORY_URDU[m.category] || esc(m.category)} · 📍 ${esc(m.area)} · ⭐ ${m.rating} · ${m.jobs_done} ${isUr ? 'مکمل کام' : 'jobs done'}<br>
+      ${isUr ? UR_DICT.wallet : 'Wallet (payout due to you):'} <b>${money(m.wallet)}</b></p>
       <label><input type="checkbox" class="w-auto" ${m.available ? 'checked' : ''} onchange="setAvail(this.checked)">
-      I am available for new jobs</label>
-      <button class="alt small" onclick="logout()">Logout</button>`;
+      ${isUr ? UR_DICT.available : 'I am available for new jobs'}</label>
+      <button class="alt small" onclick="logout()">${isUr ? UR_DICT.logout : 'Logout'}</button>`;
     const open = ['assigned', 'accepted'];
     const act = d.jobs.filter(j => open.includes(j.status));
     const hist = d.jobs.filter(j => !open.includes(j.status));
     const sharedJob = act.find(j => j.status === 'accepted' && j.location_shared);
     if (sharedJob && locationWatchId === null) startLocationSharing(sharedJob.id);
     else if (!sharedJob && locationWatchId !== null) stopLocationWatch();
-    $('active').innerHTML = act.length ? act.map(jobCard).join('') : '<p>No active jobs. Stay available.</p>';
-    $('history').innerHTML = hist.length ? hist.map(jobCard).join('') : '<p>Nothing yet.</p>';
+    $('active').innerHTML = act.length ? act.map(jobCard).join('') : `<p>${isUr ? UR_DICT.noActive : 'No active jobs. Stay available.'}</p>`;
+    $('history').innerHTML = hist.length ? hist.map(jobCard).join('') : `<p>${isUr ? UR_DICT.noHistory : 'Nothing yet.'}</p>`;
   } catch (e) {
     if (e.message.includes('Wrong')) logout();
   }
 }
 
 function jobCard(j) {
-  let h = `<div class="job"><b>#${j.id} · ${esc(j.category)}</b> ${badge(j.status)} ${j.urgency !== 'normal' ? badge(j.urgency) : ''}
-    <br>${esc(j.ai_summary || j.description)}
-    <br><small>${esc(j.area)} · ${esc(j.address)}</small>`;
-  if (j.customer_name) h += `<br>Customer: ${esc(j.customer_name)} · <a href="tel:${esc(j.customer_phone)}">${esc(j.customer_phone)}</a>`;
+  const isUr = techLang === 'ur';
+  const catDisplay = CATEGORY_URDU[j.category] || esc(j.category);
+  const statusUrdu = {
+    'assigned': '⚡ نیا کام ملا ہے (Assigned)',
+    'accepted': '🔨 جاری ہے (In Progress)',
+    'work_done': '⏳ گاہک کی تصدیق کا انتظار (Work Done)',
+    'confirmed': '✅ مکمل و تصدیق شدہ (Confirmed)',
+    'disputed': '⚠️ مسئلہ / تنازعہ (Disputed)',
+  };
+  const statusText = isUr ? (statusUrdu[j.status] || badge(j.status)) : badge(j.status);
+
+  let h = `<div class="job"><b>#${j.id} · ${catDisplay}</b> ${isUr ? `<span class="badge ${j.status}">${statusText}</span>` : statusText} ${j.urgency !== 'normal' ? badge(j.urgency) : ''}
+    <br><b>${isUr ? 'کام کی تفصیل:' : 'Job details:'}</b> ${esc(j.ai_summary || j.description)}
+    <br><small>📍 <b>${isUr ? 'پتہ:' : 'Location:'}</b> ${esc(j.area)} · ${esc(j.address)}</small>`;
+  if (j.customer_name) {
+    h += `<br><b>${isUr ? 'گاہک کا نام:' : 'Customer:'}</b> ${esc(j.customer_name)} · <a href="tel:${esc(j.customer_phone)}" class="pro-action-btn btn-call" style="padding:2px 8px;font-size:11px">📞 ${esc(j.customer_phone)} (${isUr ? 'کال کریں' : 'Call'})</a>`;
+  }
   const beforePhotos = (j.photos || []).filter(photo => photo.phase === 'before');
   const afterPhotos = (j.photos || []).filter(photo => photo.phase === 'after');
   if (beforePhotos.length || afterPhotos.length) {
-    h += '<div class="job-photo-list"><b>Job photos</b>';
+    h += `<div class="job-photo-list"><b>${isUr ? 'کام کی تصاویر:' : 'Job photos:'}</b>`;
     for (const photo of beforePhotos.concat(afterPhotos)) {
-      h += `<button class="small alt" onclick="showJobPhoto(${j.id},${photo.id})">${photo.phase === 'before' ? 'Before' : 'After'} photo</button>`;
+      h += `<button class="small alt" onclick="showJobPhoto(${j.id},${photo.id})">${photo.phase === 'before' ? (isUr ? '🔴 کام سے پہلے' : 'Before') : (isUr ? '🟢 کام کے بعد' : 'After')}</button>`;
     }
     h += '</div>';
   }
   if (j.status === 'assigned') {
-    h += `<br><button onclick="jobAct(${j.id},'accept')">Accept</button>
-          <button class="red" onclick="jobAct(${j.id},'decline')">Decline</button>`;
+    h += `<br><button onclick="jobAct(${j.id},'accept')">${isUr ? '✅ کام قبول کریں (Accept)' : 'Accept'}</button>
+          <button class="red" onclick="jobAct(${j.id},'decline')">${isUr ? '❌ انکار کریں (Decline)' : 'Decline'}</button>`;
   }
   if (j.status === 'accepted') {
     const checkedIn = Boolean(j.arrival_checked_in_at);
     const canComplete = checkedIn && beforePhotos.length > 0 && afterPhotos.length > 0 && !j.pending_extra_charge;
     h += `<div class="arrival-checkin ${checkedIn ? 'checked-in' : ''}">
-      <b>Arrival check-in</b>
+      <b>${isUr ? '📍 کسٹمر کے گھر آمد کی تصدیق (Arrival GPS Check-in)' : 'Arrival check-in'}</b>
       ${checkedIn
-        ? `<p class="msg ok">GPS check-in recorded ${esc(j.arrival_checked_in_at.replace('T', ' '))} · accuracy about ${Math.round(j.arrival_accuracy)} m.</p>`
-        : `<p>When you arrive, record a one-time GPS check-in. The GPS fix must report accuracy of 150 m or better. This saves reported coordinates; it does not independently verify the service address.</p>
-           <button id="checkin${j.id}" class="small" onclick="checkInAtJob(${j.id})">GPS check in at arrival</button>`}
+        ? `<p class="msg ok">${isUr ? `✅ جی پی ایس چیک ان درج ہو چکا ہے ${esc(j.arrival_checked_in_at.replace('T', ' '))} · ایکوریسی ${Math.round(j.arrival_accuracy)} میٹر۔` : `GPS check-in recorded ${esc(j.arrival_checked_in_at.replace('T', ' '))} · accuracy about ${Math.round(j.arrival_accuracy)} m.`}</p>`
+        : `<p>${isUr ? 'جب آپ کسٹمر کے گھر پہنچ جائیں تو نیچے دیا گیا بٹن دبائیں تاکہ آپ کا جی پی ایس ریکارڈ ہو سکے (150 میٹر کے اندر ہونا لازمی ہے):' : 'When you arrive, record a one-time GPS check-in. The GPS fix must report accuracy of 150 m or better.'}</p>
+           <button id="checkin${j.id}" class="small" onclick="checkInAtJob(${j.id})">${isUr ? '📍 کسٹمر کے گھر پہنچ کر چیک ان کریں' : 'GPS check in at arrival'}</button>`}
     </div>
     <div class="location-share">
-      <b>Live location sharing</b>
+      <b>${isUr ? '📡 کسٹمر کو لائیو لوکیشن دکھائیں (Live Location)' : 'Live location sharing'}</b>
       <p id="locationMsg${j.id}" class="msg ${j.location_shared ? 'ok' : ''}">${j.location_shared
-        ? 'Your live location is shared with this customer and admin while this job is active.'
-        : 'Sharing is off. Start it to let the customer and admin see your location on a map.'}</p>
+        ? (isUr ? 'آپ کی لائیو لوکیشن کسٹمر اور کنٹرول روم کو لائیو دکھائی جا رہی ہے۔' : 'Your live location is shared with this customer and admin while this job is active.')
+        : (isUr ? 'لوکیشن شیئرنگ بند ہے۔ بٹن دبا کر کسٹمر کو نقشے پر اپنی آمد دکھائیں۔' : 'Sharing is off. Start it to let the customer and admin see your location on a map.')}</p>
       ${j.location_shared
-        ? `<button class="alt small" onclick="stopLocationSharing(${j.id})">Stop sharing</button>`
-        : `<button class="small" onclick="startLocationSharing(${j.id})">Share my live location</button>`}
-      <small>Allow browser location access and keep this portal open. Use HTTPS outside localhost. Sharing stops when you stop it or mark the job done.</small>
+        ? `<button class="alt small" onclick="stopLocationSharing(${j.id})">${isUr ? '⏹ لوکیشن شیئرنگ بند کریں' : 'Stop sharing'}</button>`
+        : `<button class="small" onclick="startLocationSharing(${j.id})">${isUr ? '📡 لائیو لوکیشن شروع کریں' : 'Share my live location'}</button>`}
     </div>
-    <div class="row"><div><label>Amount charged (Rs)</label><input id="amt${j.id}" type="number"></div>
-          <div><label>Work note</label><input id="note${j.id}"></div></div>
-          <div class="job-photo-upload"><b>Before-and-after photos</b>
-          <p>At least one before-work and one after-work photo are required to finish this job. Uploaded: before ${beforePhotos.length}/5 · after ${afterPhotos.length}/5.</p><div class="row">
-            <div><label for="beforePhoto${j.id}">Before photo</label><input id="beforePhoto${j.id}" type="file" accept="image/*" capture="environment" onchange="uploadJobPhoto(${j.id},'before',this)"></div>
-            <div><label for="afterPhoto${j.id}">After photo</label><input id="afterPhoto${j.id}" type="file" accept="image/*" capture="environment" onchange="uploadJobPhoto(${j.id},'after',this)"></div>
+    <div class="row"><div><label>${isUr ? 'وصول شدہ رقم (روپے)' : 'Amount charged (Rs)'}</label><input id="amt${j.id}" type="number"></div>
+          <div><label>${isUr ? 'کام کا نوٹ / تفصیل' : 'Work note'}</label><input id="note${j.id}"></div></div>
+          <div class="job-photo-upload"><b>${isUr ? '📸 کام سے پہلے اور بعد کی تصاویر (Before & After)' : 'Before-and-after photos'}</b>
+          <p>${isUr ? `کام ختم کرنے کے لیے کم از کم 1 پہلے کی اور 1 بعد کی تصویر لازمی ہے۔ اپ لوڈ شدہ: پہلے ${beforePhotos.length}/5 · بعد ${afterPhotos.length}/5۔` : `At least one before-work and one after-work photo are required to finish this job. Uploaded: before ${beforePhotos.length}/5 · after ${afterPhotos.length}/5.`}</p><div class="row">
+            <div><label for="beforePhoto${j.id}">${isUr ? '🔴 کام شروع کرنے سے پہلے کی تصویر' : 'Before photo'}</label><input id="beforePhoto${j.id}" type="file" accept="image/*" capture="environment" onchange="uploadJobPhoto(${j.id},'before',this)"></div>
+            <div><label for="afterPhoto${j.id}">${isUr ? '🟢 کام مکمل ہونے کے بعد کی تصویر' : 'After photo'}</label><input id="afterPhoto${j.id}" type="file" accept="image/*" capture="environment" onchange="uploadJobPhoto(${j.id},'after',this)"></div>
           </div><div id="photoMsg${j.id}" aria-live="polite"></div></div>
           ${j.quoted_price !== null && j.quoted_price !== undefined
-            ? `<p class="price-summary">Customer estimate: ${money(j.quoted_price + (j.visit_fee || 0))}. Approved extra work: ${money(j.approved_extra_amount || 0)}.</p>`
+            ? `<p class="price-summary">${isUr ? `گاہک کا تخمینہ: ${money(j.quoted_price + (j.visit_fee || 0))}۔ منظور شدہ اضافی کام: ${money(j.approved_extra_amount || 0)}۔` : `Customer estimate: ${money(j.quoted_price + (j.visit_fee || 0))}. Approved extra work: ${money(j.approved_extra_amount || 0)}.`}</p>`
             : ''}
-          ${j.pending_extra_charge ? '<p class="msg">An extra-work price proposal is awaiting customer review.</p>' : `<button class="alt small" onclick="proposeExtra(${j.id})">Request approval for extra work</button>`}
-          ${canComplete ? '' : '<p class="msg">To finish, check in at the job, upload both required photos, and wait for any extra-work decision.</p>'}
-          <button ${canComplete ? '' : 'disabled'} onclick="done(${j.id})">Mark work done</button>`;
+          ${j.pending_extra_charge ? `<p class="msg">${isUr ? 'اضافی کام کی تجویز گاہک کی منظوری کے انتظار میں ہے۔' : 'An extra-work price proposal is awaiting customer review.'}</p>` : `<button class="alt small" onclick="proposeExtra(${j.id})">${isUr ? '➕ اضافی کام یا سامان کی منظوری مانگیں' : 'Request approval for extra work'}</button>`}
+          ${canComplete ? '' : `<p class="msg">${isUr ? 'کام مکمل کرنے کے لیے: جی پی ایس چیک ان کریں، دونوں تصاویر اپ لوڈ کریں اور اضافی کام کا فیصلہ ہونے دیں۔' : 'To finish, check in at the job, upload both required photos, and wait for any extra-work decision.'}</p>`}
+          <button ${canComplete ? '' : 'disabled'} onclick="done(${j.id})">${isUr ? '🏁 کام مکمل ہو گیا ہے (Mark Work Done)' : 'Mark work done'}</button>`;
   }
+  if (j.status === 'work_done') h += `<br>${isUr ? `گاہک کی طرف سے ${money(j.amount)} کی تصدیق کا انتظار ہے۔` : `Waiting for customer to confirm ${money(j.amount)}.`}`;
+  if (j.status === 'confirmed') h += `<br>${isUr ? `✅ گاہک نے تصدیق کر دی ہے۔ ${money(j.amount)} وصول ہو گئے۔` : `Confirmed. ${money(j.amount)} charged.`}`;
+  if (j.status === 'disputed') h += `<br>${isUr ? '⚠️ گاہک نے مسئلہ درج کیا ہے۔ ایڈمن آپ سے رابطہ کرے گا۔' : 'Customer reported a problem. Admin will contact you.'}`;
+  return h + '</div>';
+}
   if (j.status === 'work_done') h += `<br>Waiting for customer to confirm ${money(j.amount)}.`;
   if (j.status === 'confirmed') h += `<br>Confirmed. ${money(j.amount)} charged.`;
   if (j.status === 'disputed') h += '<br>Customer reported a problem. Admin will contact you.';
@@ -433,6 +542,7 @@ if (sessionStorage.getItem('admin_key')) {
   const adminNav = $('adminNavLink');
   if (adminNav) adminNav.classList.remove('hide');
 }
+applyTechLanguage();
 loadApplicationCategories();
 if (auth) start();
 </script>

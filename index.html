@@ -13,20 +13,22 @@
 <body>
 <div class="top-announcement-bar">
   <div class="top-announcement-content">
-    <span class="top-location-pin">📍 Rawalpindi • Islamabad • Jinnah Garden &amp; Zone 5 Belt · 15–25 min Rapid Dispatch</span>
+    <span class="top-location-pin" id="topLocationPin">📍 Rawalpindi • Islamabad • Jinnah Garden &amp; Zone 5 Belt · 15–25 min Rapid Dispatch</span>
     <div class="top-quick-actions">
-      <a href="tel:+923001110001" class="top-contact-link">📞 Call 0300 111 0001</a>
-      <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20home%20service." target="_blank" rel="noopener noreferrer" class="top-contact-link top-wa">💬 WhatsApp Support</a>
-      <span class="top-badge-247">⚡ 24/7 Service</span>
+      <button type="button" class="lang-toggle-btn" id="langToggleBtnTop" onclick="toggleCustomerLang()">🌐 اردو / English</button>
+      <a href="tel:+923001110001" class="top-contact-link" id="topCallLink">📞 Call 0300 111 0001</a>
+      <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20home%20service." target="_blank" rel="noopener noreferrer" class="top-contact-link top-wa" id="topWaLink">💬 WhatsApp Support</a>
+      <span class="top-badge-247" id="topBadge247">⚡ 24/7 Service</span>
     </div>
   </div>
 </div>
 <header>
   <b>⌂ HomeServe</b>
   <div class="header-actions">
-    <a href="tel:+923001110001" class="header-call-btn">📞 Call Now</a>
-    <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20service." target="_blank" rel="noopener noreferrer" class="header-wa-btn">💬 WhatsApp</a>
-    <a href="/">Home</a><a href="#services">Services</a><a href="#pricingSection">Pricing</a><a href="/terms">Terms</a><a href="/tech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
+    <button type="button" class="lang-toggle-btn" id="langToggleBtnHeader" onclick="toggleCustomerLang()">🌐 اردو / English</button>
+    <a href="tel:+923001110001" class="header-call-btn" id="hdrCallBtn">📞 Call Now</a>
+    <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20service." target="_blank" rel="noopener noreferrer" class="header-wa-btn" id="hdrWaBtn">💬 WhatsApp</a>
+    <a href="/" id="hdrHome">Home</a><a href="#services" id="hdrServices">Services</a><a href="#pricingSection" id="hdrPricing">Pricing</a><a href="/terms" id="hdrTerms">Terms</a><a href="/tech" id="hdrTech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
   </div>
 </header>
 <main>
@@ -79,6 +81,14 @@
       <div class="service-tile" onclick="selectCategory('Carpentry')" role="button" tabindex="0">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div>
         <b>Carpentry & paint</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('CCTV Installation')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>
+        <b>CCTV & Cameras</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Water Filter / RO')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
+        <b>Water filter & RO</b>
       </div>
     </div>
   </div>
@@ -203,12 +213,18 @@
         </div>
       </div>
       <div class="pricing-tabs" id="pricingTabs">
-        <button type="button" class="pricing-tab active" onclick="filterPricing('Electric Work')">⚡ Electric Work</button>
-        <button type="button" class="pricing-tab" onclick="filterPricing('Plumbing')">💧 Plumbing</button>
-        <button type="button" class="pricing-tab" onclick="filterPricing('Air Conditioning')">❄️ Air Conditioning</button>
-        <button type="button" class="pricing-tab" onclick="filterPricing('Geyser Repair')">🔥 Geyser &amp; Heating</button>
-        <button type="button" class="pricing-tab" onclick="filterPricing('Carpentry')">🪚 Carpentry</button>
-        <button type="button" class="pricing-tab" onclick="filterPricing('Home Cleaning')">🧹 Cleaning</button>
+        <button type="button" class="pricing-tab active" onclick="filterPricing('Electric Work')">⚡ Electric Work / الیکٹریشن</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Solar Solutions')">☀️ Solar Solutions / سولر سسٹم</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Plumbing')">💧 Plumbing / پلمبر</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Air Conditioning')">❄️ Air Conditioning / اے سی</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Geyser Repair')">🔥 Geyser &amp; Heating / گیزر</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('CCTV Installation')">📹 CCTV &amp; Security / کیمرے</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Water Filter / RO')">🚰 Water Filter &amp; RO / فلٹر</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Painting')">🎨 Painting &amp; Seepage / پینٹ</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Washing Machine')">🧺 Appliances / واشنگ مشین</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Carpentry')">🪚 Carpentry / کارپینٹر</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Home Cleaning')">🧹 Cleaning / صفائی</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Pest Control')">🪲 Pest Control / دیمک اسپرے</button>
       </div>
     </div>
     <div class="pricing-grid" id="pricingGrid"></div>
@@ -477,6 +493,7 @@ function selectCategory(catName) {
 }
 
 async function init() {
+  applyCustomerLanguage();
   if (sessionStorage.getItem('admin_key')) {
     const adminNav = $('adminNavLink');
     if (adminNav) adminNav.classList.remove('hide');
@@ -604,6 +621,77 @@ function stopVoiceRecording() {
 let pricingCatalogData = {};
 let currentPricingCategory = 'Electric Work';
 
+let customerLang = localStorage.getItem('hs_cust_lang') || 'en';
+
+const CUST_URDU = {
+  topPin: '📍 راولپنڈی • اسلام آباد • جناح گارڈن اور زون 5 بیلٹ · 15 تا 25 منٹ میں کاریگر کی آمد',
+  hdrCall: '📞 ابھی کال کریں',
+  hdrHome: 'صفحہ اول',
+  hdrServices: 'تمام خدمات',
+  hdrPricing: 'ریٹ لسٹ',
+  hdrTerms: 'شرائط',
+  hdrTech: 'کاریگر پورٹل',
+  heroEyebrow: 'گھریلو سروسز، اب مکمل سہولت اور اعتماد کے ساتھ',
+  heroTitle: 'آپ کا گھر حقدار ہے <span>بہترین اور قابل اعتماد کاریگر کا</span>',
+  heroCopy: 'اسلام آباد اور راولپنڈی کے تصدیق شدہ الیکٹریشن، پلمبر، سولر اور اے سی کاریگر منٹوں میں بک کریں۔ شفاف ریٹس اور مکمل گارنٹی۔',
+  rateHeading: 'شفاف ریٹ لسٹ (طے شدہ قیمتیں)',
+  rateSub: 'اسلام آباد اور جناح گارڈن کے لیے طے شدہ ریٹس — کسی بحث یا زیادہ چارجز کے بغیر۔',
+  formTitle: 'کاریگر بک کریں (Book a Service)',
+  formSub: 'اپنی ضرورت بتائیں، ہم فوری طور پر قریبی تصدیق شدہ کاریگر روانہ کریں گے۔',
+  btnSubmit: 'پیشہ ور کاریگر طلب کریں →',
+  btnVoice: 'بول کر بتائیں (Voice Note)',
+  langBtnTextUr: '🌐 Switch to English',
+  langBtnTextEn: '🌐 اردو میں دیکھیں',
+};
+
+function applyCustomerLanguage() {
+  const isUr = customerLang === 'ur';
+  document.body.classList.toggle('lang-ur', isUr);
+  document.documentElement.lang = isUr ? 'ur' : 'en';
+
+  const btnTop = $('langToggleBtnTop');
+  if (btnTop) btnTop.textContent = isUr ? CUST_URDU.langBtnTextUr : CUST_URDU.langBtnTextEn;
+  const btnHdr = $('langToggleBtnHeader');
+  if (btnHdr) btnHdr.textContent = isUr ? CUST_URDU.langBtnTextUr : CUST_URDU.langBtnTextEn;
+
+  if ($('topLocationPin')) $('topLocationPin').textContent = isUr ? CUST_URDU.topPin : '📍 Rawalpindi • Islamabad • Jinnah Garden & Zone 5 Belt · 15–25 min Rapid Dispatch';
+  if ($('hdrCallBtn')) $('hdrCallBtn').textContent = isUr ? CUST_URDU.hdrCall : '📞 Call Now';
+  if ($('hdrHome')) $('hdrHome').textContent = isUr ? CUST_URDU.hdrHome : 'Home';
+  if ($('hdrServices')) $('hdrServices').textContent = isUr ? CUST_URDU.hdrServices : 'Services';
+  if ($('hdrPricing')) $('hdrPricing').textContent = isUr ? CUST_URDU.hdrPricing : 'Pricing';
+  if ($('hdrTerms')) $('hdrTerms').textContent = isUr ? CUST_URDU.hdrTerms : 'Terms';
+  if ($('hdrTech')) $('hdrTech').textContent = isUr ? CUST_URDU.hdrTech : 'Technician portal';
+
+  const heroEyebrow = document.querySelector('#hero .eyebrow');
+  if (heroEyebrow) heroEyebrow.textContent = isUr ? CUST_URDU.heroEyebrow : 'Home services, made simple';
+  const heroH1 = document.querySelector('#hero h1');
+  if (heroH1) heroH1.innerHTML = isUr ? CUST_URDU.heroTitle : 'Your home deserves <span>the right help.</span>';
+  const heroCopy = document.querySelector('#hero .hero-copy');
+  if (heroCopy) heroCopy.textContent = isUr ? CUST_URDU.heroCopy : 'Book dependable local professionals for the jobs that keep your home running. Tell us what you need—we’ll help connect you.';
+
+  const pricingH2 = document.querySelector('#pricingSection h2');
+  if (pricingH2) pricingH2.textContent = isUr ? CUST_URDU.rateHeading : 'Transparent Upfront Pricing (Zero Haggling)';
+  const pricingP = document.querySelector('#pricingSection .section-heading p');
+  if (pricingP) pricingP.textContent = isUr ? CUST_URDU.rateSub : 'Standardized rates across Islamabad & Jinnah Garden belt. No awkward price negotiations.';
+
+  const formH2 = document.querySelector('#formView h2');
+  if (formH2) formH2.textContent = isUr ? CUST_URDU.formTitle : 'Tell us what needs fixing.';
+  const formP = document.querySelector('#formView .request-aside p');
+  if (formP) formP.textContent = isUr ? CUST_URDU.formSub : 'Share a few details and we’ll find the best available service professional for your request.';
+
+  const subBtn = $('subBtn');
+  if (subBtn) subBtn.innerHTML = isUr ? `${CUST_URDU.btnSubmit}` : 'Find a professional <span aria-hidden="true">→</span>';
+  const voiceBtnText = $('voiceBtnText');
+  if (voiceBtnText && !isRecording) voiceBtnText.textContent = isUr ? CUST_URDU.btnVoice : 'Speak (Voice Note)';
+}
+
+function toggleCustomerLang() {
+  customerLang = customerLang === 'ur' ? 'en' : 'ur';
+  localStorage.setItem('hs_cust_lang', customerLang);
+  applyCustomerLanguage();
+  renderPricingCards(currentPricingCategory);
+}
+
 async function loadPricingCatalog() {
   try {
     const res = await api('/api/pricing-catalog');
@@ -632,6 +720,7 @@ function renderPricingCards(category) {
     grid.innerHTML = '<p>No services listed for this category yet.</p>';
     return;
   }
+  const isUr = customerLang === 'ur';
   grid.innerHTML = items.map(item => `
     <div class="pricing-card">
       <div class="pricing-card-top">
@@ -648,7 +737,7 @@ function renderPricingCards(category) {
           ${esc(item.price_range)}
         </div>
         <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('${esc(category)}', '${esc(item.item)}')">
-          Book This Task →
+          ${isUr ? 'ابھی بک کریں →' : 'Book This Task →'}
         </button>
       </div>
     </div>
