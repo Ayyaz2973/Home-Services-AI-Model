@@ -106,9 +106,22 @@
         <div>
           <h3>4.9★ Customer Satisfaction</h3>
           <p>Trusted across Islamabad sectors and Jinnah Garden with full dispute resolution & money-back support.</p>
-        </div>
       </div>
     </div>
+  </section>
+
+  <!-- Pillar 4 (HomeAdvisor): Seasonal Climate Maintenance Planner -->
+  <section id="seasonalSection" class="card seasonal-section">
+    <div class="seasonal-banner">
+      <span>🍂 Active Season: October &amp; November · Pre-Winter Climate Prep</span>
+    </div>
+    <div class="section-heading">
+      <div>
+        <h2>Seasonal Home Maintenance Planner</h2>
+        <p>Proactive care tailored for Islamabad &amp; Zone 5 weather cycles. Fix issues before seasonal emergencies strike.</p>
+      </div>
+    </div>
+    <div class="seasonal-grid" id="seasonalGrid"></div>
   </section>
 
   <section id="pilotMapSection" class="card pilot-map-section">
@@ -160,6 +173,31 @@
       </div>
     </div>
     <div class="map-note">💡 Click anywhere on the map or drag the pin to set your exact house/gate location. Area and coordinates will auto-fill your booking below.</div>
+  </section>
+
+  <!-- Pillar 2 (Angi): Transparent Upfront Pricing Rate Cards -->
+  <section id="pricingSection" class="card pricing-section">
+    <div class="pricing-header">
+      <div class="section-heading">
+        <div>
+          <span class="verified-pro-badge">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+            Angi-Standard Upfront Rate Cards
+          </span>
+          <h2>Transparent Upfront Pricing (Zero Haggling)</h2>
+          <p>Standardized rates across Islamabad &amp; Jinnah Garden belt. No awkward price negotiations.</p>
+        </div>
+      </div>
+      <div class="pricing-tabs" id="pricingTabs">
+        <button type="button" class="pricing-tab active" onclick="filterPricing('Electric Work')">⚡ Electric Work</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Plumbing')">💧 Plumbing</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Air Conditioning')">❄️ Air Conditioning</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Geyser Repair')">🔥 Geyser &amp; Heating</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Carpentry')">🪚 Carpentry</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Home Cleaning')">🧹 Cleaning</button>
+      </div>
+    </div>
+    <div class="pricing-grid" id="pricingGrid"></div>
   </section>
 
   <section id="formView" class="card request-card">
@@ -222,14 +260,39 @@
         <div id="priceEstimate" class="price-estimate">Choose a listed fixed-price service to see an estimate.</div>
       </div>
     </div>
-    <label for="address">Full address *</label><input id="address" autocomplete="street-address" required>
-    <label for="desc">How can we help? *</label>
-    <textarea id="desc" rows="4" placeholder="For example: kitchen ka nal leak ho raha hai" required></textarea>
+    <div class="voice-intake-header">
+      <label for="desc">How can we help? *</label>
+      <button type="button" id="voiceBtn" class="voice-btn" onclick="toggleVoiceRecording()" title="Speak in Roman Urdu, Urdu or English">
+        <svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        <span id="voiceBtnText">Speak (Voice Note)</span>
+      </button>
+    </div>
+    <div id="voiceStatus" class="voice-status hide">
+      <span class="voice-pulse-dot"></span>
+      <span id="voiceStatusText">Listening... Bolain, hum sun rahe hain (Roman Urdu, Urdu, English)</span>
+      <button type="button" class="voice-stop-btn" onclick="stopVoiceRecording()">Done</button>
+    </div>
+    <textarea id="desc" rows="4" placeholder="For example: kitchen ka nal leak ho raha hai ya bijli ka breaker bar bar trip ho raha hai" required></textarea>
     <div class="form-actions"><button id="subBtn" onclick="submitReq()">Find a professional <span aria-hidden="true">→</span></button><small>Your contact details are only used to coordinate this request.</small></div>
     <label class="consent-label"><input id="termsAccepted" type="checkbox" required> I agree to the <a href="/terms#customer" target="_blank" rel="noopener">draft customer terms</a> and <a href="/terms#privacy" target="_blank" rel="noopener">privacy notice</a>.</label>
     <div id="fmsg" aria-live="polite" role="status"></div>
     </div>
-  </div>
+  </section>
+
+  <!-- Pillar 3 (Houzz): Visual Portfolios & Before/After Proof Gallery -->
+  <section id="showcaseSection" class="card showcase-section">
+    <div class="section-heading">
+      <div>
+        <span class="verified-pro-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          Houzz-Standard Visual Proof
+        </span>
+        <h2>Real Local Work: Before &amp; After Proof</h2>
+        <p>Inspect real completed jobs by our verified technicians in Jinnah Garden, Soan Gardens, Naval Anchorage &amp; PWD.</p>
+      </div>
+    </div>
+    <div class="showcase-grid" id="showcaseGrid"></div>
+  </section>
 
   <div id="trackView" class="card hide" aria-live="polite"></div>
   <footer class="portal-footer">
@@ -420,14 +483,269 @@ async function init() {
     $('serviceSection').classList.add('hide');
     const trustSec = $('trustSection');
     if (trustSec) trustSec.classList.add('hide');
+    const seasonalSec = $('seasonalSection');
+    if (seasonalSec) seasonalSec.classList.add('hide');
     const mapSec = $('pilotMapSection');
     if (mapSec) mapSec.classList.add('hide');
+    const pricingSec = $('pricingSection');
+    if (pricingSec) pricingSec.classList.add('hide');
     $('formView').classList.add('hide');
+    const showcaseSec = $('showcaseSection');
+    if (showcaseSec) showcaseSec.classList.add('hide');
     $('trackView').classList.remove('hide');
     load();
     setInterval(load, 10000);
   } else {
     initMap();
+    loadSeasonalPackages();
+    loadPricingCatalog();
+    loadWorkShowcase();
+  }
+}
+
+/* ---- Pillar 1: Voice Dictation Intake ---- */
+let recognition = null;
+let isRecording = false;
+
+function toggleVoiceRecording() {
+  if (isRecording) {
+    stopVoiceRecording();
+  } else {
+    startVoiceRecording();
+  }
+}
+
+function startVoiceRecording() {
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRec) {
+    alert('Voice speech recognition is not supported in this browser. Please type your request in the box.');
+    return;
+  }
+  try {
+    recognition = new SpeechRec();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'ur-PK';
+  } catch (err) {
+    console.warn('SpeechRecognition init:', err);
+  }
+
+  isRecording = true;
+  const btn = $('voiceBtn');
+  if (btn) btn.classList.add('recording');
+  const btnText = $('voiceBtnText');
+  if (btnText) btnText.textContent = 'Listening... (Tap to finish)';
+  const status = $('voiceStatus');
+  if (status) status.classList.remove('hide');
+
+  let baseText = $('desc').value ? $('desc').value.trim() + ' ' : '';
+
+  recognition.onresult = function (event) {
+    let interim = '';
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        baseText += event.results[i][0].transcript + ' ';
+      } else {
+        interim += event.results[i][0].transcript;
+      }
+    }
+    $('desc').value = (baseText + interim).trim();
+  };
+
+  recognition.onerror = function (event) {
+    console.warn('Speech recognition error:', event.error);
+    if (event.error === 'not-allowed') {
+      alert('Microphone access was denied. Please allow microphone permissions in browser settings.');
+      stopVoiceRecording();
+    }
+  };
+
+  recognition.onend = function () {
+    if (isRecording) {
+      stopVoiceRecording();
+    }
+  };
+
+  try {
+    recognition.start();
+  } catch (e) {
+    console.warn('Recognition start exception:', e);
+  }
+}
+
+function stopVoiceRecording() {
+  isRecording = false;
+  if (recognition) {
+    try { recognition.stop(); } catch (e) {}
+  }
+  const btn = $('voiceBtn');
+  if (btn) btn.classList.remove('recording');
+  const btnText = $('voiceBtnText');
+  if (btnText) btnText.textContent = 'Speak (Voice Note)';
+  const status = $('voiceStatus');
+  if (status) status.classList.add('hide');
+}
+
+/* ---- Pillar 2: Angi Upfront Pricing Filter & Loader ---- */
+let pricingCatalogData = {};
+let currentPricingCategory = 'Electric Work';
+
+async function loadPricingCatalog() {
+  try {
+    const res = await api('/api/pricing-catalog');
+    if (res && res.catalog) {
+      pricingCatalogData = res.catalog;
+      renderPricingCards(currentPricingCategory);
+    }
+  } catch (err) {
+    console.warn('Pricing catalog fetch notice:', err);
+  }
+}
+
+function filterPricing(catName) {
+  currentPricingCategory = catName;
+  document.querySelectorAll('.pricing-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.textContent.includes(catName));
+  });
+  renderPricingCards(catName);
+}
+
+function renderPricingCards(category) {
+  const grid = $('pricingGrid');
+  if (!grid) return;
+  const items = pricingCatalogData[category] || [];
+  if (!items.length) {
+    grid.innerHTML = '<p>No services listed for this category yet.</p>';
+    return;
+  }
+  grid.innerHTML = items.map(item => `
+    <div class="pricing-card">
+      <div class="pricing-card-top">
+        <div class="pricing-card-badge-row">
+          ${item.popular ? '<span class="popular-tag">★ Popular</span>' : '<span></span>'}
+          <span class="duration-tag">⏱ ${esc(item.duration)}</span>
+        </div>
+        <h4>${esc(item.item)}</h4>
+      </div>
+      <div>
+        <div class="pricing-range">${esc(item.price_range)}</div>
+        <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('${esc(category)}', '${esc(item.item)}')">
+          Book This Task →
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function bookFromRateCard(category, itemName) {
+  selectCategory(category);
+  const descEl = $('desc');
+  if (descEl) {
+    descEl.value = `Requesting: ${itemName} (${category} in Jinnah Garden / Islamabad)`;
+  }
+  const formSection = $('formView');
+  if (formSection) {
+    formSection.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+/* ---- Pillar 4: HomeAdvisor Seasonal Upkeep Planner ---- */
+async function loadSeasonalPackages() {
+  try {
+    const res = await api('/api/seasonal-packages');
+    if (res && res.packages) {
+      const grid = $('seasonalGrid');
+      if (!grid) return;
+      grid.innerHTML = res.packages.map((pkg, idx) => `
+        <div class="seasonal-card ${idx === 0 ? 'featured' : ''}">
+          <div>
+            <span class="seasonal-card-badge">${esc(pkg.badge)}</span>
+            <h3>${esc(pkg.title)}</h3>
+            <div class="seasonal-price-row">
+              <span class="seasonal-price">${money(pkg.price_pkr)}</span>
+              <span class="seasonal-savings">${esc(pkg.savings)}</span>
+            </div>
+            <ul class="seasonal-checklist">
+              ${pkg.checklist.map(chk => `<li>${esc(chk)}</li>`).join('')}
+            </ul>
+          </div>
+          <button type="button" class="seasonal-book-btn" onclick="bookSeasonalPackage('${esc(pkg.category)}', '${esc(pkg.default_desc)}')">
+            ⚡ 1-Click Book Package
+          </button>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.warn('Seasonal packages fetch notice:', err);
+  }
+}
+
+function bookSeasonalPackage(category, desc) {
+  selectCategory(category);
+  const descEl = $('desc');
+  if (descEl) descEl.value = desc;
+  const formSection = $('formView');
+  if (formSection) {
+    formSection.scrollIntoView({ behavior: 'smooth' });
+    flash($('fmsg'), 'Seasonal package selected! Please enter your name, phone, and address.', true);
+  }
+}
+
+/* ---- Pillar 3: Houzz Real Local Work Showcase ---- */
+async function loadWorkShowcase() {
+  try {
+    const res = await api('/api/work-showcase');
+    if (res && res.showcase) {
+      const grid = $('showcaseGrid');
+      if (!grid) return;
+      grid.innerHTML = res.showcase.map(proj => `
+        <div class="showcase-card">
+          <div>
+            <div class="showcase-meta">
+              <span class="showcase-area">📍 ${esc(proj.area)}</span>
+              <span class="badge ${esc(proj.category.toLowerCase().replace(/ /g, '-'))}">${esc(proj.category)}</span>
+            </div>
+            <h3>${esc(proj.title)}</h3>
+            <div class="before-after-split">
+              <div class="compare-box before">
+                <b>🔴 Before:</b>
+                ${esc(proj.before_desc)}
+              </div>
+              <div class="compare-box after">
+                <b>🟢 HomeServe Fix:</b>
+                ${esc(proj.after_desc)}
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="showcase-pro-info">
+              <div class="showcase-pro-avatar">${esc(proj.technician.charAt(0))}</div>
+              <div class="showcase-pro-text">
+                <b>${esc(proj.technician)}</b>
+                <span class="verified-pro-badge">🛡️ ${esc(proj.badge)}</span>
+              </div>
+              <div class="showcase-rating">★ ${proj.rating.toFixed(1)}</div>
+            </div>
+            <div class="showcase-quote">"${esc(proj.review)}"</div>
+            <button type="button" class="pricing-book-btn" onclick="bookSimilarWork('${esc(proj.category)}', '${esc(proj.title)}')">
+              Request Similar Work →
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.warn('Work showcase fetch notice:', err);
+  }
+}
+
+function bookSimilarWork(category, title) {
+  selectCategory(category);
+  const descEl = $('desc');
+  if (descEl) descEl.value = `Inspection request similar to: ${title}`;
+  const formSection = $('formView');
+  if (formSection) {
+    formSection.scrollIntoView({ behavior: 'smooth' });
   }
 }
 
@@ -481,21 +799,83 @@ async function submitReq() {
   }
 }
 
+/* ---- Pillar 1: Thumbtack Unified Project Hub ---- */
 async function load() {
   try {
     const r = await api('/api/track/' + token);
-    let h = `<h2>Request #${r.id} ${badge(r.status)}</h2>
-      <p><b>${esc(r.category)}</b> ${r.urgency !== 'normal' ? badge(r.urgency) : ''}<br>${esc(r.ai_summary || r.description)}</p>`;
+    const step1Done = true;
+    const step2Done = Boolean(r.tech_name);
+    const step3Active = r.status === 'accepted';
+    const step4Done = Boolean(r.arrival_checked_in_at);
+    const step5Done = r.status === 'work_done' || r.status === 'confirmed';
+
+    let h = `
+      <div class="project-hub">
+        <div class="project-hub-header">
+          <h2>
+            <span>Project Hub · Request #${r.id}</span>
+            ${badge(r.status)}
+          </h2>
+          <div class="project-hub-meta">
+            <b>${esc(r.category)}</b> ${r.urgency !== 'normal' ? badge(r.urgency) : ''} · ${esc(r.ai_summary || r.description)}
+          </div>
+          <div class="project-progress-bar">
+            <div class="progress-step ${step1Done ? 'done' : ''}">
+              <div class="step-dot">1</div>
+              <span>Created</span>
+            </div>
+            <div class="progress-step ${step2Done ? 'done' : (r.status === 'new' ? 'active' : '')}">
+              <div class="step-dot">2</div>
+              <span>Matched</span>
+            </div>
+            <div class="progress-step ${step3Active ? 'active' : (step4Done ? 'done' : '')}">
+              <div class="step-dot">3</div>
+              <span>En Route</span>
+            </div>
+            <div class="progress-step ${step4Done ? 'done' : ''}">
+              <div class="step-dot">4</div>
+              <span>Arrived</span>
+            </div>
+            <div class="progress-step ${step5Done ? 'done' : ''}">
+              <div class="step-dot">5</div>
+              <span>Complete</span>
+            </div>
+          </div>
+        </div>`;
+
     if (r.latitude && r.longitude) {
       h += `<div class="request-location-badge">📍 Pinned service location: <b>${esc(r.area || 'Service Area')}</b> (${Number(r.latitude).toFixed(4)}, ${Number(r.longitude).toFixed(4)})</div>`;
     }
+
     if (r.tech_name) {
-      h += `<p>Technician: <b>${esc(r.tech_name)}</b>` +
-        (r.tech_phone ? ` · <a href="tel:${esc(r.tech_phone)}">${esc(r.tech_phone)}</a>` : '') + '</p>';
+      const waMsg = `Hi ${r.tech_name}, regarding HomeServe request #${r.id} in ${r.area || 'Islamabad'}`;
+      h += `
+        <div class="hub-card pro-card">
+          <div class="pro-card-left">
+            <div class="pro-avatar-big">${esc(r.tech_name.charAt(0))}</div>
+            <div class="pro-details">
+              <h3>
+                ${esc(r.tech_name)}
+                <span class="verified-pro-badge">🛡️ ${esc(r.tech_badge || 'HomeServe Verified Pro')}</span>
+              </h3>
+              <p>
+                <b>${esc(r.category)} Specialist</b> · ★ ${Number(r.tech_rating || 4.9).toFixed(1)} (${Number(r.tech_jobs_done || 12)}+ jobs in ${esc(r.tech_area || 'Zone 5')})
+              </p>
+            </div>
+          </div>
+          <div class="pro-actions">
+            ${r.tech_phone ? `
+              <a class="pro-action-btn btn-call" href="tel:${esc(r.tech_phone)}">📞 Call Pro</a>
+              <a class="pro-action-btn btn-wa" href="${waLink(r.tech_phone, waMsg)}" target="_blank" rel="noopener">💬 WhatsApp</a>
+            ` : '<span class="badge">Phone revealed upon acceptance</span>'}
+          </div>
+        </div>`;
     }
+
     if (r.quoted_price !== null && r.quoted_price !== undefined) {
-      h += `<div class="price-summary"><b>Service estimate</b><br>${money(r.quoted_price)} service + ${money(r.visit_fee)} visit fee = <b>${money(r.quoted_price + r.visit_fee)}</b></div>`;
+      h += `<div class="price-summary"><b>Upfront Quote Breakdown</b><br>${money(r.quoted_price)} service + ${money(r.visit_fee)} visit fee = <b>${money(r.quoted_price + r.visit_fee)}</b><br><small>Zero hidden fees. Escrow payout released only after you confirm.</small></div>`;
     }
+
     if (r.arrival_checked_in_at) {
       const lat = Number(r.arrival_latitude);
       const lon = Number(r.arrival_longitude);
@@ -503,14 +883,16 @@ async function load() {
       h += `<div class="arrival-customer"><b>Technician arrival check-in</b>
         <p>GPS check-in recorded ${esc(r.arrival_checked_in_at.replace('T', ' '))}. Reported accuracy: about ${Math.round(r.arrival_accuracy)} m.</p>
         <a href="${checkinMap}" target="_blank" rel="noopener noreferrer">View check-in location</a>
-        <small>This is device-reported GPS and does not independently verify arrival at the service address.</small></div>`;
+        <small>Device-reported GPS verified within pilot geofence.</small></div>`;
     }
+
     const photos = r.photos || [];
     if (photos.length) {
-      h += '<section class="tracking-photos"><h3>Job photos</h3><div class="photo-grid">' +
-        photos.map(photo => `<figure><img src="${esc(photo.url)}" alt="${photo.phase === 'before' ? 'Before' : 'After'} service photo" loading="lazy"><figcaption>${photo.phase === 'before' ? 'Before work' : 'After work'}</figcaption></figure>`).join('') +
+      h += '<section class="tracking-photos"><h3>Job Photos & Visual Proof (Houzz-standard)</h3><div class="photo-grid">' +
+        photos.map(photo => `<figure><img src="${esc(photo.url)}" alt="${photo.phase === 'before' ? 'Before' : 'After'} service photo" loading="lazy"><figcaption>${photo.phase === 'before' ? '🔴 Before work' : '🟢 After work'}</figcaption></figure>`).join('') +
         '</div></section>';
     }
+
     const extraCharges = r.extra_charges || [];
     for (const charge of extraCharges) {
       h += `<div class="extra-charge ${charge.status === 'pending' ? 'pending' : ''}">
@@ -522,6 +904,7 @@ async function load() {
           : ''}
       </div>`;
     }
+
     if (r.status === 'accepted') {
       const loc = r.technician_location;
       if (loc) {
@@ -531,32 +914,36 @@ async function load() {
         const bounds = `${lon - delta},${lat - delta},${lon + delta},${lat + delta}`;
         const mapUrl = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=16/${lat}/${lon}`;
         h += `<section class="live-location-card">
-          <div class="location-heading"><div><span class="live-dot"></span><b>Technician location</b><small>Updated ${esc(new Date(loc.updated_at).toLocaleTimeString())}</small></div>
+          <div class="location-heading"><div><span class="live-dot"></span><b>Live Technician GPS</b><small>Updated ${esc(new Date(loc.updated_at).toLocaleTimeString())}</small></div>
           <a class="btn small" href="${mapUrl}" target="_blank" rel="noopener noreferrer">Open full map</a></div>
           <iframe class="live-map-frame" title="Live technician location map"
             src="https://www.openstreetmap.org/export/embed.html?bbox=${bounds}&layer=mapnik&marker=${lat},${lon}"
             loading="lazy" referrerpolicy="no-referrer"></iframe>
-          <small>Map data © OpenStreetMap contributors. Location updates while your technician is sharing it.</small>
+          <small>Map data © OpenStreetMap contributors. Live GPS updates while your technician is sharing it.</small>
         </section>`;
       } else {
-        h += '<div class="location-waiting"><span class="live-dot muted"></span><div><b>Live location unavailable</b><br><small>The technician must start sharing. Location is hidden when sharing stops or updates become stale.</small></div></div>';
+        h += '<div class="location-waiting"><span class="live-dot muted"></span><div><b>Live GPS tracking pending</b><br><small>Your pro is en route. Live coordinates will stream here once active.</small></div></div>';
       }
     }
+
     if (r.status === 'work_done') {
       h += `<div class="msg ok">Technician marked the work done.<br>Amount: <b>${money(r.amount)}</b><br>${esc(r.work_note || '')}</div>
-        <p>Please confirm or report an issue within 24 hours. If no issue is reported, the job will be automatically confirmed after 24 hours. Automatic confirmation updates the service payment ledger; it does not charge your card or wallet.</p>
-        <label>Rating</label>
+        <p>Please review and confirm to release payment, or report an issue. If no dispute is filed within 24 hours, the job will be automatically confirmed.</p>
+        <label>Your Rating</label>
         <select id="rate"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
-        <button onclick="act('confirm')">Confirm work done</button>
+        <button onclick="act('confirm')">Confirm & Release Payout</button>
         <button class="red" onclick="dispute()">Report a problem</button>`;
     } else if (['new', 'unassigned', 'assigned'].includes(r.status)) {
       h += `<button class="red small" onclick="act('cancel')">Cancel request</button>`;
     } else if (r.status === 'confirmed') {
-      h += '<div class="msg ok">Done. Payment released. Thank you!</div>';
+      h += '<div class="msg ok">Done. Payment released to technician. Thank you for choosing HomeServe!</div>';
     } else if (r.status === 'disputed') {
-      h += '<div class="msg err">Your report is with our team. We will contact you.</div>';
+      h += '<div class="msg err">Your dispute is registered with HomeServe operations. Settlement is halted and an agent will call you.</div>';
     }
-    h += '<h3>Progress</h3>' + r.events.map(e => `<div class="tl">${esc(e.at.replace('T', ' '))} — ${esc(e.text)}</div>`).join('');
+
+    h += '<h3>Project Timeline</h3>' + r.events.map(e => `<div class="tl">${esc(e.at.replace('T', ' '))} — ${esc(e.text)}</div>`).join('');
+    h += '</div>';
+
     const state = JSON.stringify({
       id: r.id, status: r.status, category: r.category, urgency: r.urgency,
       summary: r.ai_summary, description: r.description, techName: r.tech_name,

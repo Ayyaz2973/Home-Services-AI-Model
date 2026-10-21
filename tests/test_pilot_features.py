@@ -302,3 +302,63 @@ def test_ai_analyze_gemini_integration(monkeypatch):
     assert "AC gas refill" in res["summary"]
 
 
+def test_pricing_catalog_endpoint(client):
+    """Verify transparent PKR upfront pricing catalog returns standard services."""
+    res = client.get("/api/pricing-catalog")
+    assert res.status_code == 200
+    catalog = res.json()["catalog"]
+    assert "Electric Work" in catalog
+    assert "Plumbing" in catalog
+    assert "Air Conditioning" in catalog
+    assert "Geyser Repair" in catalog
+    assert any("Ceiling Fan" in item["item"] for item in catalog["Electric Work"])
+    assert any("Rs." in item["price_range"] for item in catalog["Electric Work"])
+
+
+def test_seasonal_packages_endpoint(client):
+    """Verify climate-adapted seasonal packages return active pre-winter tune-ups."""
+    res = client.get("/api/seasonal-packages")
+    assert res.status_code == 200
+    packages = res.json()["packages"]
+    assert len(packages) >= 3
+    pre_winter = next(p for p in packages if "pre-winter" in p["id"])
+    assert "Geyser" in pre_winter["title"]
+    assert pre_winter["price_pkr"] > 0
+    assert len(pre_winter["checklist"]) >= 3
+
+
+def test_work_showcase_endpoint(client):
+    """Verify Houzz-style before/after visual proof showcase endpoint."""
+    res = client.get("/api/work-showcase")
+    assert res.status_code == 200
+    showcase = res.json()["showcase"]
+    assert len(showcase) >= 4
+    jinnah_project = next(p for p in showcase if "Jinnah Garden" in p["area"])
+    assert "Verified Pro" in jinnah_project["badge"]
+    assert jinnah_project["before_desc"]
+    assert jinnah_project["after_desc"]
+    assert jinnah_project["rating"] >= 4.8
+
+
+def test_track_verified_badge_enrichment(client):
+    """Verify /api/track/{token} includes verified pro trust badge and rating."""
+    req_res = client.post("/api/requests", json={
+        "name": "Hamza",
+        "phone": "03335554433",
+        "address": "House 12, Street 3, Jinnah Garden",
+        "area": "Jinnah Garden",
+        "description": "Short circuit in distribution box",
+        "terms_accepted": True,
+    })
+    assert req_res.status_code == 200
+    token = req_res.json()["token"]
+
+    track_res = client.get(f"/api/track/{token}")
+    assert track_res.status_code == 200
+    data = track_res.json()
+    assert data["tech_is_verified"] is True
+    assert data["tech_badge"] == "HomeServe Verified Pro"
+    assert data["tech_rating"] >= 4.0
+
+
+

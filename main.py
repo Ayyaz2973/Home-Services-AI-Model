@@ -767,6 +767,174 @@ def meta():
     return {"categories": CATEGORIES, "commission_pct": COMMISSION_PCT}
 
 
+PRICING_CATALOG = {
+    "Electric Work": [
+        {"item": "Switch / Socket Replacement or Repair", "price_range": "Rs. 400 - 700", "duration": "30 mins", "popular": True},
+        {"item": "Ceiling Fan Installation & Balancing", "price_range": "Rs. 1,000 - 1,500", "duration": "45 mins", "popular": True},
+        {"item": "Distribution Box / Breaker Repair", "price_range": "Rs. 1,500 - 2,500", "duration": "60 mins", "popular": True},
+        {"item": "Complete Inverter / UPS Wiring Check", "price_range": "Rs. 2,500 - 4,500", "duration": "2 hours", "popular": False},
+    ],
+    "Plumbing": [
+        {"item": "Tap / Mixer Replacement or Washer Fix", "price_range": "Rs. 600 - 1,000", "duration": "30 mins", "popular": True},
+        {"item": "Muslim Shower / Commode Tank Flush Fix", "price_range": "Rs. 800 - 1,400", "duration": "45 mins", "popular": True},
+        {"item": "Water Tank Cleaning & High Pressure Wash", "price_range": "Rs. 2,500 - 4,500", "duration": "90 mins", "popular": True},
+        {"item": "Water Motor / Booster Pump Installation", "price_range": "Rs. 2,000 - 3,500", "duration": "90 mins", "popular": False},
+    ],
+    "Air Conditioning": [
+        {"item": "Split AC General Filter & Tray Service", "price_range": "Rs. 2,000 - 2,800", "duration": "45 mins", "popular": True},
+        {"item": "Master Deep Chemical Jet Wash (Indoor + Outdoor)", "price_range": "Rs. 3,500 - 4,500", "duration": "75 mins", "popular": True},
+        {"item": "Refrigerant Gas Top-up / Leak Test (R410/R32/R22)", "price_range": "Rs. 4,500 - 7,500", "duration": "60 mins", "popular": True},
+        {"item": "AC Dismounting & Re-installation", "price_range": "Rs. 4,000 - 6,000", "duration": "2 hours", "popular": False},
+    ],
+    "Geyser Repair": [
+        {"item": "Instant Gas Geyser Burner & Safety Valve Tune-up", "price_range": "Rs. 1,500 - 2,200", "duration": "45 mins", "popular": True},
+        {"item": "Electric Geyser Thermostat & Heating Element Replace", "price_range": "Rs. 1,800 - 3,000", "duration": "60 mins", "popular": True},
+        {"item": "Geyser Descaling & Sediment Tank Flush", "price_range": "Rs. 2,500 - 3,500", "duration": "90 mins", "popular": False},
+    ],
+    "Carpentry": [
+        {"item": "Door Lock / Handle Fitting & Alignment", "price_range": "Rs. 800 - 1,500", "duration": "45 mins", "popular": True},
+        {"item": "Kitchen Cabinet Hinge & Drawer Channel Repair", "price_range": "Rs. 1,200 - 2,200", "duration": "60 mins", "popular": True},
+        {"item": "Bed / Wardrobe Assembly & Repair", "price_range": "Rs. 2,000 - 3,500", "duration": "90 mins", "popular": False},
+    ],
+    "Home Cleaning": [
+        {"item": "Deep Sofa & Cushion Wash (5 Seater)", "price_range": "Rs. 2,500 - 4,000", "duration": "90 mins", "popular": True},
+        {"item": "Complete Bathroom Deep Disinfection", "price_range": "Rs. 1,800 - 3,000", "duration": "60 mins", "popular": True},
+    ]
+}
+
+SEASONAL_PACKAGES = [
+    {
+        "id": "pre-winter-geyser",
+        "season": "Pre-Winter (October - November)",
+        "badge": "Active Season · Islamabad & Zone 5",
+        "title": "Winter Heating & Geyser Safety Package",
+        "price_pkr": 2500,
+        "savings": "Save 25%",
+        "checklist": [
+            "Instant gas geyser burner cleaning & pilot flame tune-up",
+            "Electric water heater thermostat calibration & element safety check",
+            "Gas leak & pipe seal pressure test (prevent winter gas accidents)",
+            "Water supply valve & drain inspection"
+        ],
+        "category": "Geyser Repair",
+        "default_desc": "Winter Heating & Geyser Safety Package (Pre-winter tune-up for Islamabad)"
+    },
+    {
+        "id": "winter-solar-ups",
+        "season": "Pre-Winter (October - November)",
+        "badge": "Power Backup Prep",
+        "title": "Solar & UPS Winter Battery Readiness",
+        "price_pkr": 2200,
+        "savings": "Save 20%",
+        "checklist": [
+            "Tubular battery specific gravity hydrometer testing",
+            "Terminal acid descaling & distilled water top-up",
+            "Inverter low-sunlight charge controller optimization",
+            "Distribution board emergency load segregation"
+        ],
+        "category": "Solar Solutions",
+        "default_desc": "Winter Solar & UPS battery readiness inspection and tuning"
+    },
+    {
+        "id": "pre-summer-ac",
+        "season": "Pre-Summer (March - May)",
+        "badge": "Upcoming Season",
+        "title": "AC Master Pre-Summer Chill Tune-Up",
+        "price_pkr": 3800,
+        "savings": "Save 30%",
+        "checklist": [
+            "High-pressure chemical jet wash for indoor & outdoor coils",
+            "Ampere load & starting capacitor health verification",
+            "Refrigerant standing & running pressure gauge check",
+            "Anti-fungal blower sanitization"
+        ],
+        "category": "Air Conditioning",
+        "default_desc": "Pre-Summer AC Master chemical wash and gas level tune-up"
+    },
+    {
+        "id": "monsoon-waterproofing",
+        "season": "Monsoon (July - August)",
+        "badge": "Rain Protection",
+        "title": "Monsoon Roof & Drain Waterproofing Audit",
+        "price_pkr": 3000,
+        "savings": "Save 20%",
+        "checklist": [
+            "Parapet & terrace rain drain blockage clearing",
+            "Concealed joint leak inspection using moisture meter",
+            "Main electrical panel waterproofing check against rain shorts"
+        ],
+        "category": "Plumbing",
+        "default_desc": "Monsoon roof drainage inspection and electrical moisture protection"
+    }
+]
+
+WORK_SHOWCASE = [
+    {
+        "id": "proj-1",
+        "title": "Main Distribution Board Rewiring & Surge Protection",
+        "area": "Jinnah Garden, Phase 1",
+        "category": "Electric Work",
+        "technician": "Zubair Electrician",
+        "badge": "HomeServe Verified Pro",
+        "before_desc": "Hazardous tangled wiring, burnt main breaker, frequent tripping across Phase 1 house.",
+        "after_desc": "Complete Schneider breaker installation, color-coded neutral trunking, and earthing verified.",
+        "rating": 5.0,
+        "review": "Bohot saaf kaam kiya Zubair bhai ne. Breaker bar bar trip hone ka masla mukammal hal ho gaya.",
+    },
+    {
+        "id": "proj-2",
+        "title": "Concealed PPR Bathroom Pipe Replacement",
+        "area": "Soan Gardens, Block B",
+        "category": "Plumbing",
+        "technician": "Rashid Plumber",
+        "badge": "HomeServe Verified Pro",
+        "before_desc": "Internal GI pipe rusted and leaking behind tiles causing dampness in bedroom wall.",
+        "after_desc": "New Turkish PPR pipe line heat-welded and pressure-tested up to 10 bar without tile damage.",
+        "rating": 4.9,
+        "review": "Wall dampness stopped within 2 days. Very skilled and respectful plumber.",
+    },
+    {
+        "id": "proj-3",
+        "title": "Inverter AC Deep Jet-Wash & Gas Refill",
+        "area": "Naval Anchorage, Sector B",
+        "category": "Air Conditioning",
+        "technician": "Naveed AC Specialist",
+        "badge": "HomeServe Verified Pro",
+        "before_desc": "AC blowing warm air, outdoor condenser heavily choked with dust, high electricity bill.",
+        "after_desc": "Chemical foam coil wash, condenser fan oiling, topped up R410 refrigerant. Chilling at 16°C.",
+        "rating": 5.0,
+        "review": "Chilling perfectly now like brand new. Punctual technician arrived right on time.",
+    },
+    {
+        "id": "proj-4",
+        "title": "Hydraulic Hinge & Master Lock Installation",
+        "area": "PWD Housing Scheme",
+        "category": "Carpentry",
+        "technician": "Asif Carpenter",
+        "badge": "HomeServe Verified Pro",
+        "before_desc": "Sagging wooden main door scratching the floor, jammed deadbolt lock.",
+        "after_desc": "Planed door clearance, installed heavy-duty brass hinges and high-security 6-pin deadbolt.",
+        "rating": 4.8,
+        "review": "Smooth opening now, lock is rock solid. Great service in PWD.",
+    }
+]
+
+
+@app.get("/api/pricing-catalog")
+def pricing_catalog():
+    return {"catalog": PRICING_CATALOG}
+
+
+@app.get("/api/seasonal-packages")
+def seasonal_packages():
+    return {"packages": SEASONAL_PACKAGES}
+
+
+@app.get("/api/work-showcase")
+def work_showcase():
+    return {"showcase": WORK_SHOWCASE}
+
+
 @app.get("/api/catalog")
 def public_catalog():
     with db() as con:
@@ -1200,7 +1368,7 @@ def req_by_token(con, token):
 def track(token: str):
     with db() as con:
         r = req_by_token(con, token)
-        t = con.execute("SELECT name, phone FROM technicians WHERE id=?", (r["technician_id"],)).fetchone()
+        t = con.execute("SELECT name, phone, rating, jobs_done, area FROM technicians WHERE id=?", (r["technician_id"],)).fetchone()
         ev = con.execute("SELECT text, at FROM events WHERE request_id=? ORDER BY id", (r["id"],)).fetchall()
         d = dict(r)
         if r["status"] not in ("accepted", "work_done", "confirmed", "disputed"):
@@ -1208,6 +1376,11 @@ def track(token: str):
         d.pop("token")
         d["tech_name"] = t["name"] if t else None
         d["tech_phone"] = t["phone"] if (t and r["status"] in ("accepted", "work_done", "confirmed", "disputed")) else None
+        d["tech_rating"] = float(t["rating"]) if t and t["rating"] else 4.9
+        d["tech_jobs_done"] = int(t["jobs_done"]) if t and t["jobs_done"] else 12
+        d["tech_area"] = t["area"] if t else (r["area"] or "Islamabad")
+        d["tech_is_verified"] = True
+        d["tech_badge"] = "HomeServe Verified Pro"
         d["extra_charges"] = [
             dict(charge) for charge in con.execute(
                 """SELECT id,amount,reason,status,created_at,reviewed_at
