@@ -1034,16 +1034,145 @@ async function load() {
     }
 
     if (r.status === 'work_done') {
-      h += `<div class="msg ok">Technician marked the work done.<br>Amount: <b>${money(r.amount)}</b><br>${esc(r.work_note || '')}</div>
-        <p>Please review and confirm to release payment, or report an issue. If no dispute is filed within 24 hours, the job will be automatically confirmed.</p>
-        <label>Your Rating</label>
-        <select id="rate"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>
-        <button onclick="act('confirm')">Confirm & Release Payout</button>
-        <button class="red" onclick="dispute()">Report a problem</button>`;
+      h += `
+        <div class="card" style="border-left:4px solid var(--brand);margin:16px 0">
+          <h3>✅ Work Completed · Review & Release</h3>
+          <div class="msg ok"><b>${esc(r.tech_name || 'Technician')}</b> has completed the requested work.<br>Total Payable: <b style="font-size:18px">${money(r.amount)}</b>${r.work_note ? `<br><small>Tech Note: ${esc(r.work_note)}</small>` : ''}</div>
+          
+          <div class="payment-methods-box">
+            <h4>💳 Payment Mode: Cash on Delivery or Mobile Wallet</h4>
+            <p>You can pay physical cash directly to the technician, or send to HomeServe Technologies:</p>
+            <div class="payment-wallets-row">
+              <div class="wallet-method-pill"><b>📱 EasyPaisa Account</b>0300 111 0001<br><small>Title: HomeServe Tech</small></div>
+              <div class="wallet-method-pill"><b>📱 JazzCash Account</b>0300 111 0001<br><small>Title: HomeServe Tech</small></div>
+              <div class="wallet-method-pill"><b>⚡ Raast ID (Zero Fee)</b>03001110001<br><small>Instant interbank</small></div>
+            </div>
+          </div>
+
+          <p>Please rate your technician and provide written feedback before confirming release:</p>
+          <div class="row">
+            <div>
+              <label for="rate"><b>⭐ Overall Service Rating</b></label>
+              <select id="rate">
+                <option value="5">★★★★★ 5 - Exceptional service</option>
+                <option value="4">★★★★☆ 4 - Good, satisfied</option>
+                <option value="3">★★★☆☆ 3 - Average service</option>
+                <option value="2">★★☆☆☆ 2 - Below expectations</option>
+                <option value="1">★☆☆☆☆ 1 - Poor experience</option>
+              </select>
+            </div>
+            <div>
+              <label for="reviewText"><b>✍️ Written Feedback / Review (Optional)</b></label>
+              <input id="reviewText" placeholder="e.g. Arrived on time, very polite and cleanly fixed the issue.">
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+            <button onclick="act('confirm')" style="flex:1">Confirm & Activate 7-Day Warranty</button>
+            <button class="red" onclick="dispute()">Report an issue (Dispute)</button>
+          </div>
+        </div>`;
     } else if (['new', 'unassigned', 'assigned'].includes(r.status)) {
       h += `<button class="red small" onclick="act('cancel')">Cancel request</button>`;
     } else if (r.status === 'confirmed') {
-      h += '<div class="msg ok">Done. Payment released to technician. Thank you for choosing HomeServe!</div>';
+      const extraTotal = (r.extra_charges || []).filter(c => c.status === 'approved').reduce((sum, c) => sum + c.amount, 0);
+      const invoiceNo = `HS-${r.id}-${token.slice(0, 4).toUpperCase()}`;
+      const confirmedDate = r.confirmed_at ? r.confirmed_at.replace('T', ' ') : 'Today';
+
+      h += `
+        <div class="invoice-card" id="digitalInvoice">
+          <div class="invoice-header">
+            <div class="invoice-title-block">
+              <span class="invoice-badge">PAID & VERIFIED</span>
+              <h3>HomeServe Official Digital Receipt</h3>
+              <small>Invoice Reference: <b>${invoiceNo}</b> · Islamabad & Zone 5 Pilot</small>
+            </div>
+            <div style="text-align:right">
+              <b>HomeServe Technologies (Pvt) Ltd</b><br>
+              <small>Hub: Jinnah Garden, Islamabad<br>Helpline: 0300 111 0001</small>
+            </div>
+          </div>
+
+          <div class="invoice-meta-grid">
+            <div>Customer Name:<b>${esc(r.customer_name || 'Valued Customer')}</b></div>
+            <div>Contact Phone:<b>${esc(r.customer_phone || '')}</b></div>
+            <div>Service Area:<b>${esc(r.area || 'Islamabad')}</b></div>
+            <div>Confirmed At:<b>${confirmedDate}</b></div>
+            <div>Assigned Pro:<b>${esc(r.tech_name || 'HomeServe Pro')} (Verified Pro)</b></div>
+            <div>Payment Method:<b>Cash on Delivery (COD) / Direct</b></div>
+          </div>
+
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th>Service Description</th>
+                <th>Category</th>
+                <th style="text-align:right">Amount (PKR)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>${esc(r.category)} Standard Job</b><br><small>${esc(r.description)}</small></td>
+                <td>${esc(r.category)}</td>
+                <td style="text-align:right">${r.quoted_price ? money(r.quoted_price) : money(r.amount - extraTotal)}</td>
+              </tr>
+              ${r.visit_fee ? `
+              <tr>
+                <td>Home Service Callout & Diagnostic Visit Fee</td>
+                <td>Visit Fee</td>
+                <td style="text-align:right">${money(r.visit_fee)}</td>
+              </tr>` : ''}
+              ${extraTotal > 0 ? `
+              <tr>
+                <td>Customer-Approved Extra Material / Additional Labour</td>
+                <td>Parts & Labour</td>
+                <td style="text-align:right">${money(extraTotal)}</td>
+              </tr>` : ''}
+              <tr class="total-row">
+                <td colspan="2"><b>Total Amount Paid</b></td>
+                <td style="text-align:right"><b>${money(r.amount)}</b></td>
+              </tr>
+            </tbody>
+          </table>
+
+          ${r.customer_review ? `
+            <div style="background:#f9fbf9;border:1px solid #d8ebd9;padding:12px 16px;border-radius:10px;margin-bottom:18px">
+              <b>⭐ Verified Customer Review:</b>
+              <p style="margin:4px 0 0;font-style:italic">"${esc(r.customer_review)}"</p>
+            </div>
+          ` : ''}
+
+          <!-- 7-Day Protection Warranty Certificate -->
+          <div class="warranty-certificate">
+            <div class="warranty-certificate-header">
+              <div class="warranty-seal">🛡️</div>
+              <div>
+                <h4>HomeServe 7-Day Quality Protection Guarantee</h4>
+                <p>All parts & workmanship performed on this job are 100% guaranteed. If any leak, spark, or defect persists within 7 days, our verified technician will revisit and resolve it completely free of charge.</p>
+                <div style="margin-top:6px;font-size:12px;opacity:.95">
+                  Warranty Active Until: <b>${esc(r.warranty_until || '7 Days')}</b>
+                </div>
+              </div>
+            </div>
+
+            ${r.warranty_claimed_at ? `
+              <div class="warranty-claimed-banner">
+                ⚠️ <b>Free Warranty Revisit Claimed on ${esc(r.warranty_claimed_at.replace('T', ' '))}.</b><br>
+                Our supervisor will contact you within 2 hours to dispatch the follow-up inspection.
+              </div>
+            ` : `
+              <button type="button" class="warranty-claim-btn" onclick="claimWarranty()">
+                🛡️ Claim Free Warranty Revisit
+              </button>
+            `}
+          </div>
+
+          <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap" class="pro-actions">
+            <button type="button" class="alt small" onclick="window.print()">🖨️ Print / Save PDF Receipt</button>
+            <a class="pro-action-btn btn-wa" href="https://wa.me/?text=${encodeURIComponent('HomeServe Paid Receipt #' + invoiceNo + ' - Rs. ' + r.amount + ' for ' + r.category + ' in ' + (r.area || 'Islamabad') + '. 7-Day Protection active until ' + (r.warranty_until || ''))}" target="_blank" rel="noopener">
+              💬 Share Receipt on WhatsApp
+            </a>
+          </div>
+        </div>`;
     } else if (r.status === 'disputed') {
       h += '<div class="msg err">Your dispute is registered with HomeServe operations. Settlement is halted and an agent will call you.</div>';
     }
@@ -1058,6 +1187,7 @@ async function load() {
       quote: [r.quoted_price, r.visit_fee], charges: r.extra_charges,
       photos: r.photos, arrival: [r.arrival_checked_in_at, r.arrival_latitude, r.arrival_longitude, r.arrival_accuracy],
       location: r.technician_location, events: r.events,
+      warranty: [r.warranty_until, r.warranty_claimed_at, r.customer_review],
     });
     if (state !== renderedTrackState) {
       $('trackView').innerHTML = h;
@@ -1071,10 +1201,36 @@ async function load() {
 
 async function act(what) {
   try {
-    const body = what === 'confirm' ? { rating: parseInt($('rate').value) } : undefined;
+    let body = undefined;
+    if (what === 'confirm') {
+      const rateEl = $('rate');
+      const reviewEl = $('reviewText');
+      body = {
+        rating: rateEl ? parseInt(rateEl.value) : 5,
+        review_text: reviewEl ? reviewEl.value.trim() : null,
+      };
+    }
     await api(`/api/track/${token}/${what}`, { method: 'POST', body });
     load();
   } catch (e) { alert(e.message); }
+}
+
+async function claimWarranty() {
+  const note = prompt('Please describe the persistent issue for your 100% free warranty revisit:');
+  if (!note || note.trim().length < 5) {
+    alert('Please enter a description of at least 5 characters.');
+    return;
+  }
+  try {
+    const res = await api(`/api/track/${token}/claim-warranty`, {
+      method: 'POST',
+      body: { issue_note: note.trim() },
+    });
+    alert(res.message || 'Warranty claim recorded successfully.');
+    load();
+  } catch (e) {
+    alert(e.message);
+  }
 }
 
 async function reviewExtra(id, decision) {

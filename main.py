@@ -50,6 +50,7 @@ OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
 COMMISSION_PCT = float(os.getenv("COMMISSION_PCT", "10"))
 ASSIGN_TIMEOUT_MIN = int(os.getenv("ASSIGN_TIMEOUT_MIN", "10"))
+ASSIGN_TIMEOUT_EMERGENCY_MIN = int(os.getenv("ASSIGN_TIMEOUT_EMERGENCY_MIN", "3"))
 AUTO_CONFIRM_HOURS = 24
 CHECK_IN_MAX_ACCURACY_METERS = 150
 TERMS_VERSION = "phase1-draft-v1"
@@ -313,6 +314,9 @@ def init_db():
             ("arrival_accuracy", "REAL"),
             ("latitude", "REAL"),
             ("longitude", "REAL"),
+            ("customer_review", "TEXT"),
+            ("warranty_until", "TEXT"),
+            ("warranty_claimed_at", "TEXT"),
         ):
             if column not in request_columns:
                 con.execute(f"ALTER TABLE requests ADD COLUMN {column} {declaration}")
@@ -549,7 +553,8 @@ def retry_unassigned(con):
 
 
 def sweep(con):
-    cutoff = (datetime.now() - timedelta(minutes=ASSIGN_TIMEOUT_MIN)).isoformat(timespec="seconds")
+    emergency_cutoff = (datetime.now() - timedelta(minutes=ASSIGN_TIMEOUT_EMERGENCY_MIN)).isoformat(timespec="seconds")
+    normal_cutoff = (datetime.now() - timedelta(minutes=ASSIGN_TIMEOUT_MIN)).isoformat(timespec="seconds")
     location_cutoff = (datetime.now() - timedelta(seconds=120)).isoformat(timespec="seconds")
     con.execute(
         """DELETE FROM technician_locations
@@ -562,7 +567,15 @@ def sweep(con):
               )""",
         (location_cutoff,),
     )
-    stale = con.execute("SELECT * FROM requests WHERE status='assigned' AND assigned_at < ?", (cutoff,)).fetchall()
+    stale = con.execute(
+        """SELECT * FROM requests
+           WHERE status='assigned'
+             AND (
+               (urgency='emergency' AND assigned_at < ?)
+               OR (urgency!='emergency' AND assigned_at < ?)
+             )""",
+        (emergency_cutoff, normal_cutoff),
+    ).fetchall()
     for r in stale:
         con.execute("INSERT INTO declines VALUES(?,?,?)", (r["id"], r["technician_id"], now()))
         log(con, r["id"], "Technician did not respond in time. Reassigning.")
@@ -603,12 +616,16 @@ async def sweeper():
 
 
 # ---------------------------------------------------------------- payments
-def release_payment(con, rid, rating=None, confirmation_source="customer"):
+def release_payment(con, rid, rating=None, confirmation_source="customer", review_text=None):
     pay = con.execute("SELECT * FROM payments WHERE request_id=?", (rid,)).fetchone()
     if not pay or pay["status"] not in ("awaiting_confirmation", "disputed"):
         raise HTTPException(400, "Payment cannot be released in its current state")
+    warranty_date = (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d")
     con.execute("UPDATE payments SET status='released', released_at=? WHERE id=?", (now(), pay["id"]))
-    con.execute("UPDATE requests SET status='confirmed', confirmed_at=? WHERE id=?", (now(), rid))
+    con.execute(
+        "UPDATE requests SET status='confirmed', confirmed_at=?, warranty_until=?, customer_review=? WHERE id=?",
+        (now(), warranty_date, review_text or "", rid),
+    )
     con.execute("DELETE FROM technician_locations WHERE request_id=?", (rid,))
     t = con.execute("SELECT * FROM technicians WHERE id=?", (pay["technician_id"],)).fetchone()
     new_rating, cnt = t["rating"], t["rating_count"]
@@ -631,9 +648,9 @@ def release_payment(con, rid, rating=None, confirmation_source="customer"):
         (pay["payout"], new_rating, cnt, t["id"]),
     )
     if confirmation_source == "customer":
-        message = f"Customer confirmed. Rs {pay['payout']:.0f} released to technician."
+        message = f"Customer confirmed with {rating or 5}-star rating. Rs {pay['payout']:.0f} released. 7-day warranty active until {warranty_date}."
     else:
-        message = f"Automatically confirmed ({confirmation_source}). Rs {pay['payout']:.0f} released to technician."
+        message = f"Automatically confirmed ({confirmation_source}). Rs {pay['payout']:.0f} released. 7-day warranty active until {warranty_date}."
     log(con, rid, message)
     retry_unassigned(con)
 
@@ -915,6 +932,16 @@ class DoneIn(BaseModel):
 
 class ConfirmIn(BaseModel):
     rating: int = 5
+    review_text: Optional[str] = None
+
+
+class WarrantyClaimIn(BaseModel):
+    issue_note: str = Field(..., min_length=5, max_length=500)
+
+
+class DepositIn(BaseModel):
+    amount: float = Field(..., gt=0)
+    note: str = Field(default="Wallet top-up / EasyPaisa deposit", max_length=200)
 
 
 class ReasonIn(BaseModel):
@@ -1387,8 +1414,31 @@ def customer_confirm(token: str, body: ConfirmIn):
         ).fetchone()
         if pending:
             raise HTTPException(400, "Review or reject the pending extra-work charge before confirming")
-        release_payment(con, r["id"], max(1, min(5, body.rating)))
+        release_payment(con, r["id"], max(1, min(5, body.rating)), review_text=body.review_text)
     return {"ok": True}
+
+
+@app.post("/api/track/{token}/claim-warranty")
+def customer_claim_warranty(token: str, body: WarrantyClaimIn):
+    with db() as con:
+        r = req_by_token(con, token)
+        if r["status"] != "confirmed":
+            raise HTTPException(400, "Only confirmed completed jobs are covered by warranty")
+        if not r["warranty_until"]:
+            raise HTTPException(400, "No warranty period found for this job")
+        today = datetime.now().strftime("%Y-%m-%d")
+        if today > r["warranty_until"]:
+            raise HTTPException(400, f"The 7-day warranty expired on {r['warranty_until']}")
+        if r["warranty_claimed_at"]:
+            raise HTTPException(400, "Warranty revisit claim has already been submitted for this job")
+        claim_time = now()
+        con.execute("UPDATE requests SET warranty_claimed_at=? WHERE id=?", (claim_time, r["id"]))
+        log(con, r["id"], f"Customer filed a 7-Day Warranty Revisit claim: {body.issue_note.strip()}")
+    return {
+        "ok": True,
+        "message": "Warranty revisit claim recorded. Our supervisor will contact you within 2 hours.",
+        "claimed_at": claim_time,
+    }
 
 
 @app.post("/api/track/{token}/extra-charges/{charge_id}")
@@ -1981,6 +2031,25 @@ def admin_update_tech(tid: int, body: TechUpdateIn, x_admin_key: str = Header(No
         except sqlite3.IntegrityError:
             raise HTTPException(400, "Phone number already registered")
     return {"ok": True}
+
+
+@app.post("/api/admin/technicians/{tid}/deposit")
+def admin_tech_deposit(tid: int, body: DepositIn, x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    with db() as con:
+        tech = con.execute("SELECT * FROM technicians WHERE id=?", (tid,)).fetchone()
+        if not tech:
+            raise HTTPException(404, "Technician not found")
+        deposit_paisa = int(round(body.amount * 100))
+        con.execute(
+            """INSERT INTO commission_ledger(request_id, technician_id, gross_amount, commission_amount,
+               net_payout, commission_pct, status, note, created_at)
+               VALUES(?,?,?,?,?,?,?,?,?)""",
+            (0, tid, deposit_paisa, 0, deposit_paisa, 0, "deposit", body.note.strip(), now()),
+        )
+        con.execute("UPDATE technicians SET wallet=wallet+? WHERE id=?", (body.amount, tid))
+        updated_wallet = con.execute("SELECT wallet FROM technicians WHERE id=?", (tid,)).fetchone()[0]
+    return {"ok": True, "technician_id": tid, "amount": body.amount, "new_wallet": updated_wallet}
 
 
 @app.post("/api/admin/requests/{rid}/assign")

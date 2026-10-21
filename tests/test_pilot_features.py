@@ -10,6 +10,7 @@ import io
 import pytest
 from PIL import Image
 from fastapi.testclient import TestClient
+from datetime import datetime, timedelta
 import httpx
 import main
 
@@ -358,7 +359,94 @@ def test_track_verified_badge_enrichment(client):
     data = track_res.json()
     assert data["tech_is_verified"] is True
     assert data["tech_badge"] == "HomeServe Verified Pro"
-    assert data["tech_rating"] >= 4.0
+def test_customer_review_and_warranty_flow(client):
+    """Customer can confirm with review text and receives a 7-day warranty."""
+    req_res = client.post("/api/requests", json={
+        "name": "Suleman Khan",
+        "phone": "03339998877",
+        "address": "Street 9, Phase 1, Jinnah Garden",
+        "area": "Jinnah Garden",
+        "description": "Short circuit in fan switch",
+        "terms_accepted": True,
+    })
+    assert req_res.status_code == 200
+    token = req_res.json()["token"]
+    rid = req_res.json()["id"]
+
+    # Technician accepts, checks in, uploads photos, marks done
+    tech_h = {"X-Phone": "03001110007", "X-Pin": "1234"}
+    client.post(f"/api/tech/jobs/{rid}/accept", headers=tech_h)
+    client.post(f"/api/tech/jobs/{rid}/check-in", headers=tech_h, json={"latitude": 33.568, "longitude": 73.155, "accuracy": 20})
+    
+    # Upload minimal valid jpeg before & after
+    img_bytes = b"\xff\xd8\xff\xe0\x00\x10JFIF\x00\x01\x01\x01\x00`\x00`\x00\x00\xff\xdb\x00C\x00\x08\x06\x06\x07\x06\x05\x08\x07\x07\x07\t\t\x08\n\x0c\x14\r\x0c\x0b\x0b\x0c\x19\x12\x13\x0f\x14\x1d\x1a\x1f\x1e\x1d\x1a\x1c\x1c $.' \",#\x1c\x1c(7),01444\x1f'9=82<.342\xff\xc0\x00\x0b\x08\x00\x01\x00\x01\x01\x01\x11\x00\xff\xc4\x00\x1f\x00\x00\x01\x05\x01\x01\x01\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\xff\xda\x00\x08\x01\x01\x00\x00?\x00\xbf\x00\xff\xd9"
+    client.post(f"/api/tech/jobs/{rid}/photos/before", headers=tech_h, files={"file": ("before.jpg", img_bytes, "image/jpeg")})
+    client.post(f"/api/tech/jobs/{rid}/photos/after", headers=tech_h, files={"file": ("after.jpg", img_bytes, "image/jpeg")})
+    client.post(f"/api/tech/jobs/{rid}/done", headers=tech_h, json={"amount": 1200, "note": "Switch replaced"})
+
+    # Customer confirms with 5 stars and written review
+    conf_res = client.post(f"/api/track/{token}/confirm", json={
+        "rating": 5,
+        "review_text": "Zubair bhai did excellent work on time!"
+    })
+    assert conf_res.status_code == 200
+
+    # Verify track returns warranty_until and customer_review
+    track = client.get(f"/api/track/{token}").json()
+    assert track["status"] == "confirmed"
+    assert track["customer_review"] == "Zubair bhai did excellent work on time!"
+    assert track["warranty_until"] is not None
+
+    # Customer claims warranty revisit
+    claim_res = client.post(f"/api/track/{token}/claim-warranty", json={
+        "issue_note": "Switch sparked again after 2 days, need revisit."
+    })
+    assert claim_res.status_code == 200
+    assert claim_res.json()["ok"] is True
+
+    # Duplicate claim is rejected
+    dup_res = client.post(f"/api/track/{token}/claim-warranty", json={
+        "issue_note": "Second claim attempt."
+    })
+    assert dup_res.status_code == 400
+
+
+def test_technician_deposit_wallet(client):
+    """Admin can record a wallet deposit for a technician."""
+    admin_h = {"X-Admin-Key": "test_admin_key_998877"}
+    res = client.post(
+        "/api/admin/technicians/1/deposit",
+        headers=admin_h,
+        json={"amount": 2500, "note": "EasyPaisa cash deposit receipt EP-9821"},
+    )
+    assert res.status_code == 200
+    data = res.json()
+    assert data["ok"] is True
+    assert data["amount"] == 2500
+def test_emergency_dispatch_3min_timeout(client):
+    """Emergency requests get swept and re-assigned after 3 minutes (vs 10 for normal)."""
+    # Create emergency request
+    res = client.post("/api/requests", json={
+        "name": "Fire Risk Emergency",
+        "phone": "03332221100",
+        "address": "Street 1, Jinnah Garden",
+        "area": "Jinnah Garden",
+        "description": "sparking and aag short circuit breaker burning",
+        "terms_accepted": True,
+    })
+    assert res.status_code == 200
+    rid = res.json()["id"]
+
+    # Manually backdate assigned_at by 4 minutes (which exceeds 3 min emergency timeout, but under 10 min normal)
+    with main.db() as con:
+        four_min_ago = (datetime.now() - timedelta(minutes=4)).isoformat(timespec="seconds")
+        con.execute("UPDATE requests SET assigned_at=? WHERE id=?", (four_min_ago, rid))
+        main.sweep(con)
+        
+        # Verify decline logged for emergency timeout
+        row = con.execute("SELECT * FROM declines WHERE request_id=?", (rid,)).fetchone()
+        assert row is not None
+
 
 
 

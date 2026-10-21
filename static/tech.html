@@ -65,6 +65,16 @@
   </div>
 
   <div id="appView" class="hide">
+    <div id="ringtoneAlertBanner" class="ringtone-banner hide">
+      <div class="ringtone-content">
+        <span class="pulsing-bell">🔔⚡</span>
+        <div class="ringtone-text">
+          <b id="ringtoneTitle">نیا کام ملا ہے! فوری چیک کریں</b>
+          <p id="ringtoneSub">گاہک انتظار میں ہے۔ کام قبول کریں تاکہ پورا پتہ اور کال بٹن ظاہر ہو۔</p>
+        </div>
+        <button type="button" class="ringtone-stop-btn" onclick="stopRingtone()">آواز بند کریں 🔇</button>
+      </div>
+    </div>
     <div class="card" id="profile"></div>
     <div class="card"><h2 id="actHeading">Active jobs</h2><p id="actSub">Requests that need your attention.</p><div id="active"></div></div>
     <div class="card"><h2 id="histHeading">Job history</h2><p id="histSub">Your completed and past requests.</p><div id="history"></div></div>
@@ -81,6 +91,79 @@ let locationWatchId = null;
 let trackingJobId = null;
 let locationUpdateInFlight = false;
 let lastLocationSentAt = 0;
+
+let audioCtx = null;
+let ringtoneInterval = null;
+let isRinging = false;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) audioCtx = new AudioContextClass();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function playBuzzerNote(freq, type, duration, startTime) {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.setValueAtTime(freq, startTime || ctx.currentTime);
+    gain.gain.setValueAtTime(0.28, startTime || ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, (startTime || ctx.currentTime) + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startTime || ctx.currentTime);
+    osc.stop((startTime || ctx.currentTime) + duration);
+  } catch (e) {}
+}
+
+function playAlertChime() {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    playBuzzerNote(659.25, 'triangle', 0.16, now);
+    playBuzzerNote(830.61, 'triangle', 0.16, now + 0.13);
+    playBuzzerNote(987.77, 'sine', 0.22, now + 0.26);
+    playBuzzerNote(1318.51, 'sine', 0.42, now + 0.40);
+    if (navigator.vibrate) {
+      navigator.vibrate([250, 120, 250, 120, 450]);
+    }
+  } catch (e) {}
+}
+
+function startRingtone() {
+  if (isRinging) return;
+  isRinging = true;
+  getAudioContext();
+  playAlertChime();
+  ringtoneInterval = setInterval(playAlertChime, 3200);
+  const banner = $('ringtoneAlertBanner');
+  if (banner) banner.classList.remove('hide');
+}
+
+function stopRingtone() {
+  isRinging = false;
+  if (ringtoneInterval) {
+    clearInterval(ringtoneInterval);
+    ringtoneInterval = null;
+  }
+  const banner = $('ringtoneAlertBanner');
+  if (banner) banner.classList.add('hide');
+}
+
+function testChime() {
+  getAudioContext();
+  playAlertChime();
+  alert(techLang === 'ur' ? '🔔 گھنٹی ٹیسٹ کامیاب! نیا کام موصول ہونے پر یہ آواز اور وائبریشن خودکار الرٹ کرے گی۔' : '🔔 Chime test successful! This tone and vibration will alert you automatically when a new job is dispatched.');
+}
 
 let techLang = localStorage.getItem('hs_tech_lang') || 'ur';
 
@@ -165,6 +248,7 @@ function toggleTechLang() {
 }
 
 async function login() {
+  getAudioContext();
   auth = { phone: $('phone').value, pin: $('pin').value };
   try {
     await api('/api/tech/me', {}, H());
@@ -328,15 +412,31 @@ async function load() {
     const d = await api('/api/tech/me', {}, H());
     const m = d.me;
     const isUr = techLang === 'ur';
+
+    const walletCard = m.wallet < 0
+      ? `<div class="wallet-warning">⚠️ <b>${isUr ? 'کمیشن واجب الادا ہے:' : 'Platform commission due:'} ${money(Math.abs(m.wallet))}</b><br><small>${isUr ? 'ایزی پیسہ / جاز کیش (0300 111 0001) کے ذریعے ایڈمن کو جمع کروائیں۔' : 'Please deposit via EasyPaisa or JazzCash (0300 111 0001) to keep priority dispatch.'}</small></div>`
+      : `<div class="wallet-positive">💰 <b>${isUr ? 'آپ کی کمائی (بٹوَہ):' : 'Available balance:'} ${money(m.wallet)}</b></div>`;
+
     $('profile').innerHTML = `<h2>${esc(m.name)}</h2>
-      <p>${CATEGORY_URDU[m.category] || esc(m.category)} · 📍 ${esc(m.area)} · ⭐ ${m.rating} · ${m.jobs_done} ${isUr ? 'مکمل کام' : 'jobs done'}<br>
-      ${isUr ? UR_DICT.wallet : 'Wallet (payout due to you):'} <b>${money(m.wallet)}</b></p>
-      <label><input type="checkbox" class="w-auto" ${m.available ? 'checked' : ''} onchange="setAvail(this.checked)">
-      ${isUr ? UR_DICT.available : 'I am available for new jobs'}</label>
-      <button class="alt small" onclick="logout()">${isUr ? UR_DICT.logout : 'Logout'}</button>`;
+      <p>${CATEGORY_URDU[m.category] || esc(m.category)} · 📍 ${esc(m.area)} · ⭐ ${m.rating} · ${m.jobs_done} ${isUr ? 'مکمل کام' : 'jobs done'}</p>
+      ${walletCard}
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <label style="margin:0"><input type="checkbox" class="w-auto" ${m.available ? 'checked' : ''} onchange="setAvail(this.checked)">
+        ${isUr ? UR_DICT.available : 'I am available for new jobs'}</label>
+        <button type="button" class="alt small" onclick="testChime()">🔔 ${isUr ? 'گھنٹی ٹیسٹ کریں' : 'Test Ringtone'}</button>
+        <button class="alt small" onclick="logout()">${isUr ? UR_DICT.logout : 'Logout'}</button>
+      </div>`;
     const open = ['assigned', 'accepted'];
     const act = d.jobs.filter(j => open.includes(j.status));
     const hist = d.jobs.filter(j => !open.includes(j.status));
+
+    // Audio chime dispatcher: ring if any job is newly assigned
+    if (act.some(j => j.status === 'assigned')) {
+      startRingtone();
+    } else {
+      stopRingtone();
+    }
+
     const sharedJob = act.find(j => j.status === 'accepted' && j.location_shared);
     if (sharedJob && locationWatchId === null) startLocationSharing(sharedJob.id);
     else if (!sharedJob && locationWatchId !== null) stopLocationWatch();
@@ -414,11 +514,6 @@ function jobCard(j) {
   if (j.status === 'work_done') h += `<br>${isUr ? `گاہک کی طرف سے ${money(j.amount)} کی تصدیق کا انتظار ہے۔` : `Waiting for customer to confirm ${money(j.amount)}.`}`;
   if (j.status === 'confirmed') h += `<br>${isUr ? `✅ گاہک نے تصدیق کر دی ہے۔ ${money(j.amount)} وصول ہو گئے۔` : `Confirmed. ${money(j.amount)} charged.`}`;
   if (j.status === 'disputed') h += `<br>${isUr ? '⚠️ گاہک نے مسئلہ درج کیا ہے۔ ایڈمن آپ سے رابطہ کرے گا۔' : 'Customer reported a problem. Admin will contact you.'}`;
-  return h + '</div>';
-}
-  if (j.status === 'work_done') h += `<br>Waiting for customer to confirm ${money(j.amount)}.`;
-  if (j.status === 'confirmed') h += `<br>Confirmed. ${money(j.amount)} charged.`;
-  if (j.status === 'disputed') h += '<br>Customer reported a problem. Admin will contact you.';
   return h + '</div>';
 }
 
@@ -524,6 +619,7 @@ async function setAvail(v) {
   load();
 }
 async function jobAct(id, what) {
+  stopRingtone();
   try { await api(`/api/tech/jobs/${id}/${what}`, { method: 'POST' }, H()); load(); }
   catch (e) { alert(e.message); }
 }

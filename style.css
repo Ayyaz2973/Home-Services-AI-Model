@@ -375,3 +375,59 @@ body.lang-ur .job{text-align:right;border-left:0;border-right:4px solid var(--br
   .tabs button{flex:1;padding:9px}
   .form-actions button{width:100%;margin-right:0}
 }
+
+/* Technician Ringtone & Job Dispatch Alert */
+.ringtone-banner{background:linear-gradient(135deg,#e63946,#c1121f);color:#fff;border-radius:14px;padding:16px 20px;margin-bottom:20px;box-shadow:0 12px 28px rgba(230,57,70,.35);animation:pulseAlert 1.6s infinite ease-in-out}
+@keyframes pulseAlert{0%,100%{transform:scale(1);box-shadow:0 10px 25px rgba(230,57,70,.35)}50%{transform:scale(1.015);box-shadow:0 14px 35px rgba(230,57,70,.55)}}
+.ringtone-content{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pulsing-bell{font-size:32px;animation:swingBell 0.8s infinite ease-in-out;transform-origin:top center;display:inline-block}
+@keyframes swingBell{0%,100%{transform:rotate(0)}25%{transform:rotate(14deg)}75%{transform:rotate(-14deg)}}
+.ringtone-text b{display:block;font-size:17px;font-weight:800;letter-spacing:-.2px}
+.ringtone-text p{margin:4px 0 0;font-size:13px;opacity:.92}
+.ringtone-stop-btn{background:#fff;color:#c1121f;border:0;padding:10px 18px;border-radius:999px;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:all .18s ease}
+.ringtone-stop-btn:hover{background:#ffe5e7;transform:translateY(-1px)}
+
+/* Wallet Alert Cards */
+.wallet-positive{background:var(--brand-soft);border:1px solid #bce1d7;color:var(--brand-dark);padding:10px 14px;border-radius:10px;margin-top:10px;font-size:13px}
+.wallet-warning{background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:12px 14px;border-radius:10px;margin-top:10px;font-size:13px;line-height:1.5}
+
+/* Digital Invoice & 7-Day Protection Warranty Card */
+.invoice-card{background:#fff;border:1px solid var(--border-subtle);border-radius:18px;padding:26px;margin:24px 0;box-shadow:0 12px 36px rgba(17,32,27,.07);position:relative;overflow:hidden}
+.invoice-header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px dashed #e1ece7;padding-bottom:16px;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.invoice-title-block h3{margin:0 0 4px;font-size:20px;font-weight:850;color:var(--brand-dark)}
+.invoice-badge{background:var(--brand);color:#fff;font-size:11px;font-weight:800;padding:4px 10px;border-radius:6px;display:inline-block}
+.invoice-meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;background:#f8fbf9;border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:12px;color:#4f645d}
+.invoice-meta-grid b{color:var(--ink);display:block;font-size:13px;margin-top:2px}
+.invoice-table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:13px}
+.invoice-table th{background:#eef6f2;color:var(--brand-dark);text-align:left;padding:10px 14px;font-weight:750;border-radius:6px}
+body.lang-ur .invoice-table th{text-align:right}
+.invoice-table td{padding:12px 14px;border-bottom:1px solid #edf4f0;color:var(--ink)}
+.invoice-table tr.total-row td{font-size:16px;font-weight:850;color:var(--brand-dark);border-bottom:0;border-top:2px solid var(--brand-dark);padding-top:14px}
+
+/* Warranty Certificate Ribbon */
+.warranty-certificate{background:linear-gradient(135deg,#0e2f23,#1b4332);color:#fff;border-radius:14px;padding:20px 24px;margin:20px 0;position:relative;box-shadow:0 10px 24px rgba(27,67,50,.25);border:1px solid #2d6a4f}
+.warranty-certificate-header{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.warranty-seal{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#d4af37,#f9e076);color:#3a2e05;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;box-shadow:0 4px 14px rgba(212,175,55,.4);flex-shrink:0}
+.warranty-certificate h4{margin:0;font-size:17px;font-weight:800;color:#f3fbf6}
+.warranty-certificate p{margin:4px 0 0;font-size:13px;opacity:.92;line-height:1.5}
+.warranty-claim-btn{background:#e63946;color:#fff;border:0;padding:10px 20px;border-radius:999px;font-weight:750;font-size:13px;cursor:pointer;margin-top:14px;transition:all .18s ease;display:inline-flex;align-items:center;gap:6px}
+.warranty-claim-btn:hover{background:#c1121f;transform:translateY(-2px);box-shadow:0 8px 18px rgba(230,57,70,.4)}
+.warranty-claimed-banner{background:rgba(230,57,70,.2);border:1px solid rgba(230,57,70,.4);padding:10px 14px;border-radius:8px;font-size:12px;margin-top:12px;font-weight:700}
+
+/* Digital Payment Instructions Box */
+.payment-methods-box{background:#fdfcf7;border:1px solid #f0e6ce;border-radius:14px;padding:18px 20px;margin:18px 0}
+.payment-methods-box h4{margin:0 0 8px;font-size:15px;color:#6b5314;display:flex;align-items:center;gap:8px}
+.payment-wallets-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px}
+.wallet-method-pill{background:#fff;border:1px solid #e7dcbf;padding:10px 14px;border-radius:10px;font-size:12px}
+.wallet-method-pill b{color:var(--brand-dark);display:block;font-size:13px}
+
+/* Print Friendly Styles */
+@media print{
+  header,.floating-wa-btn,#adminNavLink,.pro-actions,.warranty-claim-btn,.portal-footer,.lang-toggle-btn{display:none!important}
+  body{background:#fff!important;color:#000!important}
+  .invoice-card{border:1px solid #000!important;box-shadow:none!important;margin:0!important;padding:20px!important}
+  .warranty-certificate{background:#f0f7f3!important;color:#000!important;border:1px solid #2d6a4f!important}
+  .warranty-certificate h4{color:#1b4332!important}
+  .warranty-certificate p{color:#333!important}
+}
+
