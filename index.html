@@ -11,9 +11,23 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
+<div class="top-announcement-bar">
+  <div class="top-announcement-content">
+    <span class="top-location-pin">📍 Rawalpindi • Islamabad • Jinnah Garden &amp; Zone 5 Belt · 15–25 min Rapid Dispatch</span>
+    <div class="top-quick-actions">
+      <a href="tel:+923001110001" class="top-contact-link">📞 Call 0300 111 0001</a>
+      <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20home%20service." target="_blank" rel="noopener noreferrer" class="top-contact-link top-wa">💬 WhatsApp Support</a>
+      <span class="top-badge-247">⚡ 24/7 Service</span>
+    </div>
+  </div>
+</div>
 <header>
   <b>⌂ HomeServe</b>
-  <span><a href="/">Home</a><a href="#services">Services</a><a href="/terms">Terms</a><a href="/tech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a></span>
+  <div class="header-actions">
+    <a href="tel:+923001110001" class="header-call-btn">📞 Call Now</a>
+    <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20service." target="_blank" rel="noopener noreferrer" class="header-wa-btn">💬 WhatsApp</a>
+    <a href="/">Home</a><a href="#services">Services</a><a href="#pricingSection">Pricing</a><a href="/terms">Terms</a><a href="/tech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
+  </div>
 </header>
 <main>
   <section id="hero" class="hero">
@@ -110,7 +124,7 @@
     </div>
   </section>
 
-  <!-- Pillar 4 (HomeAdvisor): Seasonal Climate Maintenance Planner -->
+  <!-- Seasonal Climate Maintenance Planner -->
   <section id="seasonalSection" class="card seasonal-section">
     <div class="seasonal-banner">
       <span>🍂 Active Season: October &amp; November · Pre-Winter Climate Prep</span>
@@ -175,14 +189,14 @@
     <div class="map-note">💡 Click anywhere on the map or drag the pin to set your exact house/gate location. Area and coordinates will auto-fill your booking below.</div>
   </section>
 
-  <!-- Pillar 2 (Angi): Transparent Upfront Pricing Rate Cards -->
+  <!-- Transparent Upfront Pricing Rate Cards -->
   <section id="pricingSection" class="card pricing-section">
     <div class="pricing-header">
       <div class="section-heading">
         <div>
           <span class="verified-pro-badge">
             <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-            Angi-Standard Upfront Rate Cards
+            HomeServe Verified Rate Cards
           </span>
           <h2>Transparent Upfront Pricing (Zero Haggling)</h2>
           <p>Standardized rates across Islamabad &amp; Jinnah Garden belt. No awkward price negotiations.</p>
@@ -279,13 +293,13 @@
     </div>
   </section>
 
-  <!-- Pillar 3 (Houzz): Visual Portfolios & Before/After Proof Gallery -->
+  <!-- Visual Portfolios & Before/After Proof Gallery -->
   <section id="showcaseSection" class="card showcase-section">
     <div class="section-heading">
       <div>
         <span class="verified-pro-badge">
           <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-          Houzz-Standard Visual Proof
+          Verified Visual Proof &amp; Quality Guarantee
         </span>
         <h2>Real Local Work: Before &amp; After Proof</h2>
         <p>Inspect real completed jobs by our verified technicians in Jinnah Garden, Soan Gardens, Naval Anchorage &amp; PWD.</p>
@@ -586,7 +600,7 @@ function stopVoiceRecording() {
   if (status) status.classList.add('hide');
 }
 
-/* ---- Pillar 2: Angi Upfront Pricing Filter & Loader ---- */
+/* ---- Transparent Upfront Pricing Filter & Loader ---- */
 let pricingCatalogData = {};
 let currentPricingCategory = 'Electric Work';
 
@@ -626,9 +640,13 @@ function renderPricingCards(category) {
           <span class="duration-tag">⏱ ${esc(item.duration)}</span>
         </div>
         <h4>${esc(item.item)}</h4>
+        ${item.savings ? `<span class="savings-tag">⚡ ${esc(item.savings)}</span>` : ''}
       </div>
       <div>
-        <div class="pricing-range">${esc(item.price_range)}</div>
+        <div class="pricing-range">
+          ${item.market_price ? `<span class="market-price-strike">${esc(item.market_price)}</span>` : ''}
+          ${esc(item.price_range)}
+        </div>
         <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('${esc(category)}', '${esc(item.item)}')">
           Book This Task →
         </button>
@@ -649,7 +667,7 @@ function bookFromRateCard(category, itemName) {
   }
 }
 
-/* ---- Pillar 4: HomeAdvisor Seasonal Upkeep Planner ---- */
+/* ---- Seasonal Upkeep Planner ---- */
 async function loadSeasonalPackages() {
   try {
     const res = await api('/api/seasonal-packages');
@@ -691,7 +709,7 @@ function bookSeasonalPackage(category, desc) {
   }
 }
 
-/* ---- Pillar 3: Houzz Real Local Work Showcase ---- */
+/* ---- Real Local Work Showcase ---- */
 async function loadWorkShowcase() {
   try {
     const res = await api('/api/work-showcase');
@@ -799,7 +817,7 @@ async function submitReq() {
   }
 }
 
-/* ---- Pillar 1: Thumbtack Unified Project Hub ---- */
+/* ---- Unified Project Hub ---- */
 async function load() {
   try {
     const r = await api('/api/track/' + token);
@@ -888,7 +906,7 @@ async function load() {
 
     const photos = r.photos || [];
     if (photos.length) {
-      h += '<section class="tracking-photos"><h3>Job Photos & Visual Proof (Houzz-standard)</h3><div class="photo-grid">' +
+      h += '<section class="tracking-photos"><h3>Job Photos & Visual Proof (Verified Quality)</h3><div class="photo-grid">' +
         photos.map(photo => `<figure><img src="${esc(photo.url)}" alt="${photo.phase === 'before' ? 'Before' : 'After'} service photo" loading="lazy"><figcaption>${photo.phase === 'before' ? '🔴 Before work' : '🟢 After work'}</figcaption></figure>`).join('') +
         '</div></section>';
     }
@@ -990,5 +1008,9 @@ async function dispute() {
 
 init();
 </script>
+<a href="https://wa.me/923001110001?text=Salam%20HomeServe%20Team%2C%20I%20need%20assistance%20with%20a%20home%20service." class="floating-wa-btn" target="_blank" rel="noopener" aria-label="Chat on WhatsApp with HomeServe support">
+  <svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2z"/></svg>
+  <span>Chat with Us</span>
+</a>
 </body>
 </html>

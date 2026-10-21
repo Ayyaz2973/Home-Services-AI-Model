@@ -328,7 +328,7 @@ def test_seasonal_packages_endpoint(client):
 
 
 def test_work_showcase_endpoint(client):
-    """Verify Houzz-style before/after visual proof showcase endpoint."""
+    """Verify before/after visual proof showcase endpoint."""
     res = client.get("/api/work-showcase")
     assert res.status_code == 200
     showcase = res.json()["showcase"]

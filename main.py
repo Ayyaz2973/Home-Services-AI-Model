@@ -769,36 +769,36 @@ def meta():
 
 PRICING_CATALOG = {
     "Electric Work": [
-        {"item": "Switch / Socket Replacement or Repair", "price_range": "Rs. 400 - 700", "duration": "30 mins", "popular": True},
-        {"item": "Ceiling Fan Installation & Balancing", "price_range": "Rs. 1,000 - 1,500", "duration": "45 mins", "popular": True},
-        {"item": "Distribution Box / Breaker Repair", "price_range": "Rs. 1,500 - 2,500", "duration": "60 mins", "popular": True},
-        {"item": "Complete Inverter / UPS Wiring Check", "price_range": "Rs. 2,500 - 4,500", "duration": "2 hours", "popular": False},
+        {"item": "Switch / Socket Replacement or Repair", "price_range": "Rs. 400 - 700", "market_price": "Rs. 1,000", "savings": "Save Rs. 300+", "duration": "30 mins", "popular": True},
+        {"item": "Ceiling Fan Installation & Balancing", "price_range": "Rs. 1,000 - 1,500", "market_price": "Rs. 2,200", "savings": "Save Rs. 700+", "duration": "45 mins", "popular": True},
+        {"item": "Distribution Box / Breaker Repair", "price_range": "Rs. 1,500 - 2,500", "market_price": "Rs. 3,500", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": True},
+        {"item": "Complete Inverter / UPS Wiring Check", "price_range": "Rs. 2,500 - 4,500", "market_price": "Rs. 5,500", "savings": "Save Rs. 1,000+", "duration": "2 hours", "popular": False},
     ],
     "Plumbing": [
-        {"item": "Tap / Mixer Replacement or Washer Fix", "price_range": "Rs. 600 - 1,000", "duration": "30 mins", "popular": True},
-        {"item": "Muslim Shower / Commode Tank Flush Fix", "price_range": "Rs. 800 - 1,400", "duration": "45 mins", "popular": True},
-        {"item": "Water Tank Cleaning & High Pressure Wash", "price_range": "Rs. 2,500 - 4,500", "duration": "90 mins", "popular": True},
-        {"item": "Water Motor / Booster Pump Installation", "price_range": "Rs. 2,000 - 3,500", "duration": "90 mins", "popular": False},
+        {"item": "Tap / Mixer Replacement or Washer Fix", "price_range": "Rs. 600 - 1,000", "market_price": "Rs. 1,500", "savings": "Save Rs. 500+", "duration": "30 mins", "popular": True},
+        {"item": "Muslim Shower / Commode Tank Flush Fix", "price_range": "Rs. 800 - 1,400", "market_price": "Rs. 2,000", "savings": "Save Rs. 600+", "duration": "45 mins", "popular": True},
+        {"item": "Water Tank Cleaning & High Pressure Wash", "price_range": "Rs. 2,500 - 4,500", "market_price": "Rs. 5,500", "savings": "Save Rs. 1,000+", "duration": "90 mins", "popular": True},
+        {"item": "Water Motor / Booster Pump Installation", "price_range": "Rs. 2,000 - 3,500", "market_price": "Rs. 4,500", "savings": "Save Rs. 1,000+", "duration": "90 mins", "popular": False},
     ],
     "Air Conditioning": [
-        {"item": "Split AC General Filter & Tray Service", "price_range": "Rs. 2,000 - 2,800", "duration": "45 mins", "popular": True},
-        {"item": "Master Deep Chemical Jet Wash (Indoor + Outdoor)", "price_range": "Rs. 3,500 - 4,500", "duration": "75 mins", "popular": True},
-        {"item": "Refrigerant Gas Top-up / Leak Test (R410/R32/R22)", "price_range": "Rs. 4,500 - 7,500", "duration": "60 mins", "popular": True},
-        {"item": "AC Dismounting & Re-installation", "price_range": "Rs. 4,000 - 6,000", "duration": "2 hours", "popular": False},
+        {"item": "Split AC General Filter & Tray Service", "price_range": "Rs. 2,000 - 2,800", "market_price": "Rs. 3,500", "savings": "Save Rs. 700+", "duration": "45 mins", "popular": True},
+        {"item": "Master Deep Chemical Jet Wash (Indoor + Outdoor)", "price_range": "Rs. 3,500 - 4,500", "market_price": "Rs. 6,000", "savings": "Save Rs. 1,500+", "duration": "75 mins", "popular": True},
+        {"item": "Refrigerant Gas Top-up / Leak Test (R410/R32/R22)", "price_range": "Rs. 4,500 - 7,500", "market_price": "Rs. 9,000", "savings": "Save Rs. 1,500+", "duration": "60 mins", "popular": True},
+        {"item": "AC Dismounting & Re-installation", "price_range": "Rs. 4,000 - 6,000", "market_price": "Rs. 7,500", "savings": "Save Rs. 1,500+", "duration": "2 hours", "popular": False},
     ],
     "Geyser Repair": [
-        {"item": "Instant Gas Geyser Burner & Safety Valve Tune-up", "price_range": "Rs. 1,500 - 2,200", "duration": "45 mins", "popular": True},
-        {"item": "Electric Geyser Thermostat & Heating Element Replace", "price_range": "Rs. 1,800 - 3,000", "duration": "60 mins", "popular": True},
-        {"item": "Geyser Descaling & Sediment Tank Flush", "price_range": "Rs. 2,500 - 3,500", "duration": "90 mins", "popular": False},
+        {"item": "Instant Gas Geyser Burner & Safety Valve Tune-up", "price_range": "Rs. 1,500 - 2,200", "market_price": "Rs. 3,000", "savings": "Save Rs. 800+", "duration": "45 mins", "popular": True},
+        {"item": "Electric Geyser Thermostat & Heating Element Replace", "price_range": "Rs. 1,800 - 3,000", "market_price": "Rs. 4,000", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": True},
+        {"item": "Geyser Descaling & Sediment Tank Flush", "price_range": "Rs. 2,500 - 3,500", "market_price": "Rs. 4,500", "savings": "Save Rs. 1,000+", "duration": "90 mins", "popular": False},
     ],
     "Carpentry": [
-        {"item": "Door Lock / Handle Fitting & Alignment", "price_range": "Rs. 800 - 1,500", "duration": "45 mins", "popular": True},
-        {"item": "Kitchen Cabinet Hinge & Drawer Channel Repair", "price_range": "Rs. 1,200 - 2,200", "duration": "60 mins", "popular": True},
-        {"item": "Bed / Wardrobe Assembly & Repair", "price_range": "Rs. 2,000 - 3,500", "duration": "90 mins", "popular": False},
+        {"item": "Door Lock / Handle Fitting & Alignment", "price_range": "Rs. 800 - 1,500", "market_price": "Rs. 2,200", "savings": "Save Rs. 700+", "duration": "45 mins", "popular": True},
+        {"item": "Kitchen Cabinet Hinge & Drawer Channel Repair", "price_range": "Rs. 1,200 - 2,200", "market_price": "Rs. 3,000", "savings": "Save Rs. 800+", "duration": "60 mins", "popular": True},
+        {"item": "Bed / Wardrobe Assembly & Repair", "price_range": "Rs. 2,000 - 3,500", "market_price": "Rs. 4,500", "savings": "Save Rs. 1,000+", "duration": "90 mins", "popular": False},
     ],
     "Home Cleaning": [
-        {"item": "Deep Sofa & Cushion Wash (5 Seater)", "price_range": "Rs. 2,500 - 4,000", "duration": "90 mins", "popular": True},
-        {"item": "Complete Bathroom Deep Disinfection", "price_range": "Rs. 1,800 - 3,000", "duration": "60 mins", "popular": True},
+        {"item": "Deep Sofa & Cushion Wash (5 Seater)", "price_range": "Rs. 2,500 - 4,000", "market_price": "Rs. 5,000", "savings": "Save Rs. 1,000+", "duration": "90 mins", "popular": True},
+        {"item": "Complete Bathroom Deep Disinfection", "price_range": "Rs. 1,800 - 3,000", "market_price": "Rs. 4,000", "savings": "Save Rs. 1,000+", "duration": "60 mins", "popular": True},
     ]
 }
 
