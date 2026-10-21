@@ -177,7 +177,22 @@ input[type=file]{padding:9px;font-size:12px}
 #profile{background:linear-gradient(120deg,#fff,#f2faf7)}
 #profile h2{font-size:26px}
 #profile input[type=checkbox]{accent-color:var(--brand)}
-.empty-state{text-align:center;color:var(--muted);padding:24px}
+.pilot-map-section{margin-bottom:28px}
+.pilot-map-header{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:14px}
+.pilot-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(14,165,233,0.12);color:#0284c7;font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid rgba(14,165,233,0.25);margin-bottom:8px}
+.locate-me-btn{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:8px 14px}
+.pilot-zone-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.zone-chip{background:var(--card,#ffffff);border:1px solid var(--border,#e2e8f0);color:var(--text,#1e293b);border-radius:999px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s ease;display:inline-flex;align-items:center;gap:6px}
+.zone-chip:hover{border-color:#0284c7;background:rgba(2,132,199,0.06)}
+.zone-chip.active{background:#0284c7;color:#fff;border-color:#0284c7;box-shadow:0 2px 8px rgba(2,132,199,0.25)}
+.zone-chip .hub-indicator{background:#f59e0b;color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px;text-transform:uppercase}
+.zone-chip.active .hub-indicator{background:#fff;color:#0284c7}
+.service-map-container{height:360px;width:100%;border-radius:12px;border:1px solid var(--border,#e2e8f0);overflow:hidden;position:relative;z-index:1}
+.map-selected-banner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-top:12px;padding:11px 14px;background:var(--bg-alt,#f8fafc);border:1px solid var(--border,#e2e8f0);border-radius:8px;font-size:13px}
+.coords-tag{font-family:monospace;font-size:11px;color:var(--muted,#64748b);background:rgba(0,0,0,0.05);padding:2px 6px;border-radius:4px}
+.map-note{font-size:11px;color:var(--muted,#64748b);margin-top:8px}
+.request-location-badge{display:inline-block;padding:6px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;font-size:13px;color:#166534;margin:8px 0}
+
 .portal-footer{text-align:center;color:#7d8d88;font-size:11px;padding:24px 12px}
 @media(max-width:760px){
   header{padding:12px 16px;min-height:64px}

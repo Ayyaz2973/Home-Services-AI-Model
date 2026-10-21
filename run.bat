@@ -15,6 +15,9 @@ copy /Y favicon.svg static\favicon.svg >nul
 copy /Y style.css static\style.css >nul
 copy /Y common.js static\common.js >nul
 set ADMIN_KEY=Kayani_73
+rem Free Gemini API key from https://aistudio.google.com/app/apikey
+if "%GEMINI_API_KEY%"=="" set GEMINI_API_KEY=
+set GEMINI_MODEL=gemini-1.5-flash
 set OLLAMA_MODEL=qwen2.5:14b
 set COMMISSION_PCT=10
 set ASSIGN_TIMEOUT_MIN=10

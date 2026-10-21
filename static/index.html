@@ -7,6 +7,8 @@
 <meta name="description" content="Book trusted home services in Islamabad. Tell us what you need and we will connect you with a local technician.">
 <title>HomeServe | Trusted home services in Islamabad</title>
 <link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 </head>
 <body>
 <header>
@@ -109,6 +111,57 @@
     </div>
   </section>
 
+  <section id="pilotMapSection" class="card pilot-map-section">
+    <div class="pilot-map-header">
+      <div>
+        <div class="pilot-badge">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+          Phase 1 Pilot: Jinnah Garden &amp; Zone 5 Belt
+        </div>
+        <h2>Interactive Service Map &amp; Location Picker</h2>
+        <p>Currently serving <b>Jinnah Garden</b>, <b>Naval Anchorage</b>, <b>Soan Gardens</b>, <b>PWD</b>, <b>Korang Town</b>, and <b>Pakistan Town</b>. Tap a town below or click the map to pinpoint your location.</p>
+      </div>
+      <button type="button" class="btn alt locate-me-btn" onclick="locateUserOnMap()">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+        Detect My Location
+      </button>
+    </div>
+
+    <div class="pilot-zone-chips" id="zoneChips">
+      <button type="button" class="zone-chip active" onclick="selectZone('Jinnah Garden')" data-zone="Jinnah Garden">
+        <span>📍 Jinnah Garden</span><span class="hub-indicator">Hub</span>
+      </button>
+      <button type="button" class="zone-chip" onclick="selectZone('Naval Anchorage')" data-zone="Naval Anchorage">
+        <span>📍 Naval Anchorage</span>
+      </button>
+      <button type="button" class="zone-chip" onclick="selectZone('Soan Gardens')" data-zone="Soan Gardens">
+        <span>📍 Soan Gardens</span>
+      </button>
+      <button type="button" class="zone-chip" onclick="selectZone('PWD')" data-zone="PWD">
+        <span>📍 PWD Housing Scheme</span>
+      </button>
+      <button type="button" class="zone-chip" onclick="selectZone('Korang Town')" data-zone="Korang Town">
+        <span>📍 Korang Town</span>
+      </button>
+      <button type="button" class="zone-chip" onclick="selectZone('Pakistan Town')" data-zone="Pakistan Town">
+        <span>📍 Pakistan Town</span>
+      </button>
+    </div>
+
+    <div id="serviceMap" class="service-map-container" role="region" aria-label="Interactive service coverage map"></div>
+
+    <div class="map-selected-banner">
+      <div>
+        <span id="selectedAreaText">📍 Selected Area: <b>Jinnah Garden (Hub)</b></span> ·
+        <span id="pilotStatusText" style="color: #059669; font-weight: 500;">⚡ Active squad on-call (15-25 min dispatch)</span>
+      </div>
+      <div>
+        <span id="selectedCoordsText" class="coords-tag">33.5682° N, 73.1553° E</span>
+      </div>
+    </div>
+    <div class="map-note">💡 Click anywhere on the map or drag the pin to set your exact house/gate location. Area and coordinates will auto-fill your booking below.</div>
+  </section>
+
   <section id="formView" class="card request-card">
     <aside class="request-aside">
       <div class="eyebrow">Get started</div>
@@ -128,12 +181,20 @@
     </div>
     <div class="row">
       <div><label for="area">Area / sector</label><input id="area" list="areas" placeholder="Jinnah Garden" autocomplete="address-level2">
+        <input type="hidden" id="custLat" value="33.5682">
+        <input type="hidden" id="custLng" value="73.1553">
         <datalist id="areas">
-          <option>Jinnah Garden</option><option>FECHS</option><option>PWD</option><option>Naval Anchorage</option>
+          <option>Jinnah Garden</option>
+          <option>Naval Anchorage</option>
+          <option>Soan Gardens</option>
+          <option>PWD</option>
+          <option>Korang Town</option>
+          <option>Pakistan Town</option>
+          <option>FECHS</option>
           <option>F-6</option><option>F-7</option><option>F-8</option><option>F-10</option><option>F-11</option>
           <option>G-9</option><option>G-10</option><option>G-11</option><option>G-13</option>
           <option>I-8</option><option>I-10</option><option>E-11</option>
-          <option>Soan Gardens</option><option>Gulberg Greens</option>
+          <option>Gulberg Greens</option>
           <option>DHA Phase 1</option><option>DHA Phase 2</option><option>Bahria Town</option>
         </datalist>
       </div>
@@ -190,6 +251,142 @@ const token = new URLSearchParams(location.search).get('t');
 const $ = id => document.getElementById(id);
 let renderedTrackState = null;
 
+const PILOT_ZONES = [
+  { name: 'Jinnah Garden', isHub: true, lat: 33.5682, lng: 73.1553, desc: 'Hub & Main Zone (Phase 1 & 2) · 15-25 min dispatch' },
+  { name: 'Naval Anchorage', isHub: false, lat: 33.5425, lng: 73.1670, desc: 'Naval Anchorage · Dedicated Squad' },
+  { name: 'Soan Gardens', isHub: false, lat: 33.5785, lng: 73.1385, desc: 'Soan Gardens · Rapid response' },
+  { name: 'PWD', isHub: false, lat: 33.5850, lng: 73.1350, desc: 'PWD Housing Scheme · Verified electricians & plumbers' },
+  { name: 'Korang Town', isHub: false, lat: 33.5960, lng: 73.1250, desc: 'Korang Town · Local technician coverage' },
+  { name: 'Pakistan Town', isHub: false, lat: 33.5880, lng: 73.1280, desc: 'Pakistan Town (Phase 1 & 2) · On-call pros' },
+];
+
+let leafletMap = null;
+let currentPin = null;
+
+function initMap() {
+  if (typeof L === 'undefined') return;
+  const mapEl = $('serviceMap');
+  if (!mapEl || leafletMap) return;
+
+  try {
+    leafletMap = L.map('serviceMap', {
+      center: [33.5682, 73.1553],
+      zoom: 13,
+      scrollWheelZoom: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18,
+    }).addTo(leafletMap);
+
+    PILOT_ZONES.forEach(zone => {
+      L.circle([zone.lat, zone.lng], {
+        color: zone.isHub ? '#0284c7' : '#059669',
+        fillColor: zone.isHub ? '#0284c7' : '#10b981',
+        fillOpacity: zone.isHub ? 0.22 : 0.15,
+        radius: zone.isHub ? 1200 : 900,
+        weight: 2,
+      }).addTo(leafletMap);
+
+      L.marker([zone.lat, zone.lng], { title: zone.name })
+        .addTo(leafletMap)
+        .bindPopup(`<b>${esc(zone.name)} ${zone.isHub ? '(Hub)' : ''}</b><br>${esc(zone.desc)}<br><button class="btn small" style="margin-top:6px;width:100%" onclick="selectZone('${esc(zone.name)}')">Select this area</button>`);
+    });
+
+    currentPin = L.marker([33.5682, 73.1553], { draggable: true }).addTo(leafletMap);
+    currentPin.bindPopup('<b>Your Service Location</b><br>Drag pin or click map to pinpoint').openPopup();
+
+    currentPin.on('dragend', function (e) {
+      const pos = e.target.getLatLng();
+      onLocationPicked(pos.lat, pos.lng);
+    });
+
+    leafletMap.on('click', function (e) {
+      currentPin.setLatLng(e.latlng);
+      onLocationPicked(e.latlng.lat, e.latlng.lng);
+    });
+  } catch (err) {
+    console.warn('Map initialization note:', err);
+  }
+}
+
+function selectZone(zoneName) {
+  const zone = PILOT_ZONES.find(z => z.name.toLowerCase() === zoneName.toLowerCase());
+  if (!zone) return;
+
+  document.querySelectorAll('.zone-chip').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.zone === zone.name);
+  });
+
+  if ($('area')) $('area').value = zone.name;
+  if ($('custLat')) $('custLat').value = zone.lat.toFixed(6);
+  if ($('custLng')) $('custLng').value = zone.lng.toFixed(6);
+
+  if ($('selectedAreaText')) $('selectedAreaText').innerHTML = `📍 Selected Area: <b>${esc(zone.name)}${zone.isHub ? ' (Hub)' : ''}</b>`;
+  if ($('selectedCoordsText')) $('selectedCoordsText').textContent = `${zone.lat.toFixed(4)}° N, ${zone.lng.toFixed(4)}° E`;
+  if ($('pilotStatusText')) $('pilotStatusText').textContent = `⚡ Active squad on-call (${zone.desc})`;
+
+  if (leafletMap && currentPin) {
+    leafletMap.flyTo([zone.lat, zone.lng], 14, { duration: 0.8 });
+    currentPin.setLatLng([zone.lat, zone.lng]);
+    currentPin.bindPopup(`<b>${esc(zone.name)}</b><br>Selected for dispatch`).openPopup();
+  }
+}
+
+function onLocationPicked(lat, lng) {
+  if ($('custLat')) $('custLat').value = lat.toFixed(6);
+  if ($('custLng')) $('custLng').value = lng.toFixed(6);
+  if ($('selectedCoordsText')) $('selectedCoordsText').textContent = `${lat.toFixed(4)}° N, ${lng.toFixed(4)}° E`;
+
+  let nearest = PILOT_ZONES[0];
+  let minDist = Infinity;
+  PILOT_ZONES.forEach(z => {
+    const d = Math.hypot(z.lat - lat, z.lng - lng);
+    if (d < minDist) {
+      minDist = d;
+      nearest = z;
+    }
+  });
+
+  if (minDist <= 0.055) {
+    if ($('area')) $('area').value = nearest.name;
+    document.querySelectorAll('.zone-chip').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.zone === nearest.name);
+    });
+    if ($('selectedAreaText')) $('selectedAreaText').innerHTML = `📍 Pinned near: <b>${esc(nearest.name)}</b>`;
+    if ($('pilotStatusText')) $('pilotStatusText').innerHTML = `<span style="color:#059669">⚡ Inside pilot coverage belt (${esc(nearest.name)})</span>`;
+  } else {
+    if ($('selectedAreaText')) $('selectedAreaText').innerHTML = `📍 Custom Pin Location`;
+    if ($('pilotStatusText')) $('pilotStatusText').innerHTML = `<span style="color:#d97706">⚠️ Outside core pilot belt (technicians will verify route)</span>`;
+  }
+}
+
+function locateUserOnMap() {
+  if (!navigator.geolocation) {
+    flash($('fmsg'), 'Geolocation is not supported by your browser.', false);
+    return;
+  }
+  flash($('fmsg'), 'Detecting your GPS location...', true);
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      if (leafletMap && currentPin) {
+        leafletMap.flyTo([lat, lng], 15);
+        currentPin.setLatLng([lat, lng]);
+      }
+      onLocationPicked(lat, lng);
+      flash($('fmsg'), 'GPS location detected and pinned!', true);
+    },
+    err => {
+      flash($('fmsg'), 'Could not acquire GPS: ' + err.message + '. Defaulted to Jinnah Garden.', false);
+      selectZone('Jinnah Garden');
+    },
+    { timeout: 10000, enableHighAccuracy: true }
+  );
+}
+
 function selectCategory(catName) {
   const catSelect = $('cat');
   if (catSelect) {
@@ -223,10 +420,14 @@ async function init() {
     $('serviceSection').classList.add('hide');
     const trustSec = $('trustSection');
     if (trustSec) trustSec.classList.add('hide');
+    const mapSec = $('pilotMapSection');
+    if (mapSec) mapSec.classList.add('hide');
     $('formView').classList.add('hide');
     $('trackView').classList.remove('hide');
     load();
     setInterval(load, 10000);
+  } else {
+    initMap();
   }
 }
 
@@ -266,6 +467,8 @@ async function submitReq() {
       body: {
         name: $('name').value, phone: $('phone').value, area: $('area').value,
         address: $('address').value, description: $('desc').value,
+        latitude: $('custLat') && $('custLat').value ? parseFloat($('custLat').value) : null,
+        longitude: $('custLng') && $('custLng').value ? parseFloat($('custLng').value) : null,
         category: $('cat').value.startsWith('category:') ? $('cat').value.slice('category:'.length) : null,
         service_id: $('cat').value.startsWith('service:') ? Number($('cat').value.slice('service:'.length)) : null,
         terms_accepted: $('termsAccepted').checked,
@@ -283,6 +486,9 @@ async function load() {
     const r = await api('/api/track/' + token);
     let h = `<h2>Request #${r.id} ${badge(r.status)}</h2>
       <p><b>${esc(r.category)}</b> ${r.urgency !== 'normal' ? badge(r.urgency) : ''}<br>${esc(r.ai_summary || r.description)}</p>`;
+    if (r.latitude && r.longitude) {
+      h += `<div class="request-location-badge">📍 Pinned service location: <b>${esc(r.area || 'Service Area')}</b> (${Number(r.latitude).toFixed(4)}, ${Number(r.longitude).toFixed(4)})</div>`;
+    }
     if (r.tech_name) {
       h += `<p>Technician: <b>${esc(r.tech_name)}</b>` +
         (r.tech_phone ? ` · <a href="tel:${esc(r.tech_phone)}">${esc(r.tech_phone)}</a>` : '') + '</p>';

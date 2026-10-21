@@ -7,6 +7,7 @@ Run:  uvicorn main:app --host 0.0.0.0 --port 8000
 import asyncio
 import hashlib
 import json
+import math
 import os
 import re
 import secrets
@@ -28,6 +29,8 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv("DATABASE_PATH", os.path.join(BASE, "homeserve.db"))
 PRIVATE_STORAGE = Path(os.getenv("PRIVATE_STORAGE_DIR", os.path.join(BASE, "private_uploads"))).resolve()
 ADMIN_KEY = os.getenv("ADMIN_KEY", "Kayani_73")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-1.5-flash").strip()
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
 COMMISSION_PCT = float(os.getenv("COMMISSION_PCT", "10"))
@@ -41,8 +44,83 @@ PHOTO_MAX_BYTES = int(os.getenv("PHOTO_MAX_BYTES", str(6 * 1024 * 1024)))
 IMAGE_MAX_PIXELS = 20_000_000
 IMAGE_MAX_DIMENSION = 2400
 
-# Pilot focus: Jinnah Garden / FECHS Islamabad (area matching is still soft)
+# Pilot focus: Jinnah Garden & surrounding Zone 5 towns
 JINNAH_GARDEN_KEYWORDS = ["jinnah", "jinnah garden", "jinnah gardens", "fechs", "gagri"]
+
+PILOT_AREAS = {
+    "Jinnah Garden": {
+        "lat": 33.5682,
+        "lng": 73.1553,
+        "description": "Hub & Main Pilot Zone (Phase 1, Phase 2, FECHS)",
+        "keywords": ["jinnah", "jinnah garden", "jinnah gardens", "fechs", "gagri"],
+    },
+    "Naval Anchorage": {
+        "lat": 33.5425,
+        "lng": 73.1670,
+        "description": "Naval Anchorage Islamabad",
+        "keywords": ["naval", "navel", "anchorage", "naval anchorage"],
+    },
+    "Soan Gardens": {
+        "lat": 33.5785,
+        "lng": 73.1385,
+        "description": "Soan Gardens Islamabad Expressway",
+        "keywords": ["soan", "swan", "soan garden", "soan gardens", "swan garden", "swan gardens"],
+    },
+    "PWD": {
+        "lat": 33.5850,
+        "lng": 73.1350,
+        "description": "PWD Housing Scheme",
+        "keywords": ["pwd", "p.w.d", "pwd society", "pwd road"],
+    },
+    "Korang Town": {
+        "lat": 33.5960,
+        "lng": 73.1250,
+        "description": "Korang Town Zone 5",
+        "keywords": ["korang", "korrang", "korang town", "korrang town"],
+    },
+    "Pakistan Town": {
+        "lat": 33.5880,
+        "lng": 73.1280,
+        "description": "Pakistan Town (Phase 1 & 2)",
+        "keywords": ["pakistan town", "pak town"],
+    },
+}
+
+
+def normalize_area(raw_area: Optional[str]) -> str:
+    """Normalize raw user-input area to standard pilot area name if matching."""
+    if not raw_area:
+        return ""
+    text = raw_area.strip().lower()
+    for area_name, info in PILOT_AREAS.items():
+        if any(kw in text for kw in info["keywords"]):
+            return area_name
+    return raw_area.strip()
+
+
+def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Calculate distance in kilometers between two GPS coordinates."""
+    r = 6371.0
+    dlat = math.radians(lat2 - lat1)
+    dlon = math.radians(lon2 - lon1)
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon / 2) ** 2
+    )
+    return r * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
+
+def find_nearest_pilot_area(lat: float, lng: float) -> Optional[str]:
+    """Find closest pilot area within 15 km threshold."""
+    closest_area = None
+    min_dist = float("inf")
+    for name, info in PILOT_AREAS.items():
+        dist = haversine_km(lat, lng, info["lat"], info["lng"])
+        if dist < min_dist:
+            min_dist = dist
+            closest_area = name
+    return closest_area if min_dist <= 15.0 else None
+
 
 CATEGORIES = [
     "Electric Work", "Plumbing", "Air Conditioning", "Solar Solutions",
@@ -122,6 +200,7 @@ def init_db():
             description TEXT, category TEXT, urgency TEXT DEFAULT 'normal', ai_summary TEXT,
             status TEXT DEFAULT 'new', technician_id INTEGER, amount REAL, work_note TEXT,
             service_id INTEGER, quoted_price REAL, visit_fee REAL,
+            latitude REAL, longitude REAL,
             created_at TEXT, assigned_at TEXT, completed_at TEXT, confirmed_at TEXT);
         CREATE TABLE IF NOT EXISTS declines(request_id INTEGER, technician_id INTEGER, at TEXT);
         CREATE TABLE IF NOT EXISTS technician_locations(
@@ -217,6 +296,8 @@ def init_db():
             ("arrival_latitude", "REAL"),
             ("arrival_longitude", "REAL"),
             ("arrival_accuracy", "REAL"),
+            ("latitude", "REAL"),
+            ("longitude", "REAL"),
         ):
             if column not in request_columns:
                 con.execute(f"ALTER TABLE requests ADD COLUMN {column} {declaration}")
@@ -251,6 +332,22 @@ def init_db():
                     "INSERT INTO technicians(name,phone,pin_hash,category,area,created_at) VALUES(?,?,?,?,?,?)",
                     (n, p, hp("1234"), c, a, now()),
                 )
+        if not os.getenv("RAILWAY_ENVIRONMENT"):
+            pilot_seed = [
+                ("Zubair Electrician", "03001110007", "Electric Work", "Jinnah Garden"),
+                ("Rashid Plumber", "03001110008", "Plumbing", "PWD"),
+                ("Naveed AC Specialist", "03001110009", "Air Conditioning", "Soan Gardens"),
+                ("Sajid Handyman", "03001110010", "Home Cleaning", "Naval Anchorage"),
+                ("Asif Carpenter", "03001110011", "Carpentry", "Pakistan Town"),
+                ("Faisal Technician", "03001110012", "Electric Work", "Korang Town"),
+            ]
+            for n, p, c, a in pilot_seed:
+                exists = con.execute("SELECT 1 FROM technicians WHERE phone=?", (p,)).fetchone()
+                if not exists:
+                    con.execute(
+                        "INSERT INTO technicians(name,phone,pin_hash,category,area,created_at) VALUES(?,?,?,?,?,?)",
+                        (n, p, hp("1234"), c, a, now()),
+                    )
 
 
 def log(con, rid, text):
@@ -273,8 +370,102 @@ def keyword_guess(text: str) -> dict:
     return {"category": cat, "urgency": urgency, "summary": text.strip()[:140]}
 
 
+def ai_analyze_gemini(text: str) -> Optional[dict]:
+    """Tier 1 AI triage using Google Gemini Free API."""
+    if not GEMINI_API_KEY:
+        return None
+    prompt = f"""You are an expert AI dispatcher for HomeServe, a home services provider in Islamabad, Pakistan (covering Jinnah Garden, Naval Anchorage, Soan Gardens, PWD, Korang Town, Pakistan Town).
+The customer issue description may be in Urdu (اردو), Roman Urdu (e.g. "bijli ka breaker trip ho raha hai", "nal tap leak hai pani beh raha hai", "AC thandi hawa nahi de raha"), or English.
+
+Your instructions:
+1. Select exactly ONE category from this allowed list only:
+{', '.join(CATEGORIES)}
+2. Determine urgency:
+- "emergency": Active danger (sparking, smoke, fire hazard, pipe burst / active flooding, gas leak, electric shock risk).
+- "urgent": Needs urgent same-day resolution (e.g. main fridge stopped cooling in summer, water tank motor broke down, main toilet blocked).
+- "normal": Routine repairs, installations, servicing, minor issues.
+3. Write a clear, concise one-sentence English summary for the technician explaining the specific problem.
+
+Customer message: {text}
+
+Respond ONLY with valid JSON with this exact structure:
+{{"category": "<one of the allowed categories>", "urgency": "<normal|urgent|emergency>", "summary": "<concise English summary under 140 chars>"}}"""
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {"text": prompt}
+                ]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.1,
+            "responseMimeType": "application/json"
+        }
+    }
+    try:
+        with httpx.Client(timeout=10.0) as client:
+            resp = client.post(url, json=payload)
+            if resp.status_code != 200:
+                print(f"[Gemini] Non-200 response ({resp.status_code}): {resp.text[:200]}")
+                return None
+            data = resp.json()
+            candidates = data.get("candidates", [])
+            if not candidates:
+                return None
+            parts = candidates[0].get("content", {}).get("parts", [])
+            if not parts:
+                return None
+            raw_json_str = parts[0].get("text", "").strip()
+            parsed = json.loads(raw_json_str)
+            cat = parsed.get("category", "")
+            urg = parsed.get("urgency", "normal")
+            summary = parsed.get("summary", text.strip()[:140])
+
+            matched_cat = None
+            if cat in CATEGORIES:
+                matched_cat = cat
+            else:
+                for c in CATEGORIES:
+                    if c.lower() in cat.lower() or cat.lower() in c.lower():
+                        matched_cat = c
+                        break
+            if not matched_cat:
+                matched_cat = "Other"
+
+            if urg not in ("normal", "urgent", "emergency"):
+                urg = "normal"
+
+            return {
+                "category": matched_cat,
+                "urgency": urg,
+                "summary": str(summary)[:200].strip(),
+                "engine": "gemini",
+            }
+    except Exception as exc:
+        print(f"[Gemini] Error during analysis: {exc}")
+        return None
+
+
 def ai_analyze(text: str) -> dict:
-    prompt = f"""You are a dispatcher for a home services company in Islamabad, Pakistan.
+    """Multi-tier AI Triage:
+    Tier 1: Google Gemini Free API (ultra-fast, accurate with Urdu/Roman Urdu)
+    Tier 2: Local Ollama (if configured & running)
+    Tier 3: Heuristic keyword guess (offline fallback)
+    """
+    # Tier 1: Gemini Free
+    gemini_res = ai_analyze_gemini(text)
+    if gemini_res:
+        return gemini_res
+
+    fallback = keyword_guess(text)
+
+    # Tier 2: Ollama (if running)
+    if OLLAMA_URL and not os.getenv("DISABLE_OLLAMA"):
+        try:
+            prompt = f"""You are a dispatcher for a home services company in Islamabad, Pakistan.
 The customer message may be in Urdu, Roman Urdu or English.
 Pick exactly ONE category from this list: {', '.join(CATEGORIES)}.
 Pick urgency: "normal", "urgent" (needs same day) or "emergency" (danger: sparks, flooding, gas, shock).
@@ -282,30 +473,33 @@ Write a one-line English summary for the technician.
 Reply with JSON only: {{"category": "...", "urgency": "...", "summary": "..."}}
 
 Customer message: {text}"""
-    fallback = keyword_guess(text)
-    try:
-        r = httpx.post(
-            f"{OLLAMA_URL}/api/generate",
-            json={
-                "model": OLLAMA_MODEL,
-                "prompt": prompt,
-                "stream": False,
-                "format": "json",
-                "options": {"temperature": 0.1},
-            },
-            timeout=90,
-        )
-        data = json.loads(r.json()["response"])
-        cat = data.get("category")
-        urg = data.get("urgency")
-        return {
-            "category": cat if cat in CATEGORIES else fallback["category"],
-            "urgency": urg if urg in ("normal", "urgent", "emergency") else fallback["urgency"],
-            "summary": (data.get("summary") or fallback["summary"])[:200],
-        }
-    except Exception as e:  # Ollama off or bad JSON: keyword fallback
-        print("AI fallback:", e)
-        return fallback
+            r = httpx.post(
+                f"{OLLAMA_URL}/api/generate",
+                json={
+                    "model": OLLAMA_MODEL,
+                    "prompt": prompt,
+                    "stream": False,
+                    "format": "json",
+                    "options": {"temperature": 0.1},
+                },
+                timeout=12,
+            )
+            data = json.loads(r.json()["response"])
+            cat = data.get("category")
+            urg = data.get("urgency")
+            return {
+                "category": cat if cat in CATEGORIES else fallback["category"],
+                "urgency": urg if urg in ("normal", "urgent", "emergency") else fallback["urgency"],
+                "summary": (data.get("summary") or fallback["summary"])[:200],
+                "engine": "ollama",
+            }
+        except Exception as e:
+            print("Ollama AI fallback:", e)
+
+    # Tier 3: Heuristic keywords
+    res = dict(fallback)
+    res["engine"] = "keywords"
+    return res
 
 
 # ---------------------------------------------------------------- dispatch
@@ -320,11 +514,22 @@ def pick_technician(con, req):
     ).fetchall()
     if not rows:
         return None
-    area = (req["area"] or "").strip().lower()
-    rows = sorted(
-        rows,
-        key=lambda t: (0 if area and (t["area"] or "").strip().lower() == area else 1, -t["rating"], t["jobs_done"]),
-    )
+    req_area = normalize_area(req["area"] or "").strip().lower()
+    pilot_area_keys = [k.lower() for k in PILOT_AREAS]
+
+    def rank_key(t):
+        t_area = normalize_area(t["area"] or "").strip().lower()
+        if req_area and t_area == req_area:
+            area_score = 0
+        elif req_area in pilot_area_keys and t_area in pilot_area_keys:
+            area_score = 1
+        elif not req_area:
+            area_score = 1
+        else:
+            area_score = 2
+        return (area_score, -t["rating"], t["jobs_done"])
+
+    rows = sorted(rows, key=rank_key)
     return rows[0]
 
 
@@ -552,6 +757,8 @@ class RequestIn(BaseModel):
     category: Optional[str] = None
     service_id: Optional[int] = None
     terms_accepted: bool = False
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class DoneIn(BaseModel):
@@ -917,18 +1124,26 @@ def create_request(body: RequestIn):
             else body.category if body.category in CATEGORIES
             else ai["category"]
         )
+        norm_area = normalize_area(body.area)
+        if not norm_area and body.latitude is not None and body.longitude is not None:
+            detected = find_nearest_pilot_area(body.latitude, body.longitude)
+            if detected:
+                norm_area = detected
+
         cur = con.execute(
             """INSERT INTO requests(token,customer_name,customer_phone,address,area,description,
                category,urgency,ai_summary,status,service_id,quoted_price,visit_fee,
                customer_terms_version,customer_terms_accepted_at,
-               customer_privacy_version,customer_privacy_accepted_at,created_at)
-               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-            (token, body.name.strip(), norm_phone(body.phone), body.address.strip(), body.area.strip(),
+               customer_privacy_version,customer_privacy_accepted_at,
+               latitude,longitude,created_at)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            (token, body.name.strip(), norm_phone(body.phone), body.address.strip(), norm_area,
              body.description.strip(), category, ai["urgency"], ai["summary"], "new",
              catalog_item["id"] if catalog_item else None,
              catalog_item["price"] if catalog_item else None,
              catalog_item["visit_fee"] if catalog_item else None,
-             TERMS_VERSION, now(), PRIVACY_VERSION, now(), now()),
+             TERMS_VERSION, now(), PRIVACY_VERSION, now(),
+             body.latitude, body.longitude, now()),
         )
         rid = cur.lastrowid
         log(con, rid, f"Request received. Service: {category}. Urgency: {ai['urgency']}.")
@@ -1679,3 +1894,47 @@ def admin_payout(pid: int, body: PayoutIn, x_admin_key: str = Header(None)):
         con.execute("UPDATE technicians SET wallet=wallet-? WHERE id=?", (p["payout"], p["technician_id"]))
         log(con, p["request_id"], "Technician payout sent.")
     return {"ok": True}
+
+
+# ---- pilot areas and AI diagnostic endpoints
+@app.get("/api/pilot-areas")
+def get_pilot_areas():
+    return {
+        "hub": "Jinnah Garden",
+        "areas": [
+            {
+                "name": name,
+                "lat": info["lat"],
+                "lng": info["lng"],
+                "description": info["description"],
+                "keywords": info["keywords"],
+            }
+            for name, info in PILOT_AREAS.items()
+        ],
+    }
+
+
+@app.get("/api/admin/ai-status")
+def ai_status(x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    return {
+        "gemini_configured": bool(GEMINI_API_KEY),
+        "gemini_model": GEMINI_MODEL,
+        "ollama_url": OLLAMA_URL,
+        "ollama_model": OLLAMA_MODEL,
+    }
+
+
+class AITestIn(BaseModel):
+    text: str
+
+
+@app.post("/api/admin/test-ai")
+def test_ai(body: AITestIn, x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    result = ai_analyze(body.text)
+    return {
+        "input": body.text,
+        "result": result,
+    }
+

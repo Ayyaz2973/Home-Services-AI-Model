@@ -10,6 +10,7 @@ import io
 import pytest
 from PIL import Image
 from fastapi.testclient import TestClient
+import httpx
 import main
 
 
@@ -201,3 +202,103 @@ def test_jinnah_garden_keywords():
     """Verify Jinnah Garden pilot keywords constant."""
     assert "jinnah garden" in main.JINNAH_GARDEN_KEYWORDS
     assert "fechs" in main.JINNAH_GARDEN_KEYWORDS
+
+
+def test_pilot_areas_configuration(client):
+    """Verify all 6 pilot towns are configured in PILOT_AREAS and returned by /api/pilot-areas."""
+    expected_areas = ["Jinnah Garden", "Naval Anchorage", "Soan Gardens", "PWD", "Korang Town", "Pakistan Town"]
+    for area in expected_areas:
+        assert area in main.PILOT_AREAS
+        assert "lat" in main.PILOT_AREAS[area]
+        assert "lng" in main.PILOT_AREAS[area]
+
+    res = client.get("/api/pilot-areas")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["hub"] == "Jinnah Garden"
+    names = [a["name"] for a in data["areas"]]
+    for area in expected_areas:
+        assert area in names
+
+
+def test_area_normalization():
+    """Verify user input variations normalize to canonical pilot areas."""
+    assert main.normalize_area("Swan Garden") == "Soan Gardens"
+    assert main.normalize_area("soan gardens") == "Soan Gardens"
+    assert main.normalize_area("korrang town") == "Korang Town"
+    assert main.normalize_area("naval anchorage") == "Naval Anchorage"
+    assert main.normalize_area("navel") == "Naval Anchorage"
+    assert main.normalize_area("PWD road") == "PWD"
+    assert main.normalize_area("pak town") == "Pakistan Town"
+    assert main.normalize_area("jinnah gardens phase 2") == "Jinnah Garden"
+
+
+def test_request_with_gps_coordinates(client):
+    """Customer request with map-pinned GPS coordinates is stored and returned."""
+    req_res = client.post("/api/requests", json={
+        "name": "Tariq Map User",
+        "phone": "03331112233",
+        "address": "Street 12, Phase 1, Jinnah Garden",
+        "area": "Jinnah Garden",
+        "description": "Short circuit in main board",
+        "terms_accepted": True,
+        "latitude": 33.5682,
+        "longitude": 73.1553,
+    })
+    assert req_res.status_code == 200
+    token = req_res.json()["token"]
+
+    track_res = client.get(f"/api/track/{token}")
+    assert track_res.status_code == 200
+    track_data = track_res.json()
+    assert track_data["latitude"] == pytest.approx(33.5682, rel=1e-3)
+    assert track_data["longitude"] == pytest.approx(73.1553, rel=1e-3)
+
+
+def test_admin_ai_diagnostics(client, monkeypatch):
+    """Verify /api/admin/ai-status and /api/admin/test-ai endpoints."""
+    admin_h = {"X-Admin-Key": "test_admin_key_998877"}
+    status_res = client.get("/api/admin/ai-status", headers=admin_h)
+    assert status_res.status_code == 200
+    assert "gemini_configured" in status_res.json()
+
+    test_res = client.post(
+        "/api/admin/test-ai",
+        headers=admin_h,
+        json={"text": "kitchen ka nalka leak ho raha hai"},
+    )
+    assert test_res.status_code == 200
+    result = test_res.json()["result"]
+    assert result["category"] == "Plumbing"
+
+
+def test_ai_analyze_gemini_integration(monkeypatch):
+    """Verify Gemini AI parser correctly processes Gemini API responses."""
+    class MockResponse:
+        status_code = 200
+        def json(self):
+            return {
+                "candidates": [
+                    {
+                        "content": {
+                            "parts": [
+                                {
+                                    "text": '{"category": "Air Conditioning", "urgency": "urgent", "summary": "AC gas refill needed in Jinnah Garden"}'
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+
+    monkeypatch.setattr(main, "GEMINI_API_KEY", "fake_gemini_key_123")
+    monkeypatch.setattr(httpx.Client, "post", lambda self, url, **kwargs: MockResponse())
+
+    res = main.ai_analyze_gemini("AC cooling nahi kar raha gas khatam hai")
+    assert res is not None
+    assert res["category"] == "Air Conditioning"
+    assert res["urgency"] == "urgent"
+    assert res["engine"] == "gemini"
+    assert "AC gas refill" in res["summary"]
+
+
