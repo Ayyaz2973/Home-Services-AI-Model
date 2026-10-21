@@ -30,14 +30,83 @@
 
   <section id="serviceSection">
   <div id="services">
-    <div class="section-heading"><div><div class="eyebrow">Find the help you need</div><h2>Services for every corner of home</h2></div><p>Can’t find your service? Choose “Other” in the form.</p></div>
+    <div class="section-heading"><div><div class="eyebrow">Find the help you need</div><h2>Services for every corner of home</h2></div><p>Click any category to begin your request.</p></div>
     <div class="service-grid">
-      <div class="service-tile"><div class="service-icon">⚡</div><b>Electrical</b></div>
-      <div class="service-tile"><div class="service-icon">🚿</div><b>Plumbing</b></div>
-      <div class="service-tile"><div class="service-icon">❄️</div><b>Air conditioning</b></div>
-      <div class="service-tile"><div class="service-icon">🧹</div><b>Home cleaning</b></div>
+      <div class="service-tile" onclick="selectCategory('Electric Work')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
+        <b>Electrical</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Plumbing')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
+        <b>Plumbing</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Air Conditioning')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M2 12h20M12 2v20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"></path></svg></div>
+        <b>Air conditioning</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Home Cleaning')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"></path></svg></div>
+        <b>Home cleaning</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Solar Solutions')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></div>
+        <b>Solar solutions</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Fridge Repair')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><circle cx="12" cy="14" r="4"></circle><line x1="8" y1="6" x2="8.01" y2="6"></line><line x1="12" y1="6" x2="12.01" y2="6"></line></svg></div>
+        <b>Appliances & fridge</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Pest Control')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
+        <b>Pest control</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Carpentry')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div>
+        <b>Carpentry & paint</b>
+      </div>
     </div>
   </div>
+  </section>
+
+  <section id="trustSection" class="trust-section">
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </div>
+        <div>
+          <h3>CNIC & Skill Verified</h3>
+          <p>Every technician undergoes manual government ID verification, phone check, and experience validation.</p>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-badge">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div>
+          <h3>Live GPS Arrival Tracking</h3>
+          <p>Real-time location sharing and mandatory GPS check-in ensures you know exactly when your pro arrives.</p>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-badge">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <div>
+          <h3>Fair Price & Escrow Protection</h3>
+          <p>Transparent upfront quotes with zero surprise charges. Payout released only upon your final confirmation.</p>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-badge">
+          <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+        </div>
+        <div>
+          <h3>4.9★ Customer Satisfaction</h3>
+          <p>Trusted across Islamabad sectors and Jinnah Garden with full dispute resolution & money-back support.</p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="formView" class="card request-card">
@@ -58,26 +127,62 @@
       <div><label for="phone">Phone number *</label><input id="phone" type="tel" autocomplete="tel" placeholder="03XX XXXXXXX" required></div>
     </div>
     <div class="row">
-      <div><label for="area">Area / sector</label><input id="area" list="areas" placeholder="F-10" autocomplete="address-level2">
+      <div><label for="area">Area / sector</label><input id="area" list="areas" placeholder="Jinnah Garden" autocomplete="address-level2">
         <datalist id="areas">
+          <option>Jinnah Garden</option><option>FECHS</option><option>PWD</option><option>Naval Anchorage</option>
           <option>F-6</option><option>F-7</option><option>F-8</option><option>F-10</option><option>F-11</option>
           <option>G-9</option><option>G-10</option><option>G-11</option><option>G-13</option>
-          <option>I-8</option><option>I-10</option><option>E-11</option><option>DHA</option><option>Bahria Town</option>
+          <option>I-8</option><option>I-10</option><option>E-11</option>
+          <option>Soan Gardens</option><option>Gulberg Greens</option>
+          <option>DHA Phase 1</option><option>DHA Phase 2</option><option>Bahria Town</option>
         </datalist>
       </div>
-      <div><label for="cat">Service / price</label><select id="cat"></select><div id="priceEstimate" class="price-estimate">Choose a listed fixed-price service to see an estimate.</div></div>
+      <div><label for="cat">Service / price</label>
+        <select id="cat">
+          <option value="">Auto-detect from problem (or choose below)</option>
+          <option value="category:Electric Work">Electric Work</option>
+          <option value="category:Plumbing">Plumbing</option>
+          <option value="category:Air Conditioning">Air Conditioning</option>
+          <option value="category:Solar Solutions">Solar Solutions</option>
+          <option value="category:Home Cleaning">Home Cleaning</option>
+          <option value="category:Pest Control">Pest Control</option>
+          <option value="category:Washing Machine">Washing Machine</option>
+          <option value="category:Fridge Repair">Fridge Repair</option>
+          <option value="category:Geyser Repair">Geyser Repair</option>
+          <option value="category:Carpentry">Carpentry</option>
+          <option value="category:Painting">Painting</option>
+          <option value="category:Locksmith">Locksmith</option>
+          <option value="category:CCTV Installation">CCTV Installation</option>
+          <option value="category:Water Filter / RO">Water Filter / RO</option>
+          <option value="category:Welding Work">Welding Work</option>
+          <option value="category:Labour">Labour</option>
+          <option value="category:Other">Other</option>
+        </select>
+        <div id="priceEstimate" class="price-estimate">Choose a listed fixed-price service to see an estimate.</div>
+      </div>
     </div>
     <label for="address">Full address *</label><input id="address" autocomplete="street-address" required>
     <label for="desc">How can we help? *</label>
     <textarea id="desc" rows="4" placeholder="For example: kitchen ka nal leak ho raha hai" required></textarea>
     <div class="form-actions"><button id="subBtn" onclick="submitReq()">Find a professional <span aria-hidden="true">→</span></button><small>Your contact details are only used to coordinate this request.</small></div>
     <label class="consent-label"><input id="termsAccepted" type="checkbox" required> I agree to the <a href="/terms#customer" target="_blank" rel="noopener">draft customer terms</a> and <a href="/terms#privacy" target="_blank" rel="noopener">privacy notice</a>.</label>
-    <div id="fmsg"></div>
+    <div id="fmsg" aria-live="polite" role="status"></div>
     </div>
   </div>
 
   <div id="trackView" class="card hide" aria-live="polite"></div>
-  <footer class="portal-footer">HomeServe · Local care for the place you call home</footer>
+  <footer class="portal-footer">
+    <div class="footer-nav">
+      <a href="/">Home</a>
+      <a href="#services">Services</a>
+      <a href="/tech">Technician portal</a>
+      <a href="/admin">Operations dashboard</a>
+      <a href="/terms#customer">Customer terms</a>
+      <a href="/terms#technician">Technician terms</a>
+      <a href="/terms#privacy">Privacy notice</a>
+    </div>
+    <p>HomeServe · Verified home services in Islamabad & Rawalpindi</p>
+  </footer>
 </main>
 <script src="/static/common.js"></script>
 <script>
@@ -85,19 +190,39 @@ const token = new URLSearchParams(location.search).get('t');
 const $ = id => document.getElementById(id);
 let renderedTrackState = null;
 
+function selectCategory(catName) {
+  const catSelect = $('cat');
+  if (catSelect) {
+    catSelect.value = 'category:' + catName;
+    showEstimate();
+  }
+  const formSection = $('formView');
+  if (formSection) {
+    formSection.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
 async function init() {
   if (sessionStorage.getItem('admin_key')) {
     const adminNav = $('adminNavLink');
     if (adminNav) adminNav.classList.remove('hide');
   }
-  const [meta, catalog] = await Promise.all([api('/api/meta'), api('/api/catalog')]);
-  $('cat').innerHTML = '<option value="">Auto-detect from problem (no fixed-price estimate)</option>' +
-    meta.categories.map(category => `<option value="category:${esc(category)}">${esc(category)} · no fixed-price estimate</option>`).join('') +
-    catalog.items.map(item => `<option value="service:${item.id}" data-price="${item.price}" data-visit-fee="${item.visit_fee}">${esc(item.service_name)} · ${esc(item.category)} · ${money(item.price + item.visit_fee)}</option>`).join('');
+  try {
+    const [meta, catalog] = await Promise.all([api('/api/meta'), api('/api/catalog')]);
+    if (meta && meta.categories) {
+      $('cat').innerHTML = '<option value="">Auto-detect from problem (no fixed-price estimate)</option>' +
+        meta.categories.map(category => `<option value="category:${esc(category)}">${esc(category)} · no fixed-price estimate</option>`).join('') +
+        (catalog && catalog.items ? catalog.items.map(item => `<option value="service:${item.id}" data-price="${item.price}" data-visit-fee="${item.visit_fee}">${esc(item.service_name)} · ${esc(item.category)} · ${money(item.price + item.visit_fee)}</option>`).join('') : '');
+    }
+  } catch (err) {
+    console.warn('Backend API hydration fallback active:', err);
+  }
   $('cat').addEventListener('change', showEstimate);
   if (token) {
     $('hero').classList.add('hide');
     $('serviceSection').classList.add('hide');
+    const trustSec = $('trustSection');
+    if (trustSec) trustSec.classList.add('hide');
     $('formView').classList.add('hide');
     $('trackView').classList.remove('hide');
     load();
