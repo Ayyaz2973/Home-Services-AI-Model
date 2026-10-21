@@ -31,11 +31,13 @@
       <button id="t_tech" onclick="tab('tech')">Technicians</button>
       <button id="t_catalog" onclick="tab('catalog')">Price catalogue</button>
       <button id="t_pay" onclick="tab('pay')">Payments</button>
+      <button id="t_workshop" onclick="tab('workshop')">🏬 Workshops</button>
     </div>
     <div class="card" id="p_req"></div>
     <div class="card hide" id="p_tech"></div>
     <div class="card hide" id="p_catalog"></div>
     <div class="card hide" id="p_pay"></div>
+    <div class="card hide" id="p_workshop"></div>
     <dialog id="technicianDialog" class="tech-dialog">
       <form onsubmit="saveTech(event)">
         <div class="section-heading"><div><div class="eyebrow">Technician profile</div><h2>Edit technician</h2></div><button class="alt small" type="button" onclick="closeTechEditor()">Close</button></div>
@@ -117,9 +119,9 @@ function start() {
 }
 
 function tab(n) {
-  ['req', 'tech', 'catalog', 'pay'].forEach(x => {
-    $('p_' + x).classList.toggle('hide', x !== n);
-    $('t_' + x).classList.toggle('on', x === n);
+  ['req', 'tech', 'catalog', 'pay', 'workshop'].forEach(x => {
+    $('p_' + x)?.classList.toggle('hide', x !== n);
+    $('t_' + x)?.classList.toggle('on', x === n);
   });
 }
 
@@ -128,6 +130,8 @@ async function load() {
     data = await api('/api/admin/dashboard', {}, H());
     const applications = await api('/api/admin/applications', {}, H());
     data.applications = applications.applications;
+    const workshops = await api('/api/admin/workshops', {}, H());
+    data.workshops = workshops.workshops;
   } catch (e) {
     logout();
     return;
@@ -139,6 +143,7 @@ async function load() {
   ].map(x => `<div class="stat"><b>${x[1]}</b>${x[0]}</div>`).join('');
   renderReq(); renderTech(); renderPay();
   renderCatalog();
+  renderWorkshop();
 }
 
 function renderReq() {
@@ -266,6 +271,102 @@ async function reviewApplication(id, action) {
     }, H());
     await load();
   } catch (error) { alert(error.message); }
+}
+
+function renderWorkshop() {
+  const list = (data && data.workshops) || [];
+  const rows = list.map(w => {
+    const actions = w.status === 'pending'
+      ? `<button class="small" onclick="reviewWorkshop(${w.id},'approve')">Approve</button> <button class="small red" onclick="reviewWorkshop(${w.id},'reject')">Reject</button>`
+      : (w.status === 'approved' ? `<button class="small red" onclick="reviewWorkshop(${w.id},'reject')">Revoke</button>` : `<button class="small" onclick="reviewWorkshop(${w.id},'approve')">Re-Approve</button>`);
+
+    const photos = [];
+    if (w.shop_front_photo) {
+      photos.push(`<button class="small alt" onclick="viewWorkshopPhoto(${w.id},'front')">Signboard</button>`);
+    }
+    if (w.workshop_photo) {
+      photos.push(`<button class="small alt" onclick="viewWorkshopPhoto(${w.id},'interior')">Interior</button>`);
+    }
+
+    return `<tr>
+      <td>
+        <b>${esc(w.workshop_name)}</b><br>
+        ${badge(w.status)}<br>
+        <small>Applied: ${esc(w.created_at.replace('T', ' '))}</small>
+      </td>
+      <td>
+        <b>${esc(w.owner_name)}</b><br>
+        📞 <a href="tel:${esc(w.phone)}">${esc(w.phone)}</a><br>
+        ${w.whatsapp ? `💬 <a href="https://wa.me/92${esc(w.whatsapp.replace(/^0/,''))}" target="_blank">WhatsApp</a>` : ''}
+        ${w.cnic ? `<br><small>CNIC: ${esc(w.cnic)}</small>` : ''}
+      </td>
+      <td>
+        <b>${esc(w.category)}</b><br>
+        <small>📍 ${esc(w.area)} · ${esc(w.address)}</small>
+      </td>
+      <td>
+        <b>${w.technicians_count} Techs</b><br>
+        ⭐ ${Number(w.rating).toFixed(1)} (${w.jobs_done} jobs)
+      </td>
+      <td>
+        <small>${esc(w.equipment_summary || 'Standard workshop tools')}</small>
+        ${w.services_offered ? `<br><small style="color:#556b63">"${esc(w.services_offered)}"</small>` : ''}
+      </td>
+      <td>${photos.join(' ') || '—'}</td>
+      <td>${esc(w.review_note || '—')}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+
+  $('p_workshop').innerHTML = `
+    <div class="section-heading">
+      <div>
+        <div class="eyebrow">Service Center Fleet</div>
+        <h2>Registered Workshops &amp; Contractor Squads</h2>
+      </div>
+      <div>
+        <a class="btn small" href="/workshop" target="_blank">Open Registration Portal ↗</a>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <tr>
+          <th>Workshop</th>
+          <th>Owner / Contact</th>
+          <th>Trade &amp; Location</th>
+          <th>Fleet &amp; Rating</th>
+          <th>Equipment &amp; Services</th>
+          <th>Facility Photos</th>
+          <th>Admin Note</th>
+          <th>Actions</th>
+        </tr>
+        ${rows || '<tr><td colspan="8">No workshops registered yet.</td></tr>'}
+      </table>
+    </div>`;
+}
+
+async function reviewWorkshop(id, action) {
+  let review_note = '';
+  if (action === 'approve' && !confirm('Approve this workshop partner? They will be listed in verified partner network.')) return;
+  if (action === 'reject') {
+    review_note = prompt('Enter the reason for rejecting or revoking this workshop:');
+    if (!review_note || !review_note.trim()) return;
+  }
+  try {
+    await api(`/api/admin/workshops/${id}/review`, {
+      method: 'POST', body: { action, review_note },
+    }, H());
+    await load();
+  } catch (error) { alert(error.message); }
+}
+
+async function viewWorkshopPhoto(wid, type) {
+  try {
+    const res = await fetch(`/api/admin/workshops/${wid}/photos/${type}`, { headers: H() });
+    if (!res.ok) throw new Error('Could not load workshop photo');
+    $('adminPhotoPreview').src = URL.createObjectURL(await res.blob());
+    $('adminPhotoDialog').showModal();
+  } catch (e) { alert(e.message); }
 }
 
 async function addCatalogItem() {

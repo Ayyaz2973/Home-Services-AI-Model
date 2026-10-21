@@ -28,7 +28,7 @@
     <button type="button" class="lang-toggle-btn" id="langToggleBtnHeader" onclick="toggleCustomerLang()">🌐 اردو / English</button>
     <a href="tel:+923001110001" class="header-call-btn" id="hdrCallBtn">📞 Call Now</a>
     <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20service." target="_blank" rel="noopener noreferrer" class="header-wa-btn" id="hdrWaBtn">💬 WhatsApp</a>
-    <a href="/" id="hdrHome">Home</a><a href="#services" id="hdrServices">Services</a><a href="#pricingSection" id="hdrPricing">Pricing</a><a href="/terms" id="hdrTerms">Terms</a><a href="/tech" id="hdrTech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
+    <a href="/" id="hdrHome">Home</a><a href="#services" id="hdrServices">Services</a><a href="#pricingSection" id="hdrPricing">Pricing</a><a href="/workshop" id="hdrWorkshop">Workshops</a><a href="/terms" id="hdrTerms">Terms</a><a href="/tech" id="hdrTech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
   </div>
 </header>
 <main>
@@ -631,6 +631,7 @@ const CUST_URDU = {
   hdrPricing: 'ریٹ لسٹ',
   hdrTerms: 'شرائط',
   hdrTech: 'کاریگر پورٹل',
+  hdrWorkshop: 'ورکشاپ پارٹنر',
   heroEyebrow: 'گھریلو سروسز، اب مکمل سہولت اور اعتماد کے ساتھ',
   heroTitle: 'آپ کا گھر حقدار ہے <span>بہترین اور قابل اعتماد کاریگر کا</span>',
   heroCopy: 'اسلام آباد اور راولپنڈی کے تصدیق شدہ الیکٹریشن، پلمبر، سولر اور اے سی کاریگر منٹوں میں بک کریں۔ شفاف ریٹس اور مکمل گارنٹی۔',
@@ -661,6 +662,7 @@ function applyCustomerLanguage() {
   if ($('hdrPricing')) $('hdrPricing').textContent = isUr ? CUST_URDU.hdrPricing : 'Pricing';
   if ($('hdrTerms')) $('hdrTerms').textContent = isUr ? CUST_URDU.hdrTerms : 'Terms';
   if ($('hdrTech')) $('hdrTech').textContent = isUr ? CUST_URDU.hdrTech : 'Technician portal';
+  if ($('hdrWorkshop')) $('hdrWorkshop').textContent = isUr ? CUST_URDU.hdrWorkshop : 'Workshops';
 
   const heroEyebrow = document.querySelector('#hero .eyebrow');
   if (heroEyebrow) heroEyebrow.textContent = isUr ? CUST_URDU.heroEyebrow : 'Home services, made simple';

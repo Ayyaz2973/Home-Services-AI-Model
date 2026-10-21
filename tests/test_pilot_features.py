@@ -448,5 +448,70 @@ def test_emergency_dispatch_3min_timeout(client):
         assert row is not None
 
 
+def test_workshop_registration_and_review_flow(client):
+    """Workshop can register, check status, and be reviewed by admin."""
+    # 1. Register new workshop
+    form_data = {
+        "workshop_name": "Al-Buraq AC & Solar Lab",
+        "owner_name": "Rashid Mehmood",
+        "phone": "03008887766",
+        "whatsapp": "03008887766",
+        "category": "Air Conditioning",
+        "area": "Jinnah Garden",
+        "address": "Shop 9, Main Commercial, Jinnah Garden",
+        "technicians_count": "4",
+        "services_offered": "Inverter PCB micro-soldering, split AC coil welding, chemical flush",
+        "equipment_summary": "Digital manifold, vacuum pump, chemical wash rig",
+        "ntn": "7182930-1",
+        "cnic": "61101-9988776-1",
+        "terms_accepted": "true",
+    }
+    reg_res = client.post("/api/workshops/register", data=form_data)
+    assert reg_res.status_code == 200
+    data = reg_res.json()
+    assert data["ok"] is True
+    assert data["status"] == "pending"
+    wid = data["workshop_id"]
+
+    # 2. Duplicate phone is rejected
+    dup_res = client.post("/api/workshops/register", data=form_data)
+    assert dup_res.status_code == 409
+
+    # 3. Status lookup by phone
+    status_res = client.get("/api/workshops/status/03008887766")
+    assert status_res.status_code == 200
+    status_data = status_res.json()
+    assert status_data["workshop_name"] == "Al-Buraq AC & Solar Lab"
+    assert status_data["status"] == "pending"
+
+    # 4. Admin lists workshops
+    admin_h = {"X-Admin-Key": "test_admin_key_998877"}
+    admin_list = client.get("/api/admin/workshops", headers=admin_h)
+    assert admin_list.status_code == 200
+    workshops = admin_list.json()["workshops"]
+    assert any(w["id"] == wid for w in workshops)
+
+    # 5. Admin approves workshop
+    review_res = client.post(
+        f"/api/admin/workshops/{wid}/review",
+        headers=admin_h,
+        json={"action": "approve", "review_note": "Physical facility and equipment verified in Jinnah Garden."},
+    )
+    assert review_res.status_code == 200
+    assert review_res.json()["status"] == "approved"
+
+    # 6. Verify in public workshops directory
+    public_res = client.get("/api/workshops")
+    assert public_res.status_code == 200
+    pub_list = public_res.json()["workshops"]
+    assert any(w["workshop_name"] == "Al-Buraq AC & Solar Lab" for w in pub_list)
+
+    # 7. Public page route serves HTML
+    page_res = client.get("/workshop")
+    assert page_res.status_code == 200
+    assert "Workshop" in page_res.text
+
+
+
 
 

@@ -297,6 +297,30 @@ def init_db():
             stored_path TEXT NOT NULL, media_type TEXT NOT NULL,
             uploaded_at TEXT NOT NULL);
         CREATE INDEX IF NOT EXISTS ix_job_photos_request ON job_photos(request_id, phase, id);
+        CREATE TABLE IF NOT EXISTS workshops(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            workshop_name TEXT NOT NULL,
+            owner_name TEXT NOT NULL,
+            phone TEXT UNIQUE NOT NULL,
+            whatsapp TEXT DEFAULT '',
+            category TEXT NOT NULL,
+            area TEXT NOT NULL,
+            address TEXT NOT NULL,
+            technicians_count INTEGER DEFAULT 1,
+            services_offered TEXT DEFAULT '',
+            equipment_summary TEXT DEFAULT '',
+            ntn TEXT DEFAULT '',
+            cnic TEXT DEFAULT '',
+            shop_front_photo TEXT DEFAULT '',
+            workshop_photo TEXT DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'pending',
+            rating REAL DEFAULT 5.0,
+            jobs_done INTEGER DEFAULT 0,
+            active INTEGER DEFAULT 1,
+            review_note TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            reviewed_at TEXT);
+        CREATE INDEX IF NOT EXISTS ix_workshops_status ON workshops(status, created_at);
         """
         )
         request_columns = {row["name"] for row in con.execute("PRAGMA table_info(requests)")}
@@ -334,6 +358,25 @@ def init_db():
         PRIVATE_STORAGE.mkdir(parents=True, exist_ok=True)
         (PRIVATE_STORAGE / "documents").mkdir(exist_ok=True)
         (PRIVATE_STORAGE / "job_photos").mkdir(exist_ok=True)
+        (PRIVATE_STORAGE / "workshop_photos").mkdir(exist_ok=True)
+
+        if (
+            not os.getenv("RAILWAY_ENVIRONMENT")
+            and con.execute("SELECT COUNT(*) FROM workshops").fetchone()[0] == 0
+        ):
+            demo_workshops = [
+                ("Al-Madina AC & Refrigeration Workshop", "Muhammad Irfan", "03009990001", "03009990001", "Air Conditioning", "Jinnah Garden", "Shop 4, Commercial Market, Phase 1, Jinnah Garden", 5, "Inverter AC bench testing, PCB repair, chemical jet washing, gas charging", "R32/R410 digital manifold gauges, Robinair vacuum pumps, high-pressure jet washers", "approved", 4.9, 142),
+                ("Pak Solar Energy Solutions & Workshop", "Engr. Farhan Kayani", "03009990002", "03009990002", "Solar Solutions", "PWD", "Plot 18-B, Main Boulevard, PWD Housing Scheme", 8, "Complete 3kW-50kW On-Grid & Hybrid Solar installation, inverter earthing, Net Metering prep", "Hydraulic terminal crimpers, solar irradiance meters, thermal imaging camera, insulation tester", "approved", 5.0, 98),
+                ("Rajput Motor Rewinding & Electric Center", "Tariq Mehmood Rajput", "03009990003", "03009990003", "Electric Work", "Soan Gardens", "Shop 12, Block C Commercial, Soan Gardens, Expressway", 4, "Submersible water pump rewinding, generator AVR repair, heavy breaker installation", "Motor winding lathe, automatic coil winder, megohmmeter, load test bench", "approved", 4.8, 86),
+            ]
+            for wname, oname, ph, wa, cat, ar, addr, cnt, srv, eq, st, rat, jd in demo_workshops:
+                con.execute(
+                    """INSERT INTO workshops(
+                         workshop_name, owner_name, phone, whatsapp, category, area, address,
+                         technicians_count, services_offered, equipment_summary, status, rating, jobs_done, created_at, reviewed_at)
+                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    (wname, oname, ph, wa, cat, ar, addr, cnt, srv, eq, st, rat, jd, now(), now()),
+                )
         if (
             not os.getenv("RAILWAY_ENVIRONMENT")
             and con.execute("SELECT COUNT(*) FROM technicians").fetchone()[0] == 0
@@ -688,6 +731,11 @@ def page_admin():
     return FileResponse(os.path.join(BASE, "static", "admin.html"))
 
 
+@app.get("/workshop")
+def page_workshop():
+    return FileResponse(os.path.join(BASE, "static", "workshop.html"))
+
+
 @app.get("/favicon.ico", include_in_schema=False)
 @app.get("/favicon.svg", include_in_schema=False)
 def page_favicon():
@@ -991,6 +1039,11 @@ class ApplicationReviewIn(BaseModel):
     review_note: str = ""
 
 
+class WorkshopReviewIn(BaseModel):
+    action: str
+    review_note: str = ""
+
+
 class CatalogItemIn(BaseModel):
     category: str
     service_name: str
@@ -1196,6 +1249,158 @@ def admin_job_photo(photo_id: int, x_admin_key: str = Header(None)):
     if not photo:
         raise HTTPException(404, "Job photo not found")
     return _private_file_response(photo["stored_path"], photo["media_type"])
+
+
+# ---- workshops / service centers partner portal
+@app.post("/api/workshops/register")
+async def register_workshop(
+    workshop_name: str = Form(...),
+    owner_name: str = Form(...),
+    phone: str = Form(...),
+    whatsapp: str = Form(""),
+    category: str = Form(...),
+    area: str = Form(...),
+    address: str = Form(...),
+    technicians_count: int = Form(1),
+    services_offered: str = Form(""),
+    equipment_summary: str = Form(""),
+    ntn: str = Form(""),
+    cnic: str = Form(""),
+    terms_accepted: bool = Form(False),
+    shop_front_photo: Optional[UploadFile] = File(None),
+    workshop_photo: Optional[UploadFile] = File(None),
+):
+    normalized_phone = norm_phone(phone)
+    if not workshop_name.strip() or not owner_name.strip() or len(normalized_phone) < 10:
+        raise HTTPException(400, "Enter workshop name, owner name, and a valid phone number")
+    if category not in CATEGORIES and category != "Multi-Trade Center":
+        raise HTTPException(400, "Choose a valid service trade category")
+    if len(address.strip()) < 5 or len(area.strip()) < 2:
+        raise HTTPException(400, "Enter your workshop address and area")
+    if not terms_accepted:
+        raise HTTPException(400, "Accept the workshop partner terms to submit registration")
+
+    front_stored, interior_stored = "", ""
+    stored_paths = []
+    try:
+        if shop_front_photo and shop_front_photo.filename:
+            front_stored, _ = await _store_upload(shop_front_photo, "workshop_photos", PHOTO_MAX_BYTES)
+            stored_paths.append(front_stored)
+        if workshop_photo and workshop_photo.filename:
+            interior_stored, _ = await _store_upload(workshop_photo, "workshop_photos", PHOTO_MAX_BYTES)
+            stored_paths.append(interior_stored)
+
+        with db() as con:
+            existing = con.execute("SELECT 1 FROM workshops WHERE phone=?", (normalized_phone,)).fetchone()
+            if existing:
+                raise HTTPException(409, "A workshop with this phone number is already registered")
+
+            cur = con.execute(
+                """INSERT INTO workshops(
+                     workshop_name, owner_name, phone, whatsapp, category, area, address,
+                     technicians_count, services_offered, equipment_summary, ntn, cnic,
+                     shop_front_photo, workshop_photo, status, created_at)
+                   VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'pending',?)""",
+                (
+                    workshop_name.strip(), owner_name.strip(), normalized_phone,
+                    norm_phone(whatsapp) if whatsapp else normalized_phone,
+                    category, area.strip(), address.strip(), max(1, technicians_count),
+                    services_offered.strip(), equipment_summary.strip(),
+                    ntn.strip(), cnic.strip(), front_stored, interior_stored, now(),
+                ),
+            )
+            wid = cur.lastrowid
+    except sqlite3.IntegrityError as exc:
+        for p in stored_paths:
+            (PRIVATE_STORAGE / p).unlink(missing_ok=True)
+        raise HTTPException(409, "A workshop with this phone number is already registered") from exc
+    except Exception:
+        for p in stored_paths:
+            (PRIVATE_STORAGE / p).unlink(missing_ok=True)
+        raise
+
+    return {
+        "ok": True,
+        "workshop_id": wid,
+        "status": "pending",
+        "message": "Workshop registration submitted successfully. Admin verification in progress.",
+    }
+
+
+@app.get("/api/workshops/status/{phone}")
+def get_workshop_status(phone: str):
+    normalized = norm_phone(phone)
+    with db() as con:
+        ws = con.execute(
+            """SELECT id, workshop_name, owner_name, category, area, address, technicians_count,
+                      status, review_note, created_at, reviewed_at
+               FROM workshops WHERE phone=?""",
+            (normalized,),
+        ).fetchone()
+    if not ws:
+        raise HTTPException(404, "No workshop registration found for this phone number")
+    return dict(ws)
+
+
+@app.get("/api/workshops")
+def public_workshops(category: Optional[str] = None, area: Optional[str] = None):
+    with db() as con:
+        query = """SELECT id, workshop_name, category, area, address, technicians_count,
+                          services_offered, equipment_summary, rating, jobs_done
+                   FROM workshops WHERE status='approved' AND active=1"""
+        params = []
+        if category:
+            query += " AND category=?"
+            params.append(category)
+        if area:
+            query += " AND area LIKE ?"
+            params.append(f"%{area}%")
+        query += " ORDER BY rating DESC, jobs_done DESC"
+        rows = con.execute(query, params).fetchall()
+        return {"workshops": [dict(r) for r in rows]}
+
+
+@app.get("/api/admin/workshops")
+def admin_workshops(x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    with db() as con:
+        rows = con.execute(
+            """SELECT * FROM workshops ORDER BY
+                 CASE status WHEN 'pending' THEN 0 ELSE 1 END, id DESC"""
+        ).fetchall()
+        return {"workshops": [dict(r) for r in rows]}
+
+
+@app.post("/api/admin/workshops/{wid}/review")
+def admin_review_workshop(
+    wid: int, body: WorkshopReviewIn, x_admin_key: str = Header(None)
+):
+    admin_auth(x_admin_key)
+    if body.action not in ("approve", "reject"):
+        raise HTTPException(400, "Choose approve or reject")
+    with db() as con:
+        ws = con.execute("SELECT * FROM workshops WHERE id=?", (wid,)).fetchone()
+        if not ws:
+            raise HTTPException(404, "Workshop not found")
+        status = "approved" if body.action == "approve" else "rejected"
+        con.execute(
+            "UPDATE workshops SET status=?, review_note=?, reviewed_at=? WHERE id=?",
+            (status, body.review_note.strip(), now(), wid),
+        )
+    return {"ok": True, "workshop_id": wid, "status": status}
+
+
+@app.get("/api/admin/workshops/{wid}/photos/{photo_type}")
+def admin_workshop_photo(wid: int, photo_type: str, x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    if photo_type not in ("front", "interior"):
+        raise HTTPException(400, "Photo type must be front or interior")
+    col = "shop_front_photo" if photo_type == "front" else "workshop_photo"
+    with db() as con:
+        ws = con.execute(f"SELECT {col} FROM workshops WHERE id=?", (wid,)).fetchone()
+    if not ws or not ws[col]:
+        raise HTTPException(404, "Workshop photo not found")
+    return _private_file_response(ws[col], "image/jpeg")
 
 
 @app.get("/api/catalog/{item_id}")
