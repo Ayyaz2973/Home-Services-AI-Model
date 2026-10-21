@@ -41,6 +41,9 @@ PHOTO_MAX_BYTES = int(os.getenv("PHOTO_MAX_BYTES", str(6 * 1024 * 1024)))
 IMAGE_MAX_PIXELS = 20_000_000
 IMAGE_MAX_DIMENSION = 2400
 
+# Pilot focus: Jinnah Garden / FECHS Islamabad (area matching is still soft)
+JINNAH_GARDEN_KEYWORDS = ["jinnah", "jinnah garden", "jinnah gardens", "fechs", "gagri"]
+
 CATEGORIES = [
     "Electric Work", "Plumbing", "Air Conditioning", "Solar Solutions",
     "Home Cleaning", "Pest Control", "Washing Machine", "Fridge Repair",
@@ -135,6 +138,38 @@ def init_db():
             amount REAL, commission REAL, payout REAL, collected INTEGER DEFAULT 0,
             status TEXT DEFAULT 'awaiting_confirmation', reference TEXT,
             created_at TEXT, released_at TEXT, paid_at TEXT);
+        CREATE TABLE IF NOT EXISTS commission_ledger(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            request_id INTEGER NOT NULL,
+            technician_id INTEGER NOT NULL,
+            gross_amount INTEGER NOT NULL,
+            commission_amount INTEGER NOT NULL,
+            net_payout INTEGER NOT NULL,
+            commission_pct REAL NOT NULL,
+            status TEXT NOT NULL DEFAULT 'released',
+            note TEXT DEFAULT '',
+            created_at TEXT NOT NULL);
+        CREATE INDEX IF NOT EXISTS ix_commission_ledger_tech ON commission_ledger(technician_id, id);
+        CREATE TABLE IF NOT EXISTS disputes(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            request_id INTEGER NOT NULL UNIQUE,
+            raised_by TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            evidence TEXT DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'open',
+            resolution TEXT DEFAULT '',
+            created_at TEXT NOT NULL,
+            resolved_at TEXT);
+        CREATE TABLE IF NOT EXISTS quote_revisions(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            request_id INTEGER NOT NULL,
+            quoted_price REAL NOT NULL,
+            visit_fee REAL NOT NULL DEFAULT 0,
+            reason TEXT NOT NULL,
+            created_by TEXT NOT NULL,
+            created_at TEXT NOT NULL);
+
+
         CREATE TABLE IF NOT EXISTS technician_applications(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL, phone TEXT NOT NULL, pin_hash TEXT NOT NULL,
@@ -429,6 +464,17 @@ def release_payment(con, rid, rating=None, confirmation_source="customer"):
     if rating:
         new_rating = round((t["rating"] * cnt + rating) / (cnt + 1), 2)
         cnt += 1
+    # Immutable ledger entry (amounts in paisa / integer minor units)
+    gross_paisa = int(round(pay["amount"] * 100))
+    commission_paisa = int(round(pay["commission"] * 100))
+    net_paisa = int(round(pay["payout"] * 100))
+    con.execute(
+        """INSERT INTO commission_ledger(request_id, technician_id, gross_amount, commission_amount,
+           net_payout, commission_pct, status, note, created_at)
+           VALUES(?,?,?,?,?,?,?,?,?)""",
+        (rid, pay["technician_id"], gross_paisa, commission_paisa, net_paisa,
+         COMMISSION_PCT, "released", confirmation_source, now()),
+    )
     con.execute(
         "UPDATE technicians SET wallet=wallet+?, jobs_done=jobs_done+1, rating=?, rating_count=? WHERE id=?",
         (pay["payout"], new_rating, cnt, t["id"]),
@@ -581,6 +627,22 @@ class ExtraChargeIn(BaseModel):
 
 
 class ExtraChargeDecisionIn(BaseModel):
+    approve: bool
+    note: str = ""
+
+class DisputeIn(BaseModel):
+    reason: str = Field(..., min_length=5, max_length=500)
+    evidence: str = ""
+
+class DisputeResolveIn(BaseModel):
+    resolution: str = Field(..., min_length=3, max_length=500)
+    refund_amount: float = 0.0
+
+class QuoteRevisionIn(BaseModel):
+    quoted_price: float = Field(..., ge=0)
+    visit_fee: float = Field(0, ge=0)
+    reason: str = Field(..., min_length=3, max_length=300)
+
     decision: str
 
 
@@ -896,6 +958,10 @@ def req_by_token(con, token):
 def track(token: str):
     with db() as con:
         r = req_by_token(con, token)
+        # Hide full address until job is accepted
+        safe_r = dict(r)
+        if r["status"] not in ("accepted", "work_done", "confirmed", "disputed"):
+            safe_r["address"] = (r["area"] or "Area only") + " (full address shared after technician accepts)"
         t = con.execute("SELECT name, phone FROM technicians WHERE id=?", (r["technician_id"],)).fetchone()
         ev = con.execute("SELECT text, at FROM events WHERE request_id=? ORDER BY id", (r["id"],)).fetchall()
         d = dict(r)
@@ -1003,18 +1069,7 @@ def tech_job_photo(jid: int, photo_id: int, x_phone: str = Header(None), x_pin: 
     return _private_file_response(photo["stored_path"], photo["media_type"])
 
 
-@app.post("/api/track/{token}/dispute")
-def customer_dispute(token: str, body: ReasonIn):
-    with db() as con:
-        r = req_by_token(con, token)
-        if r["status"] != "work_done":
-            raise HTTPException(400, "Nothing to dispute yet")
-        con.execute("UPDATE requests SET status='disputed' WHERE id=?", (r["id"],))
-        con.execute("DELETE FROM technician_locations WHERE request_id=?", (r["id"],))
-        con.execute("UPDATE payments SET status='disputed' WHERE request_id=?", (r["id"],))
-        log(con, r["id"], f"Customer disputed the work. Reason: {body.reason or 'not given'}")
-    return {"ok": True}
-
+# Old simple dispute endpoint replaced by structured version below
 
 @app.post("/api/track/{token}/cancel")
 def customer_cancel(token: str):
@@ -1245,7 +1300,109 @@ def admin_auth(key):
         raise HTTPException(401, "Wrong admin key")
 
 
-@app.get("/api/admin/dashboard")
+
+@app.get("/api/tech/statement")
+def tech_statement(x_phone: str = Header(None), x_pin: str = Header(None)):
+    with db() as con:
+        t = tech_auth(con, x_phone, x_pin)
+        rows = con.execute(
+            """SELECT cl.*, r.token, r.category, r.area, r.created_at AS request_created
+               FROM commission_ledger cl
+               JOIN requests r ON r.id = cl.request_id
+               WHERE cl.technician_id = ?
+               ORDER BY cl.id DESC LIMIT 100""",
+            (t["id"],),
+        ).fetchall()
+        total_net = sum(r["net_payout"] for r in rows) or 0
+        return {
+            "technician": t["name"],
+            "wallet": t["wallet"],
+            "entries": [dict(r) for r in rows],
+            "total_net_paisa": total_net,
+        }
+
+
+
+@app.post("/api/track/{token}/dispute")
+def raise_dispute(token: str, body: DisputeIn):
+    with db() as con:
+        r = req_by_token(con, token)
+        if r["status"] not in ("work_done", "confirmed", "accepted"):
+            raise HTTPException(400, "Dispute can only be raised on active or recently completed jobs")
+        existing = con.execute("SELECT id FROM disputes WHERE request_id=?", (r["id"],)).fetchone()
+        if existing:
+            raise HTTPException(409, "A dispute already exists for this request")
+        con.execute(
+            """INSERT INTO disputes(request_id, raised_by, reason, evidence, status, created_at)
+               VALUES(?,?,?,?,?,?)""",
+            (r["id"], "customer", body.reason.strip(), body.evidence.strip(), "open", now()),
+        )
+        con.execute("UPDATE requests SET status='disputed' WHERE id=?", (r["id"],))
+        log(con, r["id"], f"Customer raised dispute: {body.reason.strip()[:80]}")
+    return {"ok": True, "status": "disputed"}
+
+
+@app.post("/api/admin/disputes/{request_id}/resolve")
+def admin_resolve_dispute(
+    request_id: int, body: DisputeResolveIn, x_admin_key: str = Header(None)
+):
+    admin_auth(x_admin_key)
+    with db() as con:
+        d = con.execute("SELECT * FROM disputes WHERE request_id=? AND status='open'", (request_id,)).fetchone()
+        if not d:
+            raise HTTPException(404, "Open dispute not found")
+        con.execute(
+            "UPDATE disputes SET status='resolved', resolution=?, resolved_at=? WHERE request_id=?",
+            (body.resolution.strip(), now(), request_id),
+        )
+        # Optional refund adjustment note in ledger if refund_amount > 0
+        if body.refund_amount and body.refund_amount > 0:
+            con.execute(
+                """INSERT INTO commission_ledger(request_id, technician_id, gross_amount, commission_amount,
+                   net_payout, commission_pct, status, note, created_at)
+                   SELECT ?, technician_id, 0, 0, ?, commission_pct, 'adjustment', ?, ?
+                   FROM commission_ledger WHERE request_id=? ORDER BY id DESC LIMIT 1""",
+                (request_id, -int(round(body.refund_amount * 100)), f"Refund: {body.resolution[:100]}", now(), request_id),
+            )
+        con.execute("UPDATE requests SET status='confirmed' WHERE id=? AND status='disputed'", (request_id,))
+        log(con, request_id, f"Dispute resolved: {body.resolution.strip()[:100]}")
+    return {"ok": True}
+
+
+@app.post("/api/admin/requests/{rid}/quote-revision")
+def admin_quote_revision(
+    rid: int, body: QuoteRevisionIn, x_admin_key: str = Header(None)
+):
+    admin_auth(x_admin_key)
+    with db() as con:
+        r = con.execute("SELECT * FROM requests WHERE id=?", (rid,)).fetchone()
+        if not r:
+            raise HTTPException(404, "Request not found")
+        con.execute(
+            """INSERT INTO quote_revisions(request_id, quoted_price, visit_fee, reason, created_by, created_at)
+               VALUES(?,?,?,?,?,?)""",
+            (rid, body.quoted_price, body.visit_fee, body.reason.strip(), "admin", now()),
+        )
+        con.execute(
+            "UPDATE requests SET quoted_price=?, visit_fee=? WHERE id=?",
+            (body.quoted_price, body.visit_fee, rid),
+        )
+        log(con, rid, f"Quote revised to Rs {body.quoted_price:.0f} (+ visit {body.visit_fee:.0f}): {body.reason.strip()[:60]}")
+    return {"ok": True}
+
+
+@app.get("/api/requests/{rid}/quotes")
+def list_quote_revisions(rid: int, x_admin_key: str = Header(None)):
+    admin_auth(x_admin_key)
+    with db() as con:
+        rows = con.execute(
+            "SELECT * FROM quote_revisions WHERE request_id=? ORDER BY id",
+            (rid,),
+        ).fetchall()
+        return {"revisions": [dict(r) for r in rows]}
+
+
+@app.get("/api/admin/dashboard")@app.get("/api/admin/dashboard")
 def admin_dashboard(x_admin_key: str = Header(None)):
     admin_auth(x_admin_key)
     with db() as con:
