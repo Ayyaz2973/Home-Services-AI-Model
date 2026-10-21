@@ -168,8 +168,6 @@ def init_db():
             reason TEXT NOT NULL,
             created_by TEXT NOT NULL,
             created_at TEXT NOT NULL);
-
-
         CREATE TABLE IF NOT EXISTS technician_applications(
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL, phone TEXT NOT NULL, pin_hash TEXT NOT NULL,
@@ -627,23 +625,23 @@ class ExtraChargeIn(BaseModel):
 
 
 class ExtraChargeDecisionIn(BaseModel):
-    approve: bool
-    note: str = ""
+    decision: str
+
 
 class DisputeIn(BaseModel):
     reason: str = Field(..., min_length=5, max_length=500)
     evidence: str = ""
 
+
 class DisputeResolveIn(BaseModel):
     resolution: str = Field(..., min_length=3, max_length=500)
     refund_amount: float = 0.0
+
 
 class QuoteRevisionIn(BaseModel):
     quoted_price: float = Field(..., ge=0)
     visit_fee: float = Field(0, ge=0)
     reason: str = Field(..., min_length=3, max_length=300)
-
-    decision: str
 
 
 @app.post("/api/technician-applications")
@@ -958,13 +956,11 @@ def req_by_token(con, token):
 def track(token: str):
     with db() as con:
         r = req_by_token(con, token)
-        # Hide full address until job is accepted
-        safe_r = dict(r)
-        if r["status"] not in ("accepted", "work_done", "confirmed", "disputed"):
-            safe_r["address"] = (r["area"] or "Area only") + " (full address shared after technician accepts)"
         t = con.execute("SELECT name, phone FROM technicians WHERE id=?", (r["technician_id"],)).fetchone()
         ev = con.execute("SELECT text, at FROM events WHERE request_id=? ORDER BY id", (r["id"],)).fetchall()
         d = dict(r)
+        if r["status"] not in ("accepted", "work_done", "confirmed", "disputed"):
+            d["address"] = (r["area"] or "Area only") + " (full address shared after technician accepts)"
         d.pop("token")
         d["tech_name"] = t["name"] if t else None
         d["tech_phone"] = t["phone"] if (t and r["status"] in ("accepted", "work_done", "confirmed", "disputed")) else None
@@ -1070,6 +1066,7 @@ def tech_job_photo(jid: int, photo_id: int, x_phone: str = Header(None), x_pin: 
 
 
 # Old simple dispute endpoint replaced by structured version below
+
 
 @app.post("/api/track/{token}/cancel")
 def customer_cancel(token: str):
@@ -1327,7 +1324,7 @@ def tech_statement(x_phone: str = Header(None), x_pin: str = Header(None)):
 def raise_dispute(token: str, body: DisputeIn):
     with db() as con:
         r = req_by_token(con, token)
-        if r["status"] not in ("work_done", "confirmed", "accepted"):
+        if r["status"] not in ("work_done", "confirmed", "accepted", "disputed"):
             raise HTTPException(400, "Dispute can only be raised on active or recently completed jobs")
         existing = con.execute("SELECT id FROM disputes WHERE request_id=?", (r["id"],)).fetchone()
         if existing:
@@ -1338,6 +1335,8 @@ def raise_dispute(token: str, body: DisputeIn):
             (r["id"], "customer", body.reason.strip(), body.evidence.strip(), "open", now()),
         )
         con.execute("UPDATE requests SET status='disputed' WHERE id=?", (r["id"],))
+        con.execute("DELETE FROM technician_locations WHERE request_id=?", (r["id"],))
+        con.execute("UPDATE payments SET status='disputed' WHERE request_id=?", (r["id"],))
         log(con, r["id"], f"Customer raised dispute: {body.reason.strip()[:80]}")
     return {"ok": True, "status": "disputed"}
 
@@ -1402,7 +1401,7 @@ def list_quote_revisions(rid: int, x_admin_key: str = Header(None)):
         return {"revisions": [dict(r) for r in rows]}
 
 
-@app.get("/api/admin/dashboard")@app.get("/api/admin/dashboard")
+@app.get("/api/admin/dashboard")
 def admin_dashboard(x_admin_key: str = Header(None)):
     admin_auth(x_admin_key)
     with db() as con:
