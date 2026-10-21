@@ -27,7 +27,7 @@ from pydantic import BaseModel, Field
 BASE = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv("DATABASE_PATH", os.path.join(BASE, "homeserve.db"))
 PRIVATE_STORAGE = Path(os.getenv("PRIVATE_STORAGE_DIR", os.path.join(BASE, "private_uploads"))).resolve()
-ADMIN_KEY = os.getenv("ADMIN_KEY", "admin123")
+ADMIN_KEY = os.getenv("ADMIN_KEY", "Kayani_73")
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:14b")
 COMMISSION_PCT = float(os.getenv("COMMISSION_PCT", "10"))
