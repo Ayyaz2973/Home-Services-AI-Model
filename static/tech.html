@@ -415,7 +415,7 @@ async function load() {
     const isUr = techLang === 'ur';
 
     const walletCard = m.wallet < 0
-      ? `<div class="wallet-warning">⚠️ <b>${isUr ? 'کمیشن واجب الادا ہے:' : 'Platform commission due:'} ${money(Math.abs(m.wallet))}</b><br><small>${isUr ? 'ایزی پیسہ / جاز کیش (0300 111 0001) کے ذریعے ایڈمن کو جمع کروائیں۔' : 'Please deposit via EasyPaisa or JazzCash (0300 111 0001) to keep priority dispatch.'}</small></div>`
+      ? `<div class="wallet-warning">⚠️ <b>${isUr ? 'کمیشن واجب الادا ہے:' : 'Platform commission due:'} ${money(Math.abs(m.wallet))}</b><br><small>${isUr ? 'ایزی پیسہ / جاز کیش (0339 4021643) کے ذریعے ایڈمن کو جمع کروائیں۔' : 'Please deposit via EasyPaisa or JazzCash (0339 4021643) to keep priority dispatch.'}</small></div>`
       : `<div class="wallet-positive">💰 <b>${isUr ? 'آپ کی کمائی (بٹوَہ):' : 'Available balance:'} ${money(m.wallet)}</b></div>`;
 
     $('profile').innerHTML = `<h2>${esc(m.name)}</h2>
