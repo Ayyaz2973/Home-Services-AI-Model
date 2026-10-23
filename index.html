@@ -34,17 +34,85 @@
 <main>
   <section id="hero" class="hero">
     <div>
-      <div class="eyebrow">Home services, made simple</div>
-      <h1>Your home deserves <span>the right help.</span></h1>
-      <p class="hero-copy">Book dependable local professionals for the jobs that keep your home running. Tell us what you need—we’ll help connect you.</p>
-      <div class="hero-proof"><span>Local technicians</span><span>Simple job tracking</span><span>Support when you need it</span></div>
+      <div class="eyebrow" id="heroEyebrow">🛡️ Certified &amp; Background Checked Technicians</div>
+      <h1 id="heroTitle">Pakistan's Premier <span>Home Services</span> Platform</h1>
+      <p class="hero-copy" id="heroCopy">Book dependable electricians, plumbers, AC specialists, solar engineers &amp; tank cleaners with upfront transparent rates &amp; 7-day warranty.</p>
+      
+      <div class="hero-cta-group">
+        <a href="#formView" class="hero-btn-primary" id="heroBookBtn">⚡ Book a Service Now <span aria-hidden="true">→</span></a>
+        <a href="https://wa.me/923001110001?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20home%20service." target="_blank" rel="noopener noreferrer" class="hero-btn-wa" id="heroWaBtn">💬 WhatsApp Booking</a>
+        <a href="tel:+923001110001" class="hero-btn-call" id="heroCallBtn">📞 24/7 Helpline</a>
+      </div>
+
+      <div class="hero-proof" id="heroProof">
+        <span>NADRA verified technicians</span>
+        <span>Standardized upfront rates</span>
+        <span>7-day free rework warranty</span>
+      </div>
+
+      <div class="hero-metrics-grid" id="heroMetricsGrid">
+        <div class="hero-metric-item">
+          <span class="hero-metric-num">10,000+</span>
+          <span class="hero-metric-label" id="metricJobsLabel">Verified Jobs Done</span>
+        </div>
+        <div class="hero-metric-item">
+          <span class="hero-metric-num">30–40 min</span>
+          <span class="hero-metric-label" id="metricArrivalLabel">Average Arrival Time</span>
+        </div>
+        <div class="hero-metric-item">
+          <span class="hero-metric-num">24/7</span>
+          <span class="hero-metric-label" id="metricSupportLabel">Emergency Dispatch</span>
+        </div>
+        <div class="hero-metric-item">
+          <span class="hero-metric-num">4.9 ★</span>
+          <span class="hero-metric-label" id="metricRatingLabel">Customer Satisfaction</span>
+        </div>
+      </div>
     </div>
-    <div class="hero-art" aria-hidden="true">
-      <div class="hero-float one">Local help<strong>Right in your area</strong></div>
-      <div class="hero-house">⌂</div>
-      <div class="hero-float two">Your request<strong>Tracked from start to finish</strong></div>
+
+    <div class="hero-radar-hub" id="heroRadarHub">
+      <div class="radar-pulse-ring" aria-hidden="true"></div>
+      <div class="radar-top-pill">
+        <span class="radar-live-dot"></span>
+        <span id="radarHubTitle">Live Squad On-Call · Islamabad &amp; Zone 5</span>
+      </div>
+
+      <div class="radar-tech-card">
+        <div class="radar-avatar">ZK</div>
+        <div class="radar-tech-details">
+          <b>Zubair Khan · Master Pro</b>
+          <p>Certified Electrician &amp; Solar Inverter Specialist</p>
+          <div class="radar-tech-badges">
+            <span class="badge-nadra">🛡️ NADRA Verified</span>
+            <span class="badge-star">★ 4.9 (420+ jobs)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="radar-features-row">
+        <div class="radar-feat-item"><span>⏱ 15–30m Rapid ETA</span></div>
+        <div class="radar-feat-item"><span>🛡️ 7-Day Guarantee</span></div>
+        <div class="radar-feat-item"><span>💰 Upfront Quotes</span></div>
+        <div class="radar-feat-item"><span>📍 GPS Arrival Sharing</span></div>
+      </div>
     </div>
   </section>
+
+  <!-- Twin Cities Coverage Strip -->
+  <div class="coverage-marquee-bar" id="coverageBar">
+    <span class="coverage-title" id="coverageTitle">⚡ Trusted Service Areas Across Islamabad &amp; Rawalpindi:</span>
+    <div class="coverage-pills">
+      <span class="cov-pill">Jinnah Garden</span>
+      <span class="cov-pill">Naval Anchorage</span>
+      <span class="cov-pill">Soan Gardens</span>
+      <span class="cov-pill">PWD &amp; Pakistan Town</span>
+      <span class="cov-pill">Bahria Town (Phase 1–8)</span>
+      <span class="cov-pill">DHA Islamabad &amp; Rawalpindi</span>
+      <span class="cov-pill">Gulberg Greens</span>
+      <span class="cov-pill">Sectors (F-6 to F-11, G-8 to G-14)</span>
+      <span class="cov-pill">Saddar &amp; Westridge</span>
+    </div>
+  </div>
 
   <section id="serviceSection">
   <div id="services">
@@ -656,9 +724,18 @@ const CUST_URDU = {
   hdrTerms: 'شرائط',
   hdrTech: 'کاریگر پورٹل',
   hdrWorkshop: 'ورکشاپ پارٹنر',
-  heroEyebrow: 'گھریلو سروسز، اب مکمل سہولت اور اعتماد کے ساتھ',
-  heroTitle: 'آپ کا گھر حقدار ہے <span>بہترین اور قابل اعتماد کاریگر کا</span>',
-  heroCopy: 'اسلام آباد اور راولپنڈی کے تصدیق شدہ الیکٹریشن، پلمبر، سولر اور اے سی کاریگر منٹوں میں بک کریں۔ شفاف ریٹس اور مکمل گارنٹی۔',
+  heroEyebrow: '🛡️ تصدیق شدہ اور تجربہ کار کاریگر',
+  heroTitle: 'پاکستان کا سب سے معتبر <span>ہوم سروسز</span> پلیٹ فارم',
+  heroCopy: 'اسلام آباد اور راولپنڈی کے تصدیق شدہ الیکٹریشن، پلمبر، سولر، ٹینکی صفائی اور اے سی ماہرین منٹوں میں بک کریں۔ شفاف ریٹس اور 7 دن کی مفت وارنٹی۔',
+  heroBookBtn: '⚡ ابھی سروس بک کریں →',
+  heroWaBtn: '💬 واٹس ایپ فوری بکنگ',
+  heroCallBtn: '📞 24/7 ہیلپ لائن',
+  metricJobsLabel: 'مکمل شدہ تصدیق شدہ کام',
+  metricArrivalLabel: 'اوسط آمد کا وقت',
+  metricSupportLabel: '24/7 ہنگامی سروس',
+  metricRatingLabel: 'کسٹمر اطمینان (1,500+ آراء)',
+  radarHubTitle: 'آن کال کاریگر دستہ · اسلام آباد و زون 5',
+  coverageTitle: '⚡ اسلام آباد اور راولپنڈی کے سروس شدہ علاقے:',
   rateHeading: 'شفاف ریٹ لسٹ (طے شدہ قیمتیں)',
   rateSub: 'اسلام آباد اور جناح گارڈن کے لیے طے شدہ ریٹس — کسی بحث یا زیادہ چارجز کے بغیر۔',
   formTitle: 'کاریگر بک کریں (Book a Service)',
@@ -698,12 +775,18 @@ function applyCustomerLanguage() {
   if ($('hdrTech')) $('hdrTech').textContent = isUr ? CUST_URDU.hdrTech : 'Technician portal';
   if ($('hdrWorkshop')) $('hdrWorkshop').textContent = isUr ? CUST_URDU.hdrWorkshop : 'Workshops';
 
-  const heroEyebrow = document.querySelector('#hero .eyebrow');
-  if (heroEyebrow) heroEyebrow.textContent = isUr ? CUST_URDU.heroEyebrow : 'Home services, made simple';
-  const heroH1 = document.querySelector('#hero h1');
-  if (heroH1) heroH1.innerHTML = isUr ? CUST_URDU.heroTitle : 'Your home deserves <span>the right help.</span>';
-  const heroCopy = document.querySelector('#hero .hero-copy');
-  if (heroCopy) heroCopy.textContent = isUr ? CUST_URDU.heroCopy : 'Book dependable local professionals for the jobs that keep your home running. Tell us what you need—we’ll help connect you.';
+  if ($('heroEyebrow')) $('heroEyebrow').textContent = isUr ? CUST_URDU.heroEyebrow : '🛡️ Certified & Background Checked Technicians';
+  if ($('heroTitle')) $('heroTitle').innerHTML = isUr ? CUST_URDU.heroTitle : 'Pakistan\'s Premier <span>Home Services</span> Platform';
+  if ($('heroCopy')) $('heroCopy').textContent = isUr ? CUST_URDU.heroCopy : 'Book dependable electricians, plumbers, AC specialists, solar engineers & tank cleaners with upfront transparent rates & 7-day warranty.';
+  if ($('heroBookBtn')) $('heroBookBtn').innerHTML = isUr ? `${CUST_URDU.heroBookBtn}` : '⚡ Book a Service Now <span aria-hidden="true">→</span>';
+  if ($('heroWaBtn')) $('heroWaBtn').textContent = isUr ? CUST_URDU.heroWaBtn : '💬 WhatsApp Booking';
+  if ($('heroCallBtn')) $('heroCallBtn').textContent = isUr ? CUST_URDU.heroCallBtn : '📞 24/7 Helpline';
+  if ($('metricJobsLabel')) $('metricJobsLabel').textContent = isUr ? CUST_URDU.metricJobsLabel : 'Verified Jobs Done';
+  if ($('metricArrivalLabel')) $('metricArrivalLabel').textContent = isUr ? CUST_URDU.metricArrivalLabel : 'Average Arrival Time';
+  if ($('metricSupportLabel')) $('metricSupportLabel').textContent = isUr ? CUST_URDU.metricSupportLabel : 'Emergency Dispatch';
+  if ($('metricRatingLabel')) $('metricRatingLabel').textContent = isUr ? CUST_URDU.metricRatingLabel : 'Customer Satisfaction';
+  if ($('radarHubTitle')) $('radarHubTitle').textContent = isUr ? CUST_URDU.radarHubTitle : 'Live Squad On-Call · Islamabad & Zone 5';
+  if ($('coverageTitle')) $('coverageTitle').textContent = isUr ? CUST_URDU.coverageTitle : '⚡ Trusted Service Areas Across Islamabad & Rawalpindi:';
 
   const pricingH2 = document.querySelector('#pricingSection h2');
   if (pricingH2) pricingH2.textContent = isUr ? CUST_URDU.rateHeading : 'Transparent Upfront Pricing (Zero Haggling)';
@@ -768,27 +851,37 @@ function renderPricingCards(category) {
     return;
   }
   const isUr = customerLang === 'ur';
-  grid.innerHTML = items.map(item => `
+  grid.innerHTML = items.map(item => {
+    const waText = encodeURIComponent(`Hello HomeServe, I would like to book/inquire about ${item.item} (${category}). Please advise availability.`);
+    return `
     <div class="pricing-card">
+      <span class="limited-offer-badge">🔥 ${isUr ? 'محدود پیشکش' : 'Limited Offer'} 🔥</span>
       <div class="pricing-card-top">
         <div class="pricing-card-badge-row">
-          ${item.popular ? '<span class="popular-tag">★ Popular</span>' : '<span></span>'}
+          ${item.popular ? `<span class="popular-tag">★ ${isUr ? 'مقبول ترین' : 'Popular'}</span>` : '<span></span>'}
           <span class="duration-tag">⏱ ${esc(item.duration)}</span>
         </div>
         <h4>${esc(item.item)}</h4>
-        ${item.savings ? `<span class="savings-tag">⚡ ${esc(item.savings)}</span>` : ''}
       </div>
       <div>
-        <div class="pricing-range">
-          ${item.market_price ? `<span class="market-price-strike">${esc(item.market_price)}</span>` : ''}
-          ${esc(item.price_range)}
+        <div class="pricing-comparison-box">
+          ${item.market_price ? `<span class="market-price-strike">${isUr ? 'مارکیٹ ریٹ: ' : 'Market: '}${esc(item.market_price)}</span>` : ''}
+          <div class="pricing-main-price">
+            <span class="pricing-range">${esc(item.price_range)}</span>
+            ${item.savings ? `<span class="savings-tag">✓ ${esc(item.savings)}</span>` : ''}
+          </div>
         </div>
-        <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('${esc(category)}', '${esc(item.item)}')">
-          ${isUr ? 'ابھی بک کریں →' : 'Book This Task →'}
-        </button>
+        <div class="pricing-actions-row">
+          <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('${esc(category)}', '${esc(item.item)}')">
+            ${isUr ? 'ابھی بک کریں →' : 'Book Task →'}
+          </button>
+          <a href="https://wa.me/923001110001?text=${waText}" target="_blank" rel="noopener noreferrer" class="pricing-wa-action" title="Inquire on WhatsApp">
+            💬 WhatsApp
+          </a>
+        </div>
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function bookFromRateCard(category, itemName) {
