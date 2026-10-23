@@ -512,6 +512,73 @@ def test_workshop_registration_and_review_flow(client):
     assert "Workshop" in page_res.text
 
 
+def test_preferred_arrival_slots_and_emergency_routing(client):
+    """Customer can specify preferred arrival slot (morning/afternoon/evening/emergency) and emergency elevates urgency."""
+    # 1. Morning slot request
+    morn_res = client.post("/api/requests", json={
+        "name": "Noman Tariq",
+        "phone": "03001239988",
+        "address": "Street 5, Phase 2, Jinnah Garden",
+        "area": "Jinnah Garden",
+        "description": "Fix leaking bibcock tap in bathroom",
+        "preferred_slot": "morning",
+        "terms_accepted": True,
+    })
+    assert morn_res.status_code == 200
+    morn_data = morn_res.json()
+    assert morn_data["preferred_slot"] == "morning"
+    token = morn_data["token"]
+
+    # Verify track returns preferred_slot
+    track = client.get(f"/api/track/{token}").json()
+    assert track["preferred_slot"] == "morning"
+
+    # 2. Emergency slot elevates urgency
+    emerg_res = client.post("/api/requests", json={
+        "name": "Kamran Alert",
+        "phone": "03001239977",
+        "address": "Main Commercial, Soan Gardens",
+        "area": "Soan Gardens",
+        "description": "Short circuit sparking in DB board",
+        "preferred_slot": "emergency",
+        "terms_accepted": True,
+    })
+    assert emerg_res.status_code == 200
+    emerg_token = emerg_res.json()["token"]
+    track_emerg = client.get(f"/api/track/{emerg_token}").json()
+    assert track_emerg["preferred_slot"] == "emergency"
+    assert track_emerg["urgency"] == "emergency"
+
+
+def test_water_tank_cleaning_and_renovation_catalog(client):
+    """Verify new high-demand categories (Water Tank Cleaning, Home Renovation) exist in categories, keywords, and pricing catalog."""
+    assert "Water Tank Cleaning" in main.CATEGORIES
+    assert "Home Renovation" in main.CATEGORIES
+
+    # Keyword triage
+    triage_tank = main.ai_analyze("hamari underground pani ki tanki safai karni hai bht kachra hai")
+    assert triage_tank["category"] == "Water Tank Cleaning"
+
+    triage_reno = main.ai_analyze("we need full house renovation and false ceiling in drawing room")
+    assert triage_reno["category"] == "Home Renovation"
+
+    # Pricing catalog verification
+    res = client.get("/api/pricing-catalog")
+    assert res.status_code == 200
+    catalog = res.json()["catalog"]
+    assert "Water Tank Cleaning" in catalog
+    assert "Home Renovation" in catalog
+    assert any("Overhead Water Tank" in item["item"] for item in catalog["Water Tank Cleaning"])
+    assert any("Turnkey Renovation" in item["item"] for item in catalog["Home Renovation"])
+
+    # Seasonal packages includes solar panel washing
+    pkg_res = client.get("/api/seasonal-packages")
+    assert pkg_res.status_code == 200
+    packages = pkg_res.json()["packages"]
+    assert any("solar-panel-deep-clean" in p["id"] for p in packages)
+
+
+
 
 
 

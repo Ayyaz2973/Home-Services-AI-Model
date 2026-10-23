@@ -431,3 +431,15 @@ body.lang-ur .invoice-table th{text-align:right}
   .warranty-certificate p{color:#333!important}
 }
 
+/* Arrival Time Slot Selector */
+.slot-selector{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:6px}
+.slot-pill{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12px;font-weight:650;color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .18s ease;user-select:none}
+.slot-pill:hover{border-color:var(--brand);background:var(--brand-soft)}
+.slot-pill input[type="radio"]{accent-color:var(--brand);margin:0}
+.slot-pill.active,.slot-pill:has(input:checked){border-color:var(--brand);background:var(--brand-soft);color:var(--brand-dark);font-weight:750}
+.slot-pill.emergency{border-color:#fca5a5;color:#991b1b}
+.slot-pill.emergency:has(input:checked){border-color:#ef4444;background:#fef2f2;color:#b91c1c}
+
+/* Category Specific Badges */
+.badge.water-tank-cleaning{background:#e0f2fe;color:#0369a1}
+.badge.home-renovation{background:#fae8ff;color:#86198f}

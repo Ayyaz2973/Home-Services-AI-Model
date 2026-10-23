@@ -90,6 +90,14 @@
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
         <b>Water filter & RO</b>
       </div>
+      <div class="service-tile" onclick="selectCategory('Water Tank Cleaning')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
+        <b>Water Tank Cleaning</b>
+      </div>
+      <div class="service-tile" onclick="selectCategory('Home Renovation')" role="button" tabindex="0">
+        <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+        <b>Home Renovation</b>
+      </div>
     </div>
   </div>
   </section>
@@ -216,6 +224,8 @@
         <button type="button" class="pricing-tab active" onclick="filterPricing('Electric Work')">⚡ Electric Work / الیکٹریشن</button>
         <button type="button" class="pricing-tab" onclick="filterPricing('Solar Solutions')">☀️ Solar Solutions / سولر سسٹم</button>
         <button type="button" class="pricing-tab" onclick="filterPricing('Plumbing')">💧 Plumbing / پلمبر</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Water Tank Cleaning')">🚰 Water Tank Cleaning / ٹینکی صفائی</button>
+        <button type="button" class="pricing-tab" onclick="filterPricing('Home Renovation')">🏠 Home Renovation / رینوویشن</button>
         <button type="button" class="pricing-tab" onclick="filterPricing('Air Conditioning')">❄️ Air Conditioning / اے سی</button>
         <button type="button" class="pricing-tab" onclick="filterPricing('Geyser Repair')">🔥 Geyser &amp; Heating / گیزر</button>
         <button type="button" class="pricing-tab" onclick="filterPricing('CCTV Installation')">📹 CCTV &amp; Security / کیمرے</button>
@@ -244,11 +254,11 @@
     <div>
     <div class="form-heading"><h2>Request a service</h2><p>Write in Urdu, Roman Urdu or English. Fields marked * are required.</p></div>
     <div class="row">
-      <div><label for="name">Your name *</label><input id="name" autocomplete="name" required></div>
-      <div><label for="phone">Phone number *</label><input id="phone" type="tel" autocomplete="tel" placeholder="03XX XXXXXXX" required></div>
+      <div><label for="name" id="lblName">Your name *</label><input id="name" autocomplete="name" placeholder="e.g. Tariq Mehmood" required></div>
+      <div><label for="phone" id="lblPhone">Phone number *</label><input id="phone" type="tel" autocomplete="tel" placeholder="03XX XXXXXXX" required></div>
     </div>
     <div class="row">
-      <div><label for="area">Area / sector</label><input id="area" list="areas" placeholder="Jinnah Garden" autocomplete="address-level2">
+      <div><label for="area" id="lblArea">Area / sector</label><input id="area" list="areas" placeholder="Jinnah Garden" autocomplete="address-level2">
         <input type="hidden" id="custLat" value="33.5682">
         <input type="hidden" id="custLng" value="73.1553">
         <datalist id="areas">
@@ -266,13 +276,18 @@
           <option>DHA Phase 1</option><option>DHA Phase 2</option><option>Bahria Town</option>
         </datalist>
       </div>
-      <div><label for="cat">Service / price</label>
-        <select id="cat">
+      <div><label for="address" id="lblAddress">Street / House Address *</label><input id="address" placeholder="e.g. House 14, Street 6, Phase 1" required></div>
+    </div>
+    <div class="row">
+      <div><label for="cat" id="lblCat">Service / Category</label>
+        <select id="cat" onchange="showEstimate()">
           <option value="">Auto-detect from problem (or choose below)</option>
           <option value="category:Electric Work">Electric Work</option>
           <option value="category:Plumbing">Plumbing</option>
+          <option value="category:Water Tank Cleaning">Water Tank Cleaning</option>
           <option value="category:Air Conditioning">Air Conditioning</option>
           <option value="category:Solar Solutions">Solar Solutions</option>
+          <option value="category:Home Renovation">Home Renovation</option>
           <option value="category:Home Cleaning">Home Cleaning</option>
           <option value="category:Pest Control">Pest Control</option>
           <option value="category:Washing Machine">Washing Machine</option>
@@ -288,6 +303,15 @@
           <option value="category:Other">Other</option>
         </select>
         <div id="priceEstimate" class="price-estimate">Choose a listed fixed-price service to see an estimate.</div>
+      </div>
+      <div>
+        <label id="lblSlot">Preferred Arrival Time Slot</label>
+        <div class="slot-selector" id="slotSelector">
+          <label class="slot-pill"><input type="radio" name="preferred_slot" value="morning" checked> <span id="slotMorn">🌅 Morning (9am-1pm)</span></label>
+          <label class="slot-pill"><input type="radio" name="preferred_slot" value="afternoon"> <span id="slotAft">☀️ Afternoon (1pm-5pm)</span></label>
+          <label class="slot-pill"><input type="radio" name="preferred_slot" value="evening"> <span id="slotEve">🌙 Evening (5pm-9pm)</span></label>
+          <label class="slot-pill emergency"><input type="radio" name="preferred_slot" value="emergency"> <span id="slotEmerg">🚨 Emergency (30-60m)</span></label>
+        </div>
       </div>
     </div>
     <div class="voice-intake-header">
@@ -643,6 +667,16 @@ const CUST_URDU = {
   btnVoice: 'بول کر بتائیں (Voice Note)',
   langBtnTextUr: '🌐 Switch to English',
   langBtnTextEn: '🌐 اردو میں دیکھیں',
+  lblName: 'آپ کا نام *',
+  lblPhone: 'موبائل نمبر *',
+  lblArea: 'علاقہ / سیکٹر',
+  lblAddress: 'گلی و مکان کا مکمل پتہ *',
+  lblCat: 'سروس / کیٹگری منتخب کریں',
+  lblSlot: 'کاریگر کی آمد کا وقت (Arrival Time Slot)',
+  slotMorn: '🌅 صبح (9 تا 1 بجے)',
+  slotAft: '☀️ دوپہر (1 تا 5 بجے)',
+  slotEve: '🌙 شام (5 تا 9 بجے)',
+  slotEmerg: '🚨 ہنگامی (30-60 منٹ)',
 };
 
 function applyCustomerLanguage() {
@@ -680,6 +714,17 @@ function applyCustomerLanguage() {
   if (formH2) formH2.textContent = isUr ? CUST_URDU.formTitle : 'Tell us what needs fixing.';
   const formP = document.querySelector('#formView .request-aside p');
   if (formP) formP.textContent = isUr ? CUST_URDU.formSub : 'Share a few details and we’ll find the best available service professional for your request.';
+
+  if ($('lblName')) $('lblName').textContent = isUr ? CUST_URDU.lblName : 'Your name *';
+  if ($('lblPhone')) $('lblPhone').textContent = isUr ? CUST_URDU.lblPhone : 'Phone number *';
+  if ($('lblArea')) $('lblArea').textContent = isUr ? CUST_URDU.lblArea : 'Area / sector';
+  if ($('lblAddress')) $('lblAddress').textContent = isUr ? CUST_URDU.lblAddress : 'Street / House Address *';
+  if ($('lblCat')) $('lblCat').textContent = isUr ? CUST_URDU.lblCat : 'Service / Category';
+  if ($('lblSlot')) $('lblSlot').textContent = isUr ? CUST_URDU.lblSlot : 'Preferred Arrival Time Slot';
+  if ($('slotMorn')) $('slotMorn').textContent = isUr ? CUST_URDU.slotMorn : '🌅 Morning (9am-1pm)';
+  if ($('slotAft')) $('slotAft').textContent = isUr ? CUST_URDU.slotAft : '☀️ Afternoon (1pm-5pm)';
+  if ($('slotEve')) $('slotEve').textContent = isUr ? CUST_URDU.slotEve : '🌙 Evening (5pm-9pm)';
+  if ($('slotEmerg')) $('slotEmerg').textContent = isUr ? CUST_URDU.slotEmerg : '🚨 Emergency (30-60m)';
 
   const subBtn = $('subBtn');
   if (subBtn) subBtn.innerHTML = isUr ? `${CUST_URDU.btnSubmit}` : 'Find a professional <span aria-hidden="true">→</span>';
@@ -886,6 +931,7 @@ async function submitReq() {
     $('termsAccepted').focus();
     return;
   }
+  const selectedSlot = document.querySelector('input[name="preferred_slot"]:checked')?.value || 'anytime';
   $('subBtn').disabled = true;
   flash($('fmsg'), 'Analysing your request...', true);
   try {
@@ -898,6 +944,7 @@ async function submitReq() {
         longitude: $('custLng') && $('custLng').value ? parseFloat($('custLng').value) : null,
         category: $('cat').value.startsWith('category:') ? $('cat').value.slice('category:'.length) : null,
         service_id: $('cat').value.startsWith('service:') ? Number($('cat').value.slice('service:'.length)) : null,
+        preferred_slot: selectedSlot,
         terms_accepted: $('termsAccepted').checked,
       },
     });
@@ -951,6 +998,16 @@ async function load() {
             </div>
           </div>
         </div>`;
+
+    if (r.preferred_slot && r.preferred_slot !== 'anytime') {
+      const slotMap = {
+        'morning': '🌅 Morning (9:00 AM – 1:00 PM)',
+        'afternoon': '☀️ Afternoon (1:00 PM – 5:00 PM)',
+        'evening': '🌙 Evening (5:00 PM – 9:00 PM)',
+        'emergency': '🚨 Emergency Dispatch (Within 30–60 mins)',
+      };
+      h += `<div class="request-location-badge">⏱ Preferred Arrival Window: <b>${slotMap[r.preferred_slot] || r.preferred_slot}</b></div>`;
+    }
 
     if (r.latitude && r.longitude) {
       h += `<div class="request-location-badge">📍 Pinned service location: <b>${esc(r.area || 'Service Area')}</b> (${Number(r.latitude).toFixed(4)}, ${Number(r.longitude).toFixed(4)})</div>`;

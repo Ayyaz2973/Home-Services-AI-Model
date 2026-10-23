@@ -460,7 +460,15 @@ function jobCard(j) {
   };
   const statusText = isUr ? (statusUrdu[j.status] || badge(j.status)) : badge(j.status);
 
-  let h = `<div class="job"><b>#${j.id} · ${catDisplay}</b> ${isUr ? `<span class="badge ${j.status}">${statusText}</span>` : statusText} ${j.urgency !== 'normal' ? badge(j.urgency) : ''}
+  const slotTextMap = {
+    'morning': isUr ? '🌅 صبح (9 تا 1 بجے)' : '🌅 Morning (9am-1pm)',
+    'afternoon': isUr ? '☀️ دوپہر (1 تا 5 بجے)' : '☀️ Afternoon (1pm-5pm)',
+    'evening': isUr ? '🌙 شام (5 تا 9 بجے)' : '🌙 Evening (5pm-9pm)',
+    'emergency': isUr ? '🚨 فوری ایمرجنسی (30-60 منٹ)' : '🚨 Emergency (30-60m)',
+  };
+  const slotBadge = (j.preferred_slot && j.preferred_slot !== 'anytime') ? ` · <b>${isUr ? 'آمد کا وقت:' : 'Arrival Slot:'}</b> ${slotTextMap[j.preferred_slot] || j.preferred_slot}` : '';
+
+  let h = `<div class="job"><b>#${j.id} · ${catDisplay}</b> ${isUr ? `<span class="badge ${j.status}">${statusText}</span>` : statusText} ${j.urgency !== 'normal' ? badge(j.urgency) : ''}${slotBadge}
     <br><b>${isUr ? 'کام کی تفصیل:' : 'Job details:'}</b> ${esc(j.ai_summary || j.description)}
     <br><small>📍 <b>${isUr ? 'پتہ:' : 'Location:'}</b> ${esc(j.area)} · ${esc(j.address)}</small>`;
   if (j.customer_name) {

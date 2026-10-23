@@ -139,17 +139,19 @@ def find_nearest_pilot_area(lat: float, lng: float) -> Optional[str]:
 
 
 CATEGORIES = [
-    "Electric Work", "Plumbing", "Air Conditioning", "Solar Solutions",
-    "Home Cleaning", "Pest Control", "Washing Machine", "Fridge Repair",
+    "Electric Work", "Plumbing", "Water Tank Cleaning", "Air Conditioning", "Solar Solutions",
+    "Home Renovation", "Home Cleaning", "Pest Control", "Washing Machine", "Fridge Repair",
     "Geyser Repair", "Carpentry", "Painting", "Locksmith", "CCTV Installation",
     "Water Filter / RO", "Welding Work", "Labour", "Other",
 ]
 
 KEYWORDS = {
     "Electric Work": ["bijli", "electric", "wiring", "switch", "socket", "fan ", "breaker", "short circuit", "ups ", "بجلی"],
-    "Plumbing": ["plumb", "nal ", "nalka", "pipe", "leak", "tap ", "tanki", "drain", "commode", "washroom", "نل", "پانی"],
+    "Plumbing": ["plumb", "nal ", "nalka", "pipe", "leak", "tap ", "drain", "commode", "washroom", "نل", "پانی"],
+    "Water Tank Cleaning": ["tanki safai", "water tank", "tank cleaning", "overhead tank", "underground tank", "ٹینکی کی صفائی", "واٹر ٹینک", "sludge", "tank wash", "tanki"],
     "Air Conditioning": [" ac ", "a/c", "air condition", "cooling", "split", "اے سی"],
     "Solar Solutions": ["solar", "panel", "inverter", "سولر", "solar panel", "battery", "inverex", "growatt", "knox", "net metering", "plates", "plate", "solar system"],
+    "Home Renovation": ["renovation", "remodel", "false ceiling", "civil work", "tile flooring", "makeover", "modular kitchen", "رینوویشن", "فالس سیلنگ", "bathroom tile"],
     "Home Cleaning": ["clean", "safai", "sofa wash", "صفائی"],
     "Pest Control": ["pest", "keera", "deemak", "termite", "cockroach", "مچھر", "khatmal", "spray", "دیمک", "کیڑے"],
     "Washing Machine": ["washing machine", "dryer", "kapray dhone", "واشنگ مشین", "spinner", "motor", "oven", "microwave", "fridge", "فریج"],
@@ -216,7 +218,7 @@ def init_db():
             description TEXT, category TEXT, urgency TEXT DEFAULT 'normal', ai_summary TEXT,
             status TEXT DEFAULT 'new', technician_id INTEGER, amount REAL, work_note TEXT,
             service_id INTEGER, quoted_price REAL, visit_fee REAL,
-            latitude REAL, longitude REAL,
+            latitude REAL, longitude REAL, preferred_slot TEXT DEFAULT 'anytime',
             created_at TEXT, assigned_at TEXT, completed_at TEXT, confirmed_at TEXT);
         CREATE TABLE IF NOT EXISTS declines(request_id INTEGER, technician_id INTEGER, at TEXT);
         CREATE TABLE IF NOT EXISTS technician_locations(
@@ -341,6 +343,7 @@ def init_db():
             ("customer_review", "TEXT"),
             ("warranty_until", "TEXT"),
             ("warranty_claimed_at", "TEXT"),
+            ("preferred_slot", "TEXT DEFAULT 'anytime'"),
         ):
             if column not in request_columns:
                 con.execute(f"ALTER TABLE requests ADD COLUMN {column} {declaration}")
@@ -815,9 +818,36 @@ PRICING_CATALOG = {
         {"item": "Complete Home Anti-Termite (Deemak) Chemical Spray", "price_range": "Rs. 4,000 - 8,000", "market_price": "Rs. 12,000", "savings": "Save Rs. 4,000+", "duration": "2 hours", "popular": True},
         {"item": "Cockroach & Bed Bug (Khatmal) Targeted Gel Treatment", "price_range": "Rs. 2,500 - 4,500", "market_price": "Rs. 6,000", "savings": "Save Rs. 1,500+", "duration": "60 mins", "popular": True},
     ],
+    "Water Tank Cleaning": [
+        {"item": "Overhead Water Tank Chemical Deep Scrub & Wash (Up to 1,000 Gal)", "price_range": "Rs. 2,500 - 3,500", "market_price": "Rs. 4,500", "savings": "Save Rs. 1,000+", "duration": "90 mins", "popular": True},
+        {"item": "Underground Concrete Tank Heavy Sludge Extraction & Disinfection", "price_range": "Rs. 4,500 - 6,500", "market_price": "Rs. 9,000", "savings": "Save Rs. 2,500+", "duration": "3 hours", "popular": True},
+        {"item": "Twin Pack: Overhead + Underground Tank Dual Sanitization", "price_range": "Rs. 6,500 - 8,500", "market_price": "Rs. 12,000", "savings": "Save Rs. 3,500+", "duration": "4 hours", "popular": True},
+    ],
+    "Home Renovation": [
+        {"item": "Turnkey Renovation & Interior Architecture (Free On-Site Survey)", "price_range": "Rs. 0 (Free Estimate)", "market_price": "Rs. 5,000", "savings": "Free Visit", "duration": "Survey 60 mins", "popular": True},
+        {"item": "Gypsum / POP False Ceiling Installation with LED Grooves (Per Sq Ft)", "price_range": "Rs. 130 - 180 / sqft", "market_price": "Rs. 230 / sqft", "savings": "Save 25%", "duration": "Custom", "popular": True},
+        {"item": "Modular Kitchen Cabinets & Countertop Fitting", "price_range": "Rs. 25,000 - 75,000", "market_price": "Rs. 95,000", "savings": "Save Rs. 20,000+", "duration": "3-5 days", "popular": False},
+        {"item": "Bathroom Tile & Sanitary Complete Modernization", "price_range": "Rs. 20,000 - 45,000", "market_price": "Rs. 60,000", "savings": "Save Rs. 15,000+", "duration": "2-3 days", "popular": True},
+    ],
 }
 
 SEASONAL_PACKAGES = [
+    {
+        "id": "solar-panel-deep-clean",
+        "season": "Year-Round / Post-Dust Season",
+        "badge": "Efficiency Booster · Zone 5",
+        "title": "Solar Panel De-Dusting & Generation Restore Package",
+        "price_pkr": 2500,
+        "savings": "Save 20%",
+        "checklist": [
+            "De-ionized high-pressure jet wash for up to 16 solar plates",
+            "Bird droppings, soot, and industrial grime chemical soft-sponge scrub",
+            "Inverter DC input ampere & voltage verification before & after wash",
+            "MC4 connector water-tight seal and earthing inspection"
+        ],
+        "category": "Solar Solutions",
+        "default_desc": "Solar Panel jet wash and generation restore tune-up"
+    },
     {
         "id": "pre-winter-geyser",
         "season": "Pre-Winter (October - November)",
@@ -971,6 +1001,7 @@ class RequestIn(BaseModel):
     terms_accepted: bool = False
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    preferred_slot: Optional[str] = "anytime"
 
 
 class DoneIn(BaseModel):
@@ -1509,23 +1540,29 @@ def create_request(body: RequestIn):
             if detected:
                 norm_area = detected
 
+        slot = (body.preferred_slot or "anytime").strip().lower()
+        if slot not in ("morning", "afternoon", "evening", "emergency", "anytime"):
+            slot = "anytime"
+        urgency = "emergency" if slot == "emergency" else ai["urgency"]
+
         cur = con.execute(
             """INSERT INTO requests(token,customer_name,customer_phone,address,area,description,
                category,urgency,ai_summary,status,service_id,quoted_price,visit_fee,
                customer_terms_version,customer_terms_accepted_at,
                customer_privacy_version,customer_privacy_accepted_at,
-               latitude,longitude,created_at)
-               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               latitude,longitude,preferred_slot,created_at)
+               VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             (token, body.name.strip(), norm_phone(body.phone), body.address.strip(), norm_area,
-             body.description.strip(), category, ai["urgency"], ai["summary"], "new",
+             body.description.strip(), category, urgency, ai["summary"], "new",
              catalog_item["id"] if catalog_item else None,
              catalog_item["price"] if catalog_item else None,
              catalog_item["visit_fee"] if catalog_item else None,
              TERMS_VERSION, now(), PRIVACY_VERSION, now(),
-             body.latitude, body.longitude, now()),
+             body.latitude, body.longitude, slot, now()),
         )
         rid = cur.lastrowid
-        log(con, rid, f"Request received. Service: {category}. Urgency: {ai['urgency']}.")
+        slot_label = f" [Preferred Slot: {slot.capitalize()}]" if slot != "anytime" else ""
+        log(con, rid, f"Request received. Service: {category}. Urgency: {urgency}.{slot_label}")
         if category == "Other":
             con.execute("UPDATE requests SET status='unassigned' WHERE id=?", (rid,))
             log(con, rid, "Needs manual assignment by admin.")
@@ -1534,6 +1571,7 @@ def create_request(body: RequestIn):
         status = con.execute("SELECT status FROM requests WHERE id=?", (rid,)).fetchone()[0]
     return {
         "id": rid, "token": token, "status": status, "category": category,
+        "preferred_slot": slot,
         "quoted_price": catalog_item["price"] if catalog_item else None,
         "visit_fee": catalog_item["visit_fee"] if catalog_item else None,
     }
