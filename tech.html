@@ -418,9 +418,47 @@ async function load() {
       ? `<div class="wallet-warning">⚠️ <b>${isUr ? 'کمیشن واجب الادا ہے:' : 'Platform commission due:'} ${money(Math.abs(m.wallet))}</b><br><small>${isUr ? 'ایزی پیسہ / جاز کیش (0339 4021643) کے ذریعے ایڈمن کو جمع کروائیں۔' : 'Please deposit via EasyPaisa or JazzCash (0339 4021643) to keep priority dispatch.'}</small></div>`
       : `<div class="wallet-positive">💰 <b>${isUr ? 'آپ کی کمائی (بٹوَہ):' : 'Available balance:'} ${money(m.wallet)}</b></div>`;
 
+    const payoutMethodText = (m.payout_method || 'easypaisa').toUpperCase();
+    const payoutAccText = m.payout_account || m.phone;
+    const payoutTitleText = m.payout_title || m.name;
+
     $('profile').innerHTML = `<h2>${esc(m.name)}</h2>
       <p>${CATEGORY_URDU[m.category] || esc(m.category)} · 📍 ${esc(m.area)} · ⭐ ${m.rating} · ${m.jobs_done} ${isUr ? 'مکمل کام' : 'jobs done'}</p>
       ${walletCard}
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px;margin:12px 0">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <b>💳 ${isUr ? 'خودکار پے آؤٹ اکاؤنٹ (90% خالص آمدن)' : 'Automated Payout Account (Your 90% Share)'}</b><br>
+            <span style="font-size:13px;color:#334155">${esc(payoutMethodText)}: <b>${esc(payoutAccText)}</b> (${esc(payoutTitleText)})</span>
+          </div>
+          <button type="button" class="alt small" onclick="$('payoutEditBox').classList.toggle('hide')">✏️ ${isUr ? 'اکاؤنٹ تبدیل کریں' : 'Change Account'}</button>
+        </div>
+        <div id="payoutEditBox" class="hide" style="margin-top:10px;border-top:1px solid #cbd5e1;padding-top:10px">
+          <div class="row">
+            <div>
+              <label><small>${isUr ? 'طریقہ کار' : 'Method'}</small></label>
+              <select id="myPayoutMethod">
+                <option value="easypaisa" ${m.payout_method === 'easypaisa' ? 'selected' : ''}>📱 EasyPaisa</option>
+                <option value="jazzcash" ${m.payout_method === 'jazzcash' ? 'selected' : ''}>📱 JazzCash</option>
+                <option value="raast" ${m.payout_method === 'raast' ? 'selected' : ''}>⚡ Raast ID (Zero Fee)</option>
+                <option value="bank" ${m.payout_method === 'bank' ? 'selected' : ''}>🏦 Bank Account / IBAN</option>
+              </select>
+            </div>
+            <div>
+              <label><small>${isUr ? 'اکاؤنٹ نمبر / موبائل' : 'Account Number / Mobile'}</small></label>
+              <input id="myPayoutAccount" value="${esc(m.payout_account || '')}" placeholder="03XX XXXXXXX">
+            </div>
+            <div>
+              <label><small>${isUr ? 'اکاؤنٹ ٹائٹل (نام)' : 'Account Title'}</small></label>
+              <input id="myPayoutTitle" value="${esc(m.payout_title || '')}" placeholder="e.g. Zubair Khan">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <button type="button" class="small" onclick="savePayoutAccount()">${isUr ? '💾 محفوظ کریں' : 'Save Payout Details'}</button>
+            <span id="payoutSaveMsg" class="msg ok hide" style="padding:4px 8px;font-size:12px">Saved!</span>
+          </div>
+        </div>
+      </div>
       <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <label style="margin:0"><input type="checkbox" class="w-auto" ${m.available ? 'checked' : ''} onchange="setAvail(this.checked)">
         ${isUr ? UR_DICT.available : 'I am available for new jobs'}</label>
@@ -520,8 +558,22 @@ function jobCard(j) {
           ${canComplete ? '' : `<p class="msg">${isUr ? 'کام مکمل کرنے کے لیے: جی پی ایس چیک ان کریں، دونوں تصاویر اپ لوڈ کریں اور اضافی کام کا فیصلہ ہونے دیں۔' : 'To finish, check in at the job, upload both required photos, and wait for any extra-work decision.'}</p>`}
           <button ${canComplete ? '' : 'disabled'} onclick="done(${j.id})">${isUr ? '🏁 کام مکمل ہو گیا ہے (Mark Work Done)' : 'Mark work done'}</button>`;
   }
-  if (j.status === 'work_done') h += `<br>${isUr ? `گاہک کی طرف سے ${money(j.amount)} کی تصدیق کا انتظار ہے۔` : `Waiting for customer to confirm ${money(j.amount)}.`}`;
-  if (j.status === 'confirmed') h += `<br>${isUr ? `✅ گاہک نے تصدیق کر دی ہے۔ ${money(j.amount)} وصول ہو گئے۔` : `Confirmed. ${money(j.amount)} charged.`}`;
+  if (j.status === 'work_done') {
+    const gross = j.amount || 0;
+    const fee = Math.round(gross * 0.10);
+    const takeHome = gross - fee;
+    h += `<br><div style="background:#fef3c7;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:6px;margin-top:6px;font-size:12px;line-height:1.5">
+      ${isUr ? `⏳ <b>گاہک کی تصدیق کا انتظار ہے:</b> کل بل: <b>${money(gross)}</b><br>💵 آپ کا 90% پے آؤٹ: <b style="color:#2563eb">${money(takeHome)}</b> · پلیٹ فارم کٹوتی (10%): <b>${money(fee)}</b>` : `⏳ <b>Waiting for customer to confirm payment:</b> Total: <b>${money(gross)}</b><br>💵 Your 90% Payout: <b style="color:#2563eb">${money(takeHome)}</b> · Platform Fee (10%): <b>${money(fee)}</b>`}
+    </div>`;
+  }
+  if (j.status === 'confirmed') {
+    const gross = j.amount || 0;
+    const fee = Math.round(gross * 0.10);
+    const takeHome = gross - fee;
+    h += `<br><div style="background:#ecfdf5;border-left:3px solid #10b981;padding:8px 12px;border-radius:6px;margin-top:6px;font-size:12px;line-height:1.5">
+      ${isUr ? `✅ <b>گاہک نے تصدیق کر دی۔</b> کل رقم: <b>${money(gross)}</b><br>🎉 آپ کا خالص پے آؤٹ (90%): <b style="color:#10b981">${money(takeHome)}</b> (خودکار ٹرانسفر کا عمل جاری)` : `✅ <b>Customer confirmed.</b> Total billed: <b>${money(gross)}</b><br>🎉 Your 90% Take-Home: <b style="color:#10b981">${money(takeHome)}</b> (Automated disbursement queued)`}
+    </div>`;
+  }
   if (j.status === 'disputed') h += `<br>${isUr ? '⚠️ گاہک نے مسئلہ درج کیا ہے۔ ایڈمن آپ سے رابطہ کرے گا۔' : 'Customer reported a problem. Admin will contact you.'}`;
   return h + '</div>';
 }
@@ -641,6 +693,30 @@ async function done(id) {
     if (trackingJobId === id) stopLocationWatch();
     load();
   } catch (e) { alert(e.message); }
+}
+
+async function savePayoutAccount() {
+  const method = $('myPayoutMethod').value;
+  const account = $('myPayoutAccount').value.trim();
+  const title = $('myPayoutTitle').value.trim();
+  if (!account || !title) {
+    alert(techLang === 'ur' ? 'براہ کرم اکاؤنٹ نمبر اور اکاؤنٹ ٹائٹل درج کریں۔' : 'Please enter your account number and account title.');
+    return;
+  }
+  try {
+    await api('/api/tech/payout-account', {
+      method: 'POST',
+      body: { payout_method: method, payout_account: account, payout_title: title }
+    }, H());
+    const msg = $('payoutSaveMsg');
+    if (msg) {
+      msg.classList.remove('hide');
+      setTimeout(() => msg.classList.add('hide'), 3000);
+    }
+    await load();
+  } catch (e) {
+    alert(e.message || 'Error updating payout account');
+  }
 }
 
 if (sessionStorage.getItem('admin_key')) {

@@ -358,6 +358,23 @@ def init_db():
         technician_columns = {row["name"] for row in con.execute("PRAGMA table_info(technicians)")}
         if "application_id" not in technician_columns:
             con.execute("ALTER TABLE technicians ADD COLUMN application_id INTEGER")
+        for col, dtype in (
+            ("payout_method", "TEXT DEFAULT 'easypaisa'"),
+            ("payout_account", "TEXT DEFAULT ''"),
+            ("payout_title", "TEXT DEFAULT ''"),
+        ):
+            if col not in technician_columns:
+                con.execute(f"ALTER TABLE technicians ADD COLUMN {col} {dtype}")
+
+        app_cols = {row["name"] for row in con.execute("PRAGMA table_info(technician_applications)")}
+        for col, dtype in (
+            ("payout_method", "TEXT DEFAULT 'easypaisa'"),
+            ("payout_account", "TEXT DEFAULT ''"),
+            ("payout_title", "TEXT DEFAULT ''"),
+        ):
+            if col not in app_cols:
+                con.execute(f"ALTER TABLE technician_applications ADD COLUMN {col} {dtype}")
+
         PRIVATE_STORAGE.mkdir(parents=True, exist_ok=True)
         (PRIVATE_STORAGE / "documents").mkdir(exist_ok=True)
         (PRIVATE_STORAGE / "job_photos").mkdir(exist_ok=True)
@@ -1057,6 +1074,12 @@ class PayoutIn(BaseModel):
     reference: str = ""
 
 
+class PayoutAccountIn(BaseModel):
+    payout_method: str = Field(default="easypaisa", max_length=30)
+    payout_account: str = Field(..., min_length=4, max_length=50)
+    payout_title: str = Field(..., min_length=2, max_length=100)
+
+
 class AvailIn(BaseModel):
     available: bool
 
@@ -1249,12 +1272,17 @@ def admin_review_application(
                 )}
                 if not {"cnic_front", "cnic_back", "profile_photo"}.issubset(required):
                     raise HTTPException(400, "Required identity and profile documents are missing")
+                p_method = application["payout_method"] if "payout_method" in application.keys() and application["payout_method"] else "easypaisa"
+                p_account = application["payout_account"] if "payout_account" in application.keys() and application["payout_account"] else application["phone"]
+                p_title = application["payout_title"] if "payout_title" in application.keys() and application["payout_title"] else application["name"]
                 con.execute(
                     """INSERT INTO technicians(
-                         name,phone,pin_hash,category,area,available,active,created_at,application_id)
-                       VALUES(?,?,?,?,?,0,1,?,?)""",
+                         name,phone,pin_hash,category,area,available,active,created_at,application_id,
+                         payout_method,payout_account,payout_title)
+                       VALUES(?,?,?,?,?,0,1,?,?,?,?,?)""",
                     (application["name"], application["phone"], application["pin_hash"],
-                     application["category"], application["area"], now(), application_id),
+                     application["category"], application["area"], now(), application_id,
+                     p_method, p_account, p_title),
                 )
                 status = "approved"
             else:
@@ -1783,8 +1811,29 @@ def tech_me(x_phone: str = Header(None), x_pin: str = Header(None)):
             if j["status"] == "assigned":  # hide contact details until accepted
                 j["customer_phone"], j["customer_name"] = "", ""
                 j["address"] = "(shown after you accept)"
-        me = {k: t[k] for k in ("id", "name", "phone", "category", "area", "available", "rating", "jobs_done", "wallet")}
+        me = {
+            k: (t[k] if k in t.keys() else "")
+            for k in (
+                "id", "name", "phone", "category", "area", "available", "rating",
+                "jobs_done", "wallet", "payout_method", "payout_account", "payout_title"
+            )
+        }
         return {"me": me, "jobs": jobs}
+
+
+@app.post("/api/tech/payout-account")
+def tech_update_payout_account(
+    body: PayoutAccountIn, x_phone: str = Header(None), x_pin: str = Header(None)
+):
+    with db() as con:
+        t = tech_auth(con, x_phone, x_pin)
+        con.execute(
+            """UPDATE technicians
+               SET payout_method=?, payout_account=?, payout_title=?
+               WHERE id=?""",
+            (body.payout_method.lower().strip(), body.payout_account.strip(), body.payout_title.strip(), t["id"]),
+        )
+    return {"ok": True, "message": "Payout account updated successfully"}
 
 
 @app.post("/api/tech/availability")
@@ -2081,7 +2130,11 @@ def admin_dashboard(x_admin_key: str = Header(None)):
         for t in techs:
             t.pop("pin_hash", None)
         pays = [dict(r) for r in con.execute(
-            """SELECT p.*, t.name AS tech_name, t.phone AS tech_phone FROM payments p
+            """SELECT p.*, t.name AS tech_name, t.phone AS tech_phone,
+                      COALESCE(t.payout_method, 'easypaisa') AS tech_payout_method,
+                      COALESCE(t.payout_account, t.phone) AS tech_payout_account,
+                      COALESCE(t.payout_title, t.name) AS tech_payout_title
+               FROM payments p
                JOIN technicians t ON t.id=p.technician_id ORDER BY p.id DESC LIMIT 200""")]
         s = lambda q: con.execute(q).fetchone()[0] or 0
         stats = {

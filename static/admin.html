@@ -444,15 +444,39 @@ function closeAdminPhoto() {
 }
 
 function renderPay() {
-  const rows = data.payments.map(p => `<tr><td>#${p.request_id}</td><td>${esc(p.tech_name)}<br><small>${esc(p.tech_phone)}</small></td>
-    <td>${money(p.amount)}</td><td>${money(p.commission)}</td><td><b>${money(p.payout)}</b></td>
-    <td>${badge(p.status)}</td><td>${p.collected ? '✅ collected' : '❌ not collected'}</td>
-    <td>${!p.collected && p.status !== 'void' ? `<button class="small" onclick="post('/api/admin/payments/${p.id}/collected')">Mark collected</button>` : ''}
-    ${p.status === 'released' ? `<button class="small" onclick="payout(${p.id})">Pay out</button>` : ''}
-    <small>${esc(p.reference || '')}</small></td></tr>`).join('');
-  $('p_pay').innerHTML = `<h2>Payments ledger</h2>
-    <p><small>Flow: technician marks done → customer confirms (released) → you mark customer money collected → you pay the technician (JazzCash / Easypaisa / bank) and record the reference.</small></p>
-    <table><tr><th>Job</th><th>Technician</th><th>Amount</th><th>Commission</th><th>Payout</th><th>Status</th><th>Customer money</th><th>Action</th></tr>${rows}</table>`;
+  const totalGross = data.payments.reduce((s, p) => s + (p.amount || 0), 0);
+  const totalCommission = data.payments.reduce((s, p) => s + (p.commission || 0), 0);
+  const totalPayout = data.payments.reduce((s, p) => s + (p.payout || 0), 0);
+
+  const rows = data.payments.map(p => `<tr>
+    <td><b>#${p.request_id}</b></td>
+    <td><b>${esc(p.tech_name)}</b><br><small>${esc(p.tech_phone)}</small></td>
+    <td>${money(p.amount)}</td>
+    <td><span style="color:#10b981;font-weight:700">+${money(p.commission)} (10%)</span></td>
+    <td><b style="color:#2563eb">${money(p.payout)} (90%)</b></td>
+    <td>
+      <div style="font-size:11px;background:#f8fafc;padding:4px 8px;border-radius:6px;border:1px solid #e2e8f0;line-height:1.4">
+        <b>${esc((p.tech_payout_method || 'EasyPaisa').toUpperCase())}:</b> ${esc(p.tech_payout_account || p.tech_phone)}<br>
+        <span style="color:#64748b">${esc(p.tech_payout_title || p.tech_name)}</span>
+      </div>
+    </td>
+    <td>${badge(p.status)}</td>
+    <td>${p.collected ? '<span style="color:#10b981;font-weight:600">✅ In Owner Account</span>' : '<span style="color:#eab308;font-weight:600">⏳ Pending</span>'}</td>
+    <td>
+      ${!p.collected && p.status !== 'void' ? `<button class="small" onclick="post('/api/admin/payments/${p.id}/collected')">Mark Collected</button>` : ''}
+      ${p.status === 'released' ? `<button class="small" style="background:#10b981;color:#fff" onclick="payout(${p.id}, '${esc(p.tech_name)}', ${p.payout}, '${esc(p.tech_payout_method || 'EasyPaisa')}', '${esc(p.tech_payout_account || p.tech_phone)}')">💸 Disburse 90%</button>` : ''}
+      ${p.reference ? `<br><small style="color:#64748b">Ref: ${esc(p.reference)}</small>` : ''}
+    </td>
+  </tr>`).join('');
+
+  $('p_pay').innerHTML = `<h2>Automated Payments &amp; 10% Commission Ledger</h2>
+    <div class="stats" style="margin-bottom:18px">
+      <div class="stat"><span class="num">${money(totalGross)}</span><span class="label">Total Job Billing (100%)</span></div>
+      <div class="stat"><span class="num" style="color:#10b981">${money(totalCommission)}</span><span class="label">Owner 10% Auto-Deduction (Your Net Profit)</span></div>
+      <div class="stat"><span class="num" style="color:#2563eb">${money(totalPayout)}</span><span class="label">Technicians 90% Share (Take-Home)</span></div>
+    </div>
+    <p><small><b>Automated Split Rule:</b> 10% platform commission is automatically retained and deposited into the Owner Central Account (0339 4021643). The remaining 90% is allocated for technician payout disbursement via Raast / EasyPaisa / Bank.</small></p>
+    <table><tr><th>Job</th><th>Technician</th><th>Gross Bill</th><th>Owner 10%</th><th>Tech 90%</th><th>Tech Payout Account</th><th>Status</th><th>Owner Deposit</th><th>Action</th></tr>${rows}</table>`;
 }
 
 async function post(path, body) {
@@ -463,9 +487,11 @@ function resolve(id, action) {
   if (confirm(action === 'release' ? 'Release payment to technician?' : 'Close/void this request?'))
     post(`/api/admin/requests/${id}/resolve`, { action });
 }
-function payout(id) {
-  const reference = prompt('Transfer reference (JazzCash/Easypaisa/bank txn ID):');
-  if (reference !== null) post(`/api/admin/payments/${id}/payout`, { reference });
+function payout(id, techName, amount, method, account) {
+  const reference = prompt(`Disburse Rs ${amount} (90% share) to ${techName || 'technician'} via ${method || 'EasyPaisa'} (${account || ''}):\nEnter Transaction ID / Bank Transfer Reference:`);
+  if (reference !== null && reference.trim()) {
+    post(`/api/admin/payments/${id}/payout`, { reference: reference.trim() });
+  }
 }
 async function addTech() {
   try {

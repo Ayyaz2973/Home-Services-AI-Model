@@ -578,6 +578,85 @@ def test_water_tank_cleaning_and_renovation_catalog(client):
     assert any("solar-panel-deep-clean" in p["id"] for p in packages)
 
 
+def test_automated_10_percent_commission_and_tech_payout_routing(client):
+    """Verify 10% platform fee auto-deduction and 90% technician payout account settings and ledger."""
+    admin_headers = {"x-admin-key": main.ADMIN_KEY}
+    dash_init = client.get("/api/admin/dashboard", headers=admin_headers).json()
+    assert len(dash_init["technicians"]) > 0
+    tech = dash_init["technicians"][0]
+    tech_id = tech["id"]
+    tech_phone = tech["phone"]
+
+    # 1. Update payout account for technician (pin 1234)
+    auth_headers = {"x-phone": tech_phone, "x-pin": "1234"}
+    payout_update = client.post(
+        "/api/tech/payout-account",
+        headers=auth_headers,
+        json={"payout_method": "easypaisa", "payout_account": "03394021643", "payout_title": "Ayyaz Haider"},
+    )
+    assert payout_update.status_code == 200
+    assert payout_update.json()["ok"] is True
+
+    # 2. Verify tech/me returns updated payout account details
+    me_res = client.get("/api/tech/me", headers=auth_headers)
+    assert me_res.status_code == 200
+    me_data = me_res.json()["me"]
+    assert me_data["payout_method"] == "easypaisa"
+    assert me_data["payout_account"] == "03394021643"
+    assert me_data["payout_title"] == "Ayyaz Haider"
+
+    # 3. Create a request and test 10% / 90% split on completion
+    req_res = client.post("/api/requests", json={
+        "name": "Hamza Ali",
+        "phone": "03129876543",
+        "address": "Street 10, Sector G-13/2",
+        "area": "G-13",
+        "description": "Fix electrical short circuit and change breaker",
+        "terms_accepted": True,
+    })
+    assert req_res.status_code == 200
+    token = req_res.json()["token"]
+    rid = req_res.json()["id"]
+
+    # Assign to tech
+    client.post(f"/api/admin/requests/{rid}/assign", headers=admin_headers, json={"technician_id": tech_id})
+    client.post(f"/api/tech/jobs/{rid}/accept", headers=auth_headers)
+
+    # GPS check in & photos
+    dummy = make_dummy_image()
+    client.post(f"/api/tech/jobs/{rid}/check-in", headers=auth_headers, json={"latitude": 33.6, "longitude": 73.0, "accuracy": 15.0})
+    client.post(f"/api/tech/jobs/{rid}/photos/before", headers=auth_headers, files={"file": ("b.jpg", dummy, "image/jpeg")})
+    client.post(f"/api/tech/jobs/{rid}/photos/after", headers=auth_headers, files={"file": ("a.jpg", dummy, "image/jpeg")})
+
+    # Tech marks done with Rs. 3,000
+    job_done = client.post(f"/api/tech/jobs/{rid}/done", headers=auth_headers, json={"amount": 3000.0, "note": "Replaced breaker"})
+    assert job_done.status_code == 200
+
+    # 4. Check admin dashboard payments ledger: Gross Rs 3000 -> 10% (Rs 300) to owner, 90% (Rs 2700) to tech
+    dash = client.get("/api/admin/dashboard", headers=admin_headers).json()
+    job_pay = next((p for p in dash["payments"] if p["request_id"] == rid), None)
+    assert job_pay is not None
+    assert job_pay["amount"] == 3000.0
+    assert job_pay["commission"] == 300.0  # Exactly 10%
+    assert job_pay["payout"] == 2700.0      # Exactly 90%
+    assert job_pay["tech_payout_account"] == "03394021643"
+    assert job_pay["tech_payout_title"] == "Ayyaz Haider"
+
+    # Customer confirms payment
+    conf_res = client.post(f"/api/track/{token}/confirm", json={"rating": 5, "review_text": "Great work!"})
+    assert conf_res.status_code == 200
+
+    # Owner verifies customer funds deposited into central account (0339 4021643)
+    col_res = client.post(f"/api/admin/payments/{job_pay['id']}/collected", headers=admin_headers)
+    assert col_res.status_code == 200
+
+    # Admin disburses 90% share to technician's registered EasyPaisa account
+    payout_exec = client.post(f"/api/admin/payments/{job_pay['id']}/payout", headers=admin_headers, json={"reference": "EP-TRX-998811"})
+    assert payout_exec.status_code == 200
+    assert payout_exec.json()["ok"] is True
+
+
+
 
 
 
