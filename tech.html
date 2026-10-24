@@ -57,8 +57,26 @@
         <div><label for="policeCertificate">Police verification (optional)</label><input id="policeCertificate" name="police_certificate" type="file" accept="image/jpeg,image/png,image/webp,application/pdf,.pdf"></div>
       </div>
       <p class="privacy-note">Identity documents are private and can only be viewed by an authenticated HomeServe administrator. They are stored on the server and are not shown on your public profile.</p>
-      <label class="consent-label"><input type="checkbox" name="terms_accepted" required> I have read and agree to the <a href="/terms#technician" target="_blank" rel="noopener">draft provider terms</a>.</label>
-      <label class="consent-label"><input type="checkbox" name="privacy_accepted" required> I have read the <a href="/terms#privacy" target="_blank" rel="noopener">privacy and document-handling notice</a>.</label>
+
+      <!-- Interactive Urdu Terms & Conditions Accordion for Technicians -->
+      <details class="terms-preview-box" id="techTermsBox" open>
+        <summary><b>📜 رجسٹریشن سے پہلے ہوم سرو کے باضابطہ قوانین و شرائط (اردو میں پڑھیں)</b></summary>
+        <div class="terms-preview-content">
+          <p style="margin:0 0 8px;font-weight:700;color:var(--brand-dark)">ہوم سرو ٹیکنیکل عملہ الحاق ضوابط (لازمی نکات):</p>
+          <ol>
+            <li><b>اصل شناختی کارڈ اور کلین ریکارڈ:</b> اصل نادرا شناختی کارڈ (دونوں اطراف) اور تازہ تصویر لازمی ہے۔ کسی بھی مجرمانہ سرگرمی میں ملوث نہ ہونے کا حلف، ضرورت پڑنے پر پولیس تصدیق طلب کی جا سکتی ہے۔</li>
+            <li><b>10% پلیٹ فارم فیس اور 90% پے آؤٹ:</b> جاب بل کی 90% خالص رقم کاریگر کی کمائی ہے، صرف 10% فیس کمپنی کی ہے۔ آن لائن ادائیگی کی صورت میں ایڈمن 90% رقم کاریگر کے اکاؤنٹ میں بھیجے گا، کیش کی صورت میں والٹ سے 10% کٹوتی ہوگی۔</li>
+            <li><b>فیملی پرائیویسی اور اخلاقیات:</b> گاہک کے گھر کا تقدس، پردہ اور خواتین کی پرائیویسی کا احترام اولین فرض ہے۔ بدتمیزی یا نازیبا رویے پر اکاؤنٹ فوری بند ہوگا۔</li>
+            <li><b>GPS ارائیول چیک اِن اور تصاویر:</b> گاہک کے گھر پہنچ کر GPS چیک اِن اور کام کی قبل (Before) اور بعد (After) تصاویر اپ لوڈ کرنا رقم کی وصولی کے لیے لازمی ہے۔</li>
+            <li><b>7 دن کی مفت وارنٹی:</b> کام میں خرابی پر 7 دن کے اندر بغیر کسی اضافی لیبر فیس کے دوبارہ وزٹ کر کے کام درست کرنا لازمی ہے۔</li>
+            <li><b>پلیٹ فارم بائی پاس کی ممانعت:</b> گاہک سے پرائیویٹ یا آف لائن کام لینا، یا غیر منظور شدہ اضافی پیسے مانگنا سخت منع ہے۔ خلاف ورزی پر تاحیات بلیک لسٹ۔</li>
+          </ol>
+          <p style="margin:8px 0 0;font-size:12px"><a href="/terms#technician-ur" target="_blank" rel="noopener" style="color:var(--brand);font-weight:750">تفصیلی قانونی دستاویز پڑھنے کے لیے یہاں کلک کریں ←</a></p>
+        </div>
+      </details>
+
+      <label class="consent-label"><input type="checkbox" name="terms_accepted" required> <span id="lblTermsConsent">I have read and agree to the <a href="/terms#technician-ur" target="_blank" rel="noopener">HomeServe Technician Terms &amp; 10% Fee Policy (اردو شرائط)</a>.</span></label>
+      <label class="consent-label"><input type="checkbox" name="privacy_accepted" required> <span id="lblPrivacyConsent">I have read the <a href="/terms#privacy" target="_blank" rel="noopener">privacy and document-handling notice</a>.</span></label>
       <button id="applicationSubmit" type="submit">Submit application</button>
       <button class="alt" type="button" onclick="showLogin()">Back to sign in</button>
       <div id="applicationMsg" aria-live="polite"></div>
@@ -194,6 +212,8 @@ const UR_DICT = {
   available: 'نئے کام کے لیے دستیاب ہوں (آن لائن)',
   wallet: 'آپ کا بٹوَہ (واجب الادا کمائی):',
   jobsDone: 'مکمل شدہ کام',
+  lblTermsConsent: 'میں نے کاریگروں کے لیے ہوم سرو کے باضابطہ قوانین، 10% فیس اور 7 دن کی وارنٹی کی شرائط پڑھ لی ہیں اور ان سے متفق ہوں۔',
+  lblPrivacyConsent: 'میں نے پرائیویسی اور نادرا شناختی دستاویزات کے تحفظ کی شرائط پڑھ لی ہیں۔',
 };
 
 const CATEGORY_URDU = {
@@ -239,6 +259,8 @@ function applyTechLanguage() {
   if ($('actSub')) $('actSub').textContent = isUr ? UR_DICT.actSub : 'Requests that need your attention.';
   if ($('histHeading')) $('histHeading').textContent = isUr ? UR_DICT.histHeading : 'Job history';
   if ($('histSub')) $('histSub').textContent = isUr ? UR_DICT.histSub : 'Your completed and past requests.';
+  if ($('lblTermsConsent')) $('lblTermsConsent').innerHTML = isUr ? `${UR_DICT.lblTermsConsent} (<a href="/terms#technician-ur" target="_blank" rel="noopener">اردو شرائط پڑھیں</a>)` : 'I have read and agree to the <a href="/terms#technician-ur" target="_blank" rel="noopener">HomeServe Technician Terms &amp; 10% Fee Policy (اردو شرائط)</a>.';
+  if ($('lblPrivacyConsent')) $('lblPrivacyConsent').innerHTML = isUr ? `${UR_DICT.lblPrivacyConsent} (<a href="/terms#privacy" target="_blank" rel="noopener">نوٹس دیکھیں</a>)` : 'I have read the <a href="/terms#privacy" target="_blank" rel="noopener">privacy and document-handling notice</a>.';
 }
 
 function toggleTechLang() {

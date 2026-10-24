@@ -231,10 +231,27 @@
         </div>
       </div>
 
+      <!-- Interactive Urdu Terms & Conditions Accordion for Workshops -->
+      <details class="terms-preview-box" id="workshopTermsBox" open>
+        <summary><b>📜 رجسٹریشن سے پہلے ورکشاپ الحاق کی باضابطہ شرائط (اردو میں پڑھیں)</b></summary>
+        <div class="terms-preview-content">
+          <p style="margin:0 0 8px;font-weight:700;color:#0f172a">ہوم سرو ورکشاپس و سروس سینٹرز الحاق ضوابط (اہم نکات):</p>
+          <ol>
+            <li><b>ورکشاپ کی فزیکل تصدیق:</b> ورکشاپ کے مالک کا شناختی کارڈ، دکان کا مکمل کمرشل پتہ، دکان کے سائن بورڈ اور اندرونی ٹول بینچ کی تصاویر لازمی ہیں۔ ایڈمن ٹیم کا فزیکل سروے کا اختیار ہوگا۔</li>
+            <li><b>ٹیکنیشنز کے کردار کی 100% قانونی ذمہ داری:</b> فیلڈ میں جانے والے تمام کاریگروں اور ہیلپرز کے کردار، اخلاق، ڈریس کوڈ اور قانونی سرگرمیوں کی تمام تر قانونی و مالی ذمہ داری ورکشاپ کے مالک پر ہوگی۔</li>
+            <li><b>10% پلیٹ فارم فیس اور 90% پے آؤٹ:</b> ہوم سرو کے ذریعے بھیجے گئے تمام آرڈرز پر کمپنی فیس صرف 10% ہوگی۔ گاہک کی تسلی اور تصدیق کے بعد 90% خالص رقم ورکشاپ کے نامزد اکاؤنٹ میں منتقل کی جائے گی۔</li>
+            <li><b>اصلی اسپیئر پارٹس اور وارنٹی:</b> مرمت میں صرف معیاری اور اصل پارٹس استعمال کیے جائیں گے۔ پرانے پرزے کو نیا بتانا فراڈ ہوگا جس پر مکمل ہرجانہ عائد ہوگا۔ ہر نئے پارٹ کی رسید اور وارنٹی دینا لازم ہے۔</li>
+            <li><b>طے شدہ وقت کی پابندی:</b> ورکشاپ لائے گئے سامان کو کسٹمر کے ساتھ طے شدہ مقررہ وقت اور کوٹیشن کے اندر ٹھیک کر کے محفوظ حالت میں دوبارہ فٹ کرنا ورکشاپ کی ذمہ داری ہے۔</li>
+            <li><b>7 دن کی مکمل مرمت گارنٹی:</b> ہر ورکشاپ جاب پر کم از کم 7 دن کی گارنٹی لازمی ہے۔ نقص سامنے آنے پر بلامعاوضہ ترجیحی بنیاد پر فالٹ درست کیا جائے گا۔</li>
+          </ol>
+          <p style="margin:8px 0 0;font-size:12px"><a href="/terms#workshop-ur" target="_blank" rel="noopener" style="color:var(--brand);font-weight:750">تفصیلی قانونی دستاویز پڑھنے کے لیے یہاں کلک کریں ←</a></p>
+        </div>
+      </details>
+
       <div class="form-consent-wrap">
         <label class="consent-label">
           <input id="termsAccepted" type="checkbox" name="terms_accepted" required>
-          <span id="lblConsent">I have read and agree to the <a href="/terms#technician" target="_blank" rel="noopener">HomeServe Workshop &amp; Contractor Terms</a>. I confirm that all listed tools and technicians comply with safety standards.</span>
+          <span id="lblConsent">I have read and agree to the <a href="/terms#workshop-ur" target="_blank" rel="noopener">HomeServe Workshop &amp; Contractor Terms (اردو شرائط)</a>. I confirm that all listed tools and technicians comply with safety standards.</span>
         </label>
       </div>
 
@@ -313,7 +330,7 @@ const WS_URDU = {
   sec4Title: '۴. ورکشاپ کی تصدیقی تصاویر',
   lblFrontPhoto: 'دکان کے باہر بورڈ کی تصویر (JPEG/PNG)',
   lblInteriorPhoto: 'ورکشاپ کے اندرونی حصے اور اوزاروں کی تصویر',
-  lblConsent: 'میں نے ہوم سروس ورکشاپ پارٹنر کی تمام شرائط پڑھ لی ہیں اور ان سے متفق ہوں۔',
+  lblConsent: 'میں نے ہوم سرو ورکشاپ الحاق کی تمام باضابطہ شرائط، 10% فیس اور اصلی پارٹس گارنٹی کے قوانین قبول کر لیے ہیں۔',
   submitWsBtn: '🏬 ورکشاپ رجسٹریشن فارم جمع کروائیں →',
   dirEyebrow: 'تصدیق شدہ پارٹنر ورکشاپس',
   dirTitle: 'اسلام آباد اور زون ۵ کی رجسٹرڈ ورکشاپس',
@@ -374,6 +391,10 @@ function applyWsLanguage() {
   if ($('sec4Title')) $('sec4Title').textContent = isUr ? WS_URDU.sec4Title : '4. Facility Verification Photos';
   if ($('lblFrontPhoto')) $('lblFrontPhoto').textContent = isUr ? WS_URDU.lblFrontPhoto : 'Shop Signboard / Front Photo (JPEG/PNG)';
   if ($('lblInteriorPhoto')) $('lblInteriorPhoto').textContent = isUr ? WS_URDU.lblInteriorPhoto : 'Workshop Interior / Tool Bench Photo';
+
+  if ($('lblConsent')) $('lblConsent').innerHTML = isUr
+    ? `${WS_URDU.lblConsent} (<a href="/terms#workshop-ur" target="_blank" rel="noopener">تفصیلی شرائط پڑھیں</a>)`
+    : 'I have read and agree to the <a href="/terms#workshop-ur" target="_blank" rel="noopener">HomeServe Workshop &amp; Contractor Terms (اردو شرائط)</a>. I confirm that all listed tools and technicians comply with safety standards.';
 
   if ($('submitWsBtn')) $('submitWsBtn').textContent = isUr ? WS_URDU.submitWsBtn : '🏬 Submit Workshop Application →';
   if ($('dirEyebrow')) $('dirEyebrow').textContent = isUr ? WS_URDU.dirEyebrow : 'Verified Partner Network';
