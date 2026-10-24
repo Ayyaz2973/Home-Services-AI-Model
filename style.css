@@ -513,3 +513,18 @@ body.lang-ur .invoice-table th{text-align:right}
 .terms-preview-content ol,.terms-preview-content ul{padding-right:20px;padding-left:0;margin:8px 0}
 .terms-preview-content li{margin-bottom:8px}
 .terms-preview-content b{color:#0f172a}
+
+/* Technician Landing Page Terms Card */
+.tech-landing-terms-card{max-width:760px;margin:20px auto 36px;padding:26px 28px;border-top:4px solid var(--brand);background:#fff;box-shadow:0 6px 24px rgba(0,0,0,.06);border-radius:16px;line-height:1.8;font-family:'Segoe UI',Tahoma,Arial,sans-serif;text-align:right;direction:rtl}
+.terms-card-header{margin-bottom:14px;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
+.terms-badge{display:inline-block;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:750}
+.terms-grid-body{display:flex;flex-direction:column;gap:12px;margin-top:14px}
+.terms-rule-item{display:flex;gap:14px;background:#f8fafc;border:1px solid #e2e8f0;padding:12px 16px;border-radius:10px;font-size:13.5px;color:#334155;align-items:flex-start}
+.terms-rule-item.highlight-fee{background:#f0fdf4;border-color:#bbf7d0}
+.terms-rule-item.highlight-ban{background:#fef2f2;border-color:#fecaca}
+.rule-num{background:var(--brand);color:#fff;min-width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0;margin-top:2px}
+.terms-rule-item.highlight-fee .rule-num{background:#16a34a}
+.terms-rule-item.highlight-ban .rule-num{background:#dc2626}
+.rule-text{flex:1}
+.rule-text b{color:#0f172a}
+
