@@ -70,7 +70,7 @@
     <button type="button" class="lang-toggle-btn" id="langToggleBtnHeader" onclick="toggleCustomerLang()">🌐 اردو / English</button>
     <a href="tel:+923394021643" class="header-call-btn" id="hdrCallBtn">📞 Call Now</a>
     <a href="https://wa.me/923394021643?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20service." target="_blank" rel="noopener noreferrer" class="header-wa-btn" id="hdrWaBtn">💬 WhatsApp</a>
-    <a href="/" id="hdrHome">Home</a><a href="#services" id="hdrServices">Services</a><a href="#pricingSection" id="hdrPricing">Pricing</a><a href="/workshop" id="hdrWorkshop">Workshops</a><a href="/terms" id="hdrTerms">Terms</a><a href="/tech" id="hdrTech">Join as a Pro</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
+    <a href="/" id="hdrHome">Home</a><a href="#services" id="hdrServices">Services</a><a href="#pricingSection" id="hdrPricing">Pricing</a><a href="/workshop" id="hdrWorkshop">Workshops</a><a href="/terms" id="hdrTerms">Terms</a><a href="/tech" id="hdrTech">Join as a Pro</a>
   </div>
 </header>
 <main>
@@ -328,9 +328,9 @@
   <section id="pilotMapSection" class="card pilot-map-section">
     <div class="pilot-map-header">
       <div>
-        <div class="pilot-badge">
+        <div class="pilot-badge" id="pilotBadge">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
-          Phase 1 Pilot: Jinnah Garden &amp; Zone 5 Belt
+          <span id="pilotBadgeText">Primary Rapid-Dispatch Hub: Jinnah Garden &amp; Zone 5 Belt</span>
         </div>
         <h2>Interactive Service Map &amp; Location Picker</h2>
         <p>Currently serving <b>Jinnah Garden</b>, <b>Naval Anchorage</b>, <b>Soan Gardens</b>, <b>PWD</b>, <b>Korang Town</b>, and <b>Pakistan Town</b>. Tap a town below or click the map to pinpoint your location.</p>
@@ -644,10 +644,12 @@
           <h3>Main Distribution Board Rewiring &amp; Surge Protection</h3>
           <div class="before-after-split">
             <div class="compare-box before">
+              <img src="/static/images/db-wiring-before.svg" alt="Before: Tangled burnt distribution board wiring in Jinnah Garden" class="showcase-img" loading="lazy" width="400" height="240">
               <b>🔴 Before:</b>
               Hazardous tangled wiring, burnt main breaker, frequent tripping across Phase 1 house.
             </div>
             <div class="compare-box after">
+              <img src="/static/images/db-wiring-after.svg" alt="HomeServe Fix: Clean Schneider breaker installation with color-coded trunking" class="showcase-img" loading="lazy" width="400" height="240">
               <b>🟢 HomeServe Fix:</b>
               Complete Schneider breaker installation, color-coded neutral trunking, and earthing verified.
             </div>
@@ -677,10 +679,12 @@
           <h3>Concealed PPR Bathroom Pipe Replacement</h3>
           <div class="before-after-split">
             <div class="compare-box before">
+              <img src="/static/images/ppr-pipe-before.svg" alt="Before: Rusted leaking GI pipe causing dampness in Soan Gardens" class="showcase-img" loading="lazy" width="400" height="240">
               <b>🔴 Before:</b>
               Internal GI pipe rusted and leaking behind tiles causing dampness in bedroom wall.
             </div>
             <div class="compare-box after">
+              <img src="/static/images/ppr-pipe-after.svg" alt="HomeServe Fix: Turkish PPR pipe heat-welded and 10-bar pressure tested" class="showcase-img" loading="lazy" width="400" height="240">
               <b>🟢 HomeServe Fix:</b>
               New Turkish PPR pipe line heat-welded and pressure-tested up to 10 bar without tile damage.
             </div>
@@ -718,6 +722,7 @@
     </div>
     <p>© 2026 HomeServe AI · Operated by Ayyaz Digital &amp; AI Solutions, Islamabad</p>
   </footer>
+  <div style="display:none" hidden aria-hidden="true"><a href="/admin" id="adminNavLink" class="hide" rel="nofollow">Admin portal</a></div>
 </main>
 <script src="/static/common.js"></script>
 <script>
@@ -877,7 +882,13 @@ async function init() {
   applyCustomerLanguage();
   if (sessionStorage.getItem('admin_key')) {
     const adminNav = $('adminNavLink');
-    if (adminNav) adminNav.classList.remove('hide');
+    if (adminNav) {
+      adminNav.classList.remove('hide');
+      const hdrActions = document.querySelector('.header-actions');
+      if (hdrActions && !hdrActions.contains(adminNav)) {
+        hdrActions.appendChild(adminNav);
+      }
+    }
   }
   try {
     const [meta, catalog] = await Promise.all([api('/api/meta'), api('/api/catalog')]);
@@ -1043,6 +1054,7 @@ const CUST_URDU = {
   slotAft: '☀️ دوپہر (1 تا 5 بجے)',
   slotEve: '🌙 شام (5 تا 9 بجے)',
   slotEmerg: '🚨 ہنگامی (30-60 منٹ)',
+  pilotBadgeText: 'اہم ریپڈ ڈسپیچ ہب: جناح گارڈن اور زون 5 بیلٹ',
 };
 
 function applyCustomerLanguage() {
@@ -1056,6 +1068,7 @@ function applyCustomerLanguage() {
   if (btnHdr) btnHdr.textContent = isUr ? CUST_URDU.langBtnTextUr : CUST_URDU.langBtnTextEn;
 
   if ($('topLocationPin')) $('topLocationPin').textContent = isUr ? CUST_URDU.topPin : '📍 Rawalpindi • Islamabad • Jinnah Garden & Zone 5 Hub · 15–30 min Rapid Dispatch';
+  if ($('pilotBadgeText')) $('pilotBadgeText').textContent = isUr ? CUST_URDU.pilotBadgeText : 'Primary Rapid-Dispatch Hub: Jinnah Garden & Zone 5 Belt';
   if ($('hdrCallBtn')) $('hdrCallBtn').textContent = isUr ? CUST_URDU.hdrCall : '📞 Call Now';
   if ($('hdrHome')) $('hdrHome').textContent = isUr ? CUST_URDU.hdrHome : 'Home';
   if ($('hdrServices')) $('hdrServices').textContent = isUr ? CUST_URDU.hdrServices : 'Services';
@@ -1076,6 +1089,11 @@ function applyCustomerLanguage() {
   if ($('metricRatingLabel')) $('metricRatingLabel').textContent = isUr ? CUST_URDU.metricRatingLabel : 'Free Rework Warranty';
   if ($('radarHubTitle')) $('radarHubTitle').textContent = isUr ? CUST_URDU.radarHubTitle : 'Live Squad On-Call · Islamabad & Zone 5 Hub';
   if ($('coverageTitle')) $('coverageTitle').textContent = isUr ? CUST_URDU.coverageTitle : '⚡ Trusted Service Areas Across Islamabad & Rawalpindi:';
+
+  ['topCallLink', 'hdrCallBtn', 'heroCallBtn'].forEach(id => {
+    const el = $(id);
+    if (el) el.setAttribute('href', 'tel:+923394021643');
+  });
 
   const pricingH2 = document.querySelector('#pricingSection h2');
   if (pricingH2) pricingH2.textContent = isUr ? CUST_URDU.rateHeading : 'Transparent Upfront Pricing (Zero Haggling)';
@@ -1244,10 +1262,12 @@ async function loadWorkShowcase() {
             <h3>${esc(proj.title)}</h3>
             <div class="before-after-split">
               <div class="compare-box before">
+                ${proj.before_img ? `<img src="${esc(proj.before_img)}" alt="${esc(proj.before_alt || 'Before work')}" class="showcase-img" loading="lazy" width="400" height="240">` : ''}
                 <b>🔴 Before:</b>
                 ${esc(proj.before_desc)}
               </div>
               <div class="compare-box after">
+                ${proj.after_img ? `<img src="${esc(proj.after_img)}" alt="${esc(proj.after_alt || 'HomeServe Fix')}" class="showcase-img" loading="lazy" width="400" height="240">` : ''}
                 <b>🟢 HomeServe Fix:</b>
                 ${esc(proj.after_desc)}
               </div>

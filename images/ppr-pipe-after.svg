@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 240" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgClean" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#022c22"/>
+    </linearGradient>
+    <linearGradient id="pprGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="50%" stop-color="#15803d"/>
+      <stop offset="100%" stop-color="#14532d"/>
+    </linearGradient>
+    <linearGradient id="brass" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fde047"/>
+      <stop offset="50%" stop-color="#ca8a04"/>
+      <stop offset="100%" stop-color="#854d0e"/>
+    </linearGradient>
+    <linearGradient id="gaugeDial" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Clean Dry Wall Background -->
+  <rect width="400" height="240" rx="10" fill="url(#bgClean)"/>
+  <rect x="20" y="20" width="360" height="200" rx="8" fill="#0f172a" stroke="#10b981" stroke-width="2"/>
+
+  <!-- Clean Pristine Tile Grid -->
+  <line x1="20" y1="90" x2="380" y2="90" stroke="#1e293b" stroke-width="1.5"/>
+  <line x1="20" y1="150" x2="380" y2="150" stroke="#1e293b" stroke-width="1.5"/>
+  <line x1="140" y1="20" x2="140" y2="220" stroke="#1e293b" stroke-width="1.5"/>
+  <line x1="260" y1="20" x2="260" y2="220" stroke="#1e293b" stroke-width="1.5"/>
+
+  <!-- High-Grade Turkish PPR Pipes (Emerald Green PN20) -->
+  <!-- Horizontal Pipe -->
+  <rect x="40" y="112" width="165" height="18" rx="3" fill="url(#pprGreen)"/>
+  <!-- Pipe Spec Text -->
+  <text x="110" y="124" fill="#86efac" font-family="Segoe UI, sans-serif" font-size="7" font-weight="600" opacity="0.8">PPR-C PN20 25mm TURKEY STD</text>
+
+  <!-- Heat-Welded Elbow Joint with Fusion Bead Rings -->
+  <rect x="200" y="108" width="26" height="26" rx="4" fill="#15803d" stroke="#22c55e" stroke-width="1.5"/>
+  <!-- Heat Welded Double Beads -->
+  <ellipse cx="201" cy="121" rx="2.5" ry="11" fill="#4ade80"/>
+  <ellipse cx="213" cy="133" rx="11" ry="2.5" fill="#4ade80"/>
+
+  <!-- Vertical Pipe Running Down -->
+  <rect x="204" y="132" width="18" height="75" rx="3" fill="url(#pprGreen)"/>
+
+  <!-- Brass Fitting Adaptor to Testing Rig -->
+  <rect x="202" y="86" width="22" height="22" rx="2" fill="url(#brass)" stroke="#a16207" stroke-width="1"/>
+  <line x1="204" y1="92" x2="222" y2="92" stroke="#713f12" stroke-width="1"/>
+  <line x1="204" y1="98" x2="222" y2="98" stroke="#713f12" stroke-width="1"/>
+  <line x1="204" y1="104" x2="222" y2="104" stroke="#713f12" stroke-width="1"/>
+
+  <!-- 10-Bar Pressure Test Gauge Dial -->
+  <g transform="translate(260, 60)">
+    <circle cx="45" cy="45" r="40" fill="#334155" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="45" cy="45" r="35" fill="url(#gaugeDial)"/>
+    <!-- Gauge Ticks -->
+    <path d="M 20 55 A 30 30 0 1 1 70 55" fill="none" stroke="#475569" stroke-width="2"/>
+    <path d="M 50 20 A 30 30 0 0 1 70 55" fill="none" stroke="#ef4444" stroke-width="2.5"/>
+    <text x="45" y="38" fill="#1e293b" font-family="Segoe UI, sans-serif" font-size="7" font-weight="bold" text-anchor="middle">BAR</text>
+    <text x="45" y="60" fill="#059669" font-family="Segoe UI, sans-serif" font-size="12" font-weight="900" text-anchor="middle">10.0</text>
+    <!-- Pointer at 10 Bar (Safe Zone) -->
+    <line x1="45" y1="45" x2="60" y2="30" stroke="#dc2626" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="45" cy="45" r="4" fill="#0f172a"/>
+    <!-- Stamp -->
+    <rect x="20" y="65" width="50" height="12" rx="2" fill="#10b981"/>
+    <text x="45" y="74" fill="#fff" font-family="Segoe UI, sans-serif" font-size="7" font-weight="bold" text-anchor="middle">PASSED ✓</text>
+  </g>
+
+  <!-- Success Status Badge -->
+  <rect x="25" y="25" width="180" height="24" rx="4" fill="#047857"/>
+  <text x="115" y="41" fill="#fff" font-family="Segoe UI, sans-serif" font-size="11" font-weight="bold" text-anchor="middle">🟢 TURKISH PPR HEAT-WELDED</text>
+
+  <text x="200" y="212" fill="#34d399" font-family="Segoe UI, sans-serif" font-size="11" font-weight="600" text-anchor="middle">10-Bar Tested • 0% Tile Damage • Zero Dampness</text>
+</svg>
