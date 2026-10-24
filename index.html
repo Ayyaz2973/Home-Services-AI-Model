@@ -4,16 +4,58 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<meta name="description" content="Book trusted home services in Islamabad. Tell us what you need and we will connect you with a local technician.">
-<title>HomeServe | Trusted home services in Islamabad</title>
+<meta name="description" content="Book trusted electricians, plumbers, AC technicians, solar engineers & water tank cleaners in Islamabad & Jinnah Garden. Upfront rates & 7-day warranty.">
+<title>HomeServe AI | Trusted Home Services in Islamabad & Rawalpindi</title>
 <link rel="stylesheet" href="/static/style.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HomeAndConstructionBusiness",
+  "name": "HomeServe AI - On-Demand Home Services",
+  "image": "https://homeserve.yoursmarttoolkit.com/favicon.svg",
+  "telephone": "+923394021643",
+  "url": "https://homeserve.yoursmarttoolkit.com/",
+  "priceRange": "PKR 500 - PKR 15000",
+  "paymentAccepted": "Cash, EasyPaisa, JazzCash, Bank Transfer",
+  "currenciesAccepted": "PKR",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "28 Street 203C",
+    "addressLocality": "Islamabad",
+    "addressRegion": "ICT",
+    "postalCode": "44000",
+    "addressCountry": "PK"
+  },
+  "geo": {
+    "@type": "GeoCoordinates",
+    "latitude": 33.5682,
+    "longitude": 73.1553
+  },
+  "openingHoursSpecification": {
+    "@type": "OpeningHoursSpecification",
+    "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    "opens": "00:00",
+    "closes": "23:59"
+  },
+  "areaServed": [
+    { "@type": "AdministrativeArea", "name": "Jinnah Garden, Islamabad" },
+    { "@type": "AdministrativeArea", "name": "Naval Anchorage, Islamabad" },
+    { "@type": "AdministrativeArea", "name": "Soan Gardens, Islamabad" },
+    { "@type": "AdministrativeArea", "name": "PWD Housing Scheme, Islamabad" },
+    { "@type": "AdministrativeArea", "name": "Korang Town, Islamabad" },
+    { "@type": "AdministrativeArea", "name": "Pakistan Town, Islamabad" },
+    { "@type": "AdministrativeArea", "name": "Islamabad" },
+    { "@type": "AdministrativeArea", "name": "Rawalpindi" }
+  ]
+}
+</script>
 </head>
 <body>
 <div class="top-announcement-bar">
   <div class="top-announcement-content">
-    <span class="top-location-pin" id="topLocationPin">📍 Rawalpindi • Islamabad • Jinnah Garden &amp; Zone 5 Belt · 15–25 min Rapid Dispatch</span>
+    <span class="top-location-pin" id="topLocationPin">📍 Rawalpindi • Islamabad • Jinnah Garden &amp; Zone 5 Hub · 15–30 min Rapid Dispatch</span>
     <div class="top-quick-actions">
       <button type="button" class="lang-toggle-btn" id="langToggleBtnTop" onclick="toggleCustomerLang()">🌐 اردو / English</button>
       <a href="tel:+923394021643" class="top-contact-link" id="topCallLink">📞 Call 0339 4021643</a>
@@ -23,12 +65,12 @@
   </div>
 </div>
 <header>
-  <b>⌂ HomeServe</b>
+  <b>⌂ HomeServe AI</b>
   <div class="header-actions">
     <button type="button" class="lang-toggle-btn" id="langToggleBtnHeader" onclick="toggleCustomerLang()">🌐 اردو / English</button>
     <a href="tel:+923394021643" class="header-call-btn" id="hdrCallBtn">📞 Call Now</a>
     <a href="https://wa.me/923394021643?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20a%20service." target="_blank" rel="noopener noreferrer" class="header-wa-btn" id="hdrWaBtn">💬 WhatsApp</a>
-    <a href="/" id="hdrHome">Home</a><a href="#services" id="hdrServices">Services</a><a href="#pricingSection" id="hdrPricing">Pricing</a><a href="/workshop" id="hdrWorkshop">Workshops</a><a href="/terms" id="hdrTerms">Terms</a><a href="/tech" id="hdrTech">Technician portal</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
+    <a href="/" id="hdrHome">Home</a><a href="#services" id="hdrServices">Services</a><a href="#pricingSection" id="hdrPricing">Pricing</a><a href="/workshop" id="hdrWorkshop">Workshops</a><a href="/terms" id="hdrTerms">Terms</a><a href="/tech" id="hdrTech">Join as a Pro</a><a href="/admin" id="adminNavLink" class="hide">Admin portal</a>
   </div>
 </header>
 <main>
@@ -52,20 +94,20 @@
 
       <div class="hero-metrics-grid" id="heroMetricsGrid">
         <div class="hero-metric-item">
-          <span class="hero-metric-num">10,000+</span>
-          <span class="hero-metric-label" id="metricJobsLabel">Verified Jobs Done</span>
+          <span class="hero-metric-num">100%</span>
+          <span class="hero-metric-label" id="metricJobsLabel">CNIC &amp; Police Vetted Pros</span>
         </div>
         <div class="hero-metric-item">
-          <span class="hero-metric-num">30–40 min</span>
-          <span class="hero-metric-label" id="metricArrivalLabel">Average Arrival Time</span>
+          <span class="hero-metric-num">15–30 min</span>
+          <span class="hero-metric-label" id="metricArrivalLabel">Zone 5 Rapid Dispatch</span>
         </div>
         <div class="hero-metric-item">
-          <span class="hero-metric-num">24/7</span>
-          <span class="hero-metric-label" id="metricSupportLabel">Emergency Dispatch</span>
+          <span class="hero-metric-num">Rs. 0</span>
+          <span class="hero-metric-label" id="metricSupportLabel">Advance (Pay After Work)</span>
         </div>
         <div class="hero-metric-item">
-          <span class="hero-metric-num">4.9 ★</span>
-          <span class="hero-metric-label" id="metricRatingLabel">Customer Satisfaction</span>
+          <span class="hero-metric-num">7-Day</span>
+          <span class="hero-metric-label" id="metricRatingLabel">Free Rework Warranty</span>
         </div>
       </div>
     </div>
@@ -83,17 +125,17 @@
           <b>Zubair Khan · Master Pro</b>
           <p>Certified Electrician &amp; Solar Inverter Specialist</p>
           <div class="radar-tech-badges">
-            <span class="badge-nadra">🛡️ NADRA Verified</span>
-            <span class="badge-star">★ 4.9 (420+ jobs)</span>
+            <span class="badge-nadra">🛡️ NADRA &amp; Police Vetted</span>
+            <span class="badge-star">★ 4.9 · Zone 5 On-Call</span>
           </div>
         </div>
       </div>
 
       <div class="radar-features-row">
-        <div class="radar-feat-item"><span>⏱ 15–30m Rapid ETA</span></div>
-        <div class="radar-feat-item"><span>🛡️ 7-Day Guarantee</span></div>
+        <div class="radar-feat-item"><span>⏱ 15–30m Rapid Hub ETA</span></div>
+        <div class="radar-feat-item"><span>🛡️ 7-Day Warranty</span></div>
         <div class="radar-feat-item"><span>💰 Upfront Quotes</span></div>
-        <div class="radar-feat-item"><span>📍 GPS Arrival Sharing</span></div>
+        <div class="radar-feat-item"><span>📍 GPS Arrival Tracking</span></div>
       </div>
     </div>
   </section>
@@ -118,54 +160,54 @@
   <div id="services">
     <div class="section-heading"><div><div class="eyebrow">Find the help you need</div><h2>Services for every corner of home</h2></div><p>Click any category to begin your request.</p></div>
     <div class="service-grid">
-      <div class="service-tile" onclick="selectCategory('Electric Work')" role="button" tabindex="0">
+      <button type="button" class="service-tile" onclick="selectCategory('Electric Work')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
         <b>Electrical</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Plumbing')" role="button" tabindex="0">
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Plumbing')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
         <b>Plumbing</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Air Conditioning')" role="button" tabindex="0">
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Air Conditioning')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M2 12h20M12 2v20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"></path></svg></div>
         <b>Air conditioning</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Home Cleaning')" role="button" tabindex="0">
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Home Cleaning')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"></path></svg></div>
         <b>Home cleaning</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Solar Solutions')" role="button" tabindex="0">
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Solar Solutions')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg></div>
         <b>Solar solutions</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Fridge Repair')" role="button" tabindex="0">
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Fridge Repair')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"></rect><circle cx="12" cy="14" r="4"></circle><line x1="8" y1="6" x2="8.01" y2="6"></line><line x1="12" y1="6" x2="12.01" y2="6"></line></svg></div>
-        <b>Appliances & fridge</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Pest Control')" role="button" tabindex="0">
+        <b>Appliances &amp; fridge</b>
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Pest Control')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
         <b>Pest control</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Carpentry')" role="button" tabindex="0">
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Carpentry')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></div>
-        <b>Carpentry & paint</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('CCTV Installation')" role="button" tabindex="0">
+        <b>Carpentry &amp; paint</b>
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('CCTV Installation')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>
-        <b>CCTV & Cameras</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Water Filter / RO')" role="button" tabindex="0">
+        <b>CCTV &amp; Cameras</b>
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Water Filter / RO')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
-        <b>Water filter & RO</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Water Tank Cleaning')" role="button" tabindex="0">
+        <b>Water filter &amp; RO</b>
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Water Tank Cleaning')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg></div>
         <b>Water Tank Cleaning</b>
-      </div>
-      <div class="service-tile" onclick="selectCategory('Home Renovation')" role="button" tabindex="0">
+      </button>
+      <button type="button" class="service-tile" onclick="selectCategory('Home Renovation')">
         <div class="service-icon"><svg class="icon-svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
         <b>Home Renovation</b>
-      </div>
+      </button>
     </div>
   </div>
   </section>
@@ -195,8 +237,8 @@
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
         <div>
-          <h3>Fair Price & Escrow Protection</h3>
-          <p>Transparent upfront quotes with zero surprise charges. Payout released only upon your final confirmation.</p>
+          <h3 id="trustPayTitle">Fair Price &amp; Pay-After-Inspection</h3>
+          <p id="trustPayDesc">Transparent upfront rates with zero advance deposit. Inspect the completed work first, then pay the verified technician directly.</p>
         </div>
       </div>
       <div class="trust-card">
@@ -204,8 +246,9 @@
           <svg viewBox="0 0 24 24"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
         </div>
         <div>
-          <h3>4.9★ Customer Satisfaction</h3>
-          <p>Trusted across Islamabad sectors and Jinnah Garden with full dispute resolution & money-back support.</p>
+          <h3 id="trustSatTitle">100% Quality &amp; Dispute Protection</h3>
+          <p id="trustSatDesc">Backed by dedicated local support in Jinnah Garden and Islamabad with prompt re-inspection and dispute resolution.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -221,7 +264,65 @@
         <p>Proactive care tailored for Islamabad &amp; Zone 5 weather cycles. Fix issues before seasonal emergencies strike.</p>
       </div>
     </div>
-    <div class="seasonal-grid" id="seasonalGrid"></div>
+    <div class="seasonal-grid" id="seasonalGrid">
+      <div class="seasonal-card featured">
+        <div>
+          <span class="seasonal-card-badge">Active Season · Islamabad &amp; Zone 5</span>
+          <h3>Winter Heating &amp; Geyser Safety Package</h3>
+          <div class="seasonal-price-row">
+            <span class="seasonal-price">Rs. 2,500</span>
+            <span class="seasonal-savings">Save 25%</span>
+          </div>
+          <ul class="seasonal-checklist">
+            <li>Instant gas geyser burner cleaning &amp; pilot flame tune-up</li>
+            <li>Electric water heater thermostat calibration &amp; element safety check</li>
+            <li>Gas leak &amp; pipe seal pressure test (prevent winter gas accidents)</li>
+            <li>Water supply valve &amp; drain inspection</li>
+          </ul>
+        </div>
+        <button type="button" class="seasonal-book-btn" onclick="bookSeasonalPackage('Geyser Repair', 'Winter Heating &amp; Geyser Safety Package (Pre-winter tune-up for Islamabad)')">
+          ⚡ 1-Click Book Package
+        </button>
+      </div>
+      <div class="seasonal-card">
+        <div>
+          <span class="seasonal-card-badge">Efficiency Booster · Zone 5</span>
+          <h3>Solar Panel De-Dusting &amp; Generation Restore Package</h3>
+          <div class="seasonal-price-row">
+            <span class="seasonal-price">Rs. 2,500</span>
+            <span class="seasonal-savings">Save 20%</span>
+          </div>
+          <ul class="seasonal-checklist">
+            <li>De-ionized high-pressure jet wash for up to 16 solar plates</li>
+            <li>Bird droppings, soot, and grime chemical soft-sponge scrub</li>
+            <li>Inverter DC input ampere &amp; voltage verification before &amp; after wash</li>
+            <li>MC4 connector water-tight seal and earthing inspection</li>
+          </ul>
+        </div>
+        <button type="button" class="seasonal-book-btn" onclick="bookSeasonalPackage('Solar Solutions', 'Solar Panel jet wash and generation restore tune-up')">
+          ⚡ 1-Click Book Package
+        </button>
+      </div>
+      <div class="seasonal-card">
+        <div>
+          <span class="seasonal-card-badge">Power Backup Prep</span>
+          <h3>Solar &amp; UPS Winter Battery Readiness</h3>
+          <div class="seasonal-price-row">
+            <span class="seasonal-price">Rs. 2,200</span>
+            <span class="seasonal-savings">Save 20%</span>
+          </div>
+          <ul class="seasonal-checklist">
+            <li>Tubular battery specific gravity hydrometer testing</li>
+            <li>Terminal acid descaling &amp; distilled water top-up</li>
+            <li>Inverter low-sunlight charge controller optimization</li>
+            <li>Distribution board emergency load segregation</li>
+          </ul>
+        </div>
+        <button type="button" class="seasonal-book-btn" onclick="bookSeasonalPackage('Solar Solutions', 'Winter Solar &amp; UPS battery readiness inspection and tuning')">
+          ⚡ 1-Click Book Package
+        </button>
+      </div>
+    </div>
   </section>
 
   <section id="pilotMapSection" class="card pilot-map-section">
@@ -305,7 +406,116 @@
         <button type="button" class="pricing-tab" onclick="filterPricing('Pest Control')">🪲 Pest Control / دیمک اسپرے</button>
       </div>
     </div>
-    <div class="pricing-grid" id="pricingGrid"></div>
+    <div class="pricing-grid" id="pricingGrid">
+      <div class="pricing-card">
+        <span class="limited-offer-badge">🔥 Limited Offer 🔥</span>
+        <div class="pricing-card-top">
+          <div class="pricing-card-badge-row">
+            <span class="popular-tag">★ Popular</span>
+            <span class="duration-tag">⏱ 30 mins</span>
+          </div>
+          <h4>Switch / Socket Replacement or Repair</h4>
+        </div>
+        <div>
+          <div class="pricing-comparison-box">
+            <span class="market-price-strike">Market: Rs. 1,000</span>
+            <div class="pricing-main-price">
+              <span class="pricing-range">Rs. 400 - 700</span>
+              <span class="savings-tag">✓ Save Rs. 300+</span>
+            </div>
+          </div>
+          <div class="pricing-actions-row">
+            <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('Electric Work', 'Switch / Socket Replacement or Repair')">
+              Book Task →
+            </button>
+            <a href="https://wa.me/923394021643?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20Switch%20%2F%20Socket%20Replacement%20(Electric%20Work)." target="_blank" rel="noopener noreferrer" class="pricing-wa-action" title="Inquire on WhatsApp">
+              💬 WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-card">
+        <span class="limited-offer-badge">🔥 Limited Offer 🔥</span>
+        <div class="pricing-card-top">
+          <div class="pricing-card-badge-row">
+            <span class="popular-tag">★ Popular</span>
+            <span class="duration-tag">⏱ 45 mins</span>
+          </div>
+          <h4>Ceiling Fan Installation &amp; Balancing</h4>
+        </div>
+        <div>
+          <div class="pricing-comparison-box">
+            <span class="market-price-strike">Market: Rs. 2,200</span>
+            <div class="pricing-main-price">
+              <span class="pricing-range">Rs. 1,000 - 1,500</span>
+              <span class="savings-tag">✓ Save Rs. 700+</span>
+            </div>
+          </div>
+          <div class="pricing-actions-row">
+            <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('Electric Work', 'Ceiling Fan Installation & Balancing')">
+              Book Task →
+            </button>
+            <a href="https://wa.me/923394021643?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20Fan%20Installation%20(Electric%20Work)." target="_blank" rel="noopener noreferrer" class="pricing-wa-action" title="Inquire on WhatsApp">
+              💬 WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-card">
+        <span class="limited-offer-badge">🔥 Limited Offer 🔥</span>
+        <div class="pricing-card-top">
+          <div class="pricing-card-badge-row">
+            <span class="popular-tag">★ Popular</span>
+            <span class="duration-tag">⏱ 60 mins</span>
+          </div>
+          <h4>Distribution Box / Breaker Repair</h4>
+        </div>
+        <div>
+          <div class="pricing-comparison-box">
+            <span class="market-price-strike">Market: Rs. 3,500</span>
+            <div class="pricing-main-price">
+              <span class="pricing-range">Rs. 1,500 - 2,500</span>
+              <span class="savings-tag">✓ Save Rs. 1,000+</span>
+            </div>
+          </div>
+          <div class="pricing-actions-row">
+            <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('Electric Work', 'Distribution Box / Breaker Repair')">
+              Book Task →
+            </button>
+            <a href="https://wa.me/923394021643?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20Breaker%20Repair%20(Electric%20Work)." target="_blank" rel="noopener noreferrer" class="pricing-wa-action" title="Inquire on WhatsApp">
+              💬 WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="pricing-card">
+        <span class="limited-offer-badge">🔥 Limited Offer 🔥</span>
+        <div class="pricing-card-top">
+          <div class="pricing-card-badge-row">
+            <span></span>
+            <span class="duration-tag">⏱ 2 hours</span>
+          </div>
+          <h4>Complete Inverter / UPS Wiring Check</h4>
+        </div>
+        <div>
+          <div class="pricing-comparison-box">
+            <span class="market-price-strike">Market: Rs. 5,500</span>
+            <div class="pricing-main-price">
+              <span class="pricing-range">Rs. 2,500 - 4,500</span>
+              <span class="savings-tag">✓ Save Rs. 1,000+</span>
+            </div>
+          </div>
+          <div class="pricing-actions-row">
+            <button type="button" class="pricing-book-btn" onclick="bookFromRateCard('Electric Work', 'Complete Inverter / UPS Wiring Check')">
+              Book Task →
+            </button>
+            <a href="https://wa.me/923394021643?text=Hello%20HomeServe%2C%20I%20would%20like%20to%20book%20Inverter%20Wiring%20Check." target="_blank" rel="noopener noreferrer" class="pricing-wa-action" title="Inquire on WhatsApp">
+              💬 WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="formView" class="card request-card">
@@ -330,18 +540,29 @@
         <input type="hidden" id="custLat" value="33.5682">
         <input type="hidden" id="custLng" value="73.1553">
         <datalist id="areas">
-          <option>Jinnah Garden</option>
-          <option>Naval Anchorage</option>
-          <option>Soan Gardens</option>
-          <option>PWD</option>
-          <option>Korang Town</option>
-          <option>Pakistan Town</option>
-          <option>FECHS</option>
-          <option>F-6</option><option>F-7</option><option>F-8</option><option>F-10</option><option>F-11</option>
-          <option>G-9</option><option>G-10</option><option>G-11</option><option>G-13</option>
-          <option>I-8</option><option>I-10</option><option>E-11</option>
-          <option>Gulberg Greens</option>
-          <option>DHA Phase 1</option><option>DHA Phase 2</option><option>Bahria Town</option>
+          <option value="Jinnah Garden">Jinnah Garden (Hub Zone 5)</option>
+          <option value="Naval Anchorage">Naval Anchorage</option>
+          <option value="Soan Gardens">Soan Gardens</option>
+          <option value="PWD">PWD Housing Scheme</option>
+          <option value="Korang Town">Korang Town</option>
+          <option value="Pakistan Town">Pakistan Town</option>
+          <option value="FECHS">FECHS</option>
+          <option value="Gulberg Greens">Gulberg Greens</option>
+          <option value="DHA Phase 1">DHA Phase 1</option>
+          <option value="DHA Phase 2">DHA Phase 2</option>
+          <option value="Bahria Town">Bahria Town (Phase 1–8)</option>
+          <option value="F-6">Sector F-6</option>
+          <option value="F-7">Sector F-7</option>
+          <option value="F-8">Sector F-8</option>
+          <option value="F-10">Sector F-10</option>
+          <option value="F-11">Sector F-11</option>
+          <option value="G-9">Sector G-9</option>
+          <option value="G-10">Sector G-10</option>
+          <option value="G-11">Sector G-11</option>
+          <option value="G-13">Sector G-13</option>
+          <option value="I-8">Sector I-8</option>
+          <option value="I-10">Sector I-10</option>
+          <option value="E-11">Sector E-11</option>
         </datalist>
       </div>
       <div><label for="address" id="lblAddress">Street / House Address *</label><input id="address" placeholder="e.g. House 14, Street 6, Phase 1" required></div>
@@ -413,7 +634,74 @@
         <p>Inspect real completed jobs by our verified technicians in Jinnah Garden, Soan Gardens, Naval Anchorage &amp; PWD.</p>
       </div>
     </div>
-    <div class="showcase-grid" id="showcaseGrid"></div>
+    <div class="showcase-grid" id="showcaseGrid">
+      <div class="showcase-card">
+        <div>
+          <div class="showcase-meta">
+            <span class="showcase-area">📍 Jinnah Garden, Phase 1</span>
+            <span class="badge electric-work">Electric Work</span>
+          </div>
+          <h3>Main Distribution Board Rewiring &amp; Surge Protection</h3>
+          <div class="before-after-split">
+            <div class="compare-box before">
+              <b>🔴 Before:</b>
+              Hazardous tangled wiring, burnt main breaker, frequent tripping across Phase 1 house.
+            </div>
+            <div class="compare-box after">
+              <b>🟢 HomeServe Fix:</b>
+              Complete Schneider breaker installation, color-coded neutral trunking, and earthing verified.
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="showcase-pro-info">
+            <div class="showcase-pro-avatar">Z</div>
+            <div class="showcase-pro-text">
+              <b>Zubair Electrician</b>
+              <span class="verified-pro-badge">🛡️ HomeServe Verified Pro</span>
+            </div>
+            <div class="showcase-rating">★ 5.0</div>
+          </div>
+          <div class="showcase-quote">"Bohot saaf kaam kiya Zubair bhai ne. Breaker bar bar trip hone ka masla mukammal hal ho gaya."</div>
+          <button type="button" class="pricing-book-btn" onclick="bookSimilarWork('Electric Work', 'Main Distribution Board Rewiring & Surge Protection')">
+            Request Similar Work →
+          </button>
+        </div>
+      </div>
+      <div class="showcase-card">
+        <div>
+          <div class="showcase-meta">
+            <span class="showcase-area">📍 Soan Gardens, Block B</span>
+            <span class="badge plumbing">Plumbing</span>
+          </div>
+          <h3>Concealed PPR Bathroom Pipe Replacement</h3>
+          <div class="before-after-split">
+            <div class="compare-box before">
+              <b>🔴 Before:</b>
+              Internal GI pipe rusted and leaking behind tiles causing dampness in bedroom wall.
+            </div>
+            <div class="compare-box after">
+              <b>🟢 HomeServe Fix:</b>
+              New Turkish PPR pipe line heat-welded and pressure-tested up to 10 bar without tile damage.
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="showcase-pro-info">
+            <div class="showcase-pro-avatar">R</div>
+            <div class="showcase-pro-text">
+              <b>Rashid Plumber</b>
+              <span class="verified-pro-badge">🛡️ HomeServe Verified Pro</span>
+            </div>
+            <div class="showcase-rating">★ 4.9</div>
+          </div>
+          <div class="showcase-quote">"Wall dampness stopped within 2 days. Very skilled and respectful plumber."</div>
+          <button type="button" class="pricing-book-btn" onclick="bookSimilarWork('Plumbing', 'Concealed PPR Bathroom Pipe Replacement')">
+            Request Similar Work →
+          </button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <div id="trackView" class="card hide" aria-live="polite"></div>
@@ -421,13 +709,14 @@
     <div class="footer-nav">
       <a href="/">Home</a>
       <a href="#services">Services</a>
-      <a href="/tech">Technician portal</a>
-      <a href="/admin">Operations dashboard</a>
+      <a href="#pricingSection">Pricing</a>
+      <a href="/tech">Join as a Pro</a>
+      <a href="/workshop">Workshop Partners</a>
       <a href="/terms#customer">Customer terms</a>
       <a href="/terms#technician">Technician terms</a>
       <a href="/terms#privacy">Privacy notice</a>
     </div>
-    <p>HomeServe · Verified home services in Islamabad & Rawalpindi</p>
+    <p>© 2026 HomeServe AI · Operated by Ayyaz Digital &amp; AI Solutions, Islamabad</p>
   </footer>
 </main>
 <script src="/static/common.js"></script>
@@ -716,25 +1005,25 @@ let currentPricingCategory = 'Electric Work';
 let customerLang = localStorage.getItem('hs_cust_lang') || 'en';
 
 const CUST_URDU = {
-  topPin: '📍 راولپنڈی • اسلام آباد • جناح گارڈن اور زون 5 بیلٹ · 15 تا 25 منٹ میں کاریگر کی آمد',
+  topPin: '📍 راولپنڈی • اسلام آباد • جناح گارڈن و زون 5 ہب · 15 تا 30 منٹ فوری ترسیل',
   hdrCall: '📞 ابھی کال کریں',
   hdrHome: 'صفحہ اول',
   hdrServices: 'تمام خدمات',
   hdrPricing: 'ریٹ لسٹ',
   hdrTerms: 'شرائط',
-  hdrTech: 'کاریگر پورٹل',
+  hdrTech: 'بطور کاریگر شامل ہوں',
   hdrWorkshop: 'ورکشاپ پارٹنر',
-  heroEyebrow: '🛡️ تصدیق شدہ اور تجربہ کار کاریگر',
+  heroEyebrow: '🛡️ نادرا و پولیس تصدیق شدہ تجربہ کار کاریگر',
   heroTitle: 'پاکستان کا سب سے معتبر <span>ہوم سروسز</span> پلیٹ فارم',
-  heroCopy: 'اسلام آباد اور راولپنڈی کے تصدیق شدہ الیکٹریشن، پلمبر، سولر، ٹینکی صفائی اور اے سی ماہرین منٹوں میں بک کریں۔ شفاف ریٹس اور 7 دن کی مفت وارنٹی۔',
+  heroCopy: 'اسلام آباد اور راولپنڈی کے تصدیق شدہ الیکٹریشن، پلمبر، سولر، ٹینکی صفائی اور اے سی ماہرین منٹوں میں بک کریں۔ شفاف ریٹس، صفر ایڈوانس اور 7 دن کی مفت وارنٹی۔',
   heroBookBtn: '⚡ ابھی سروس بک کریں →',
   heroWaBtn: '💬 واٹس ایپ فوری بکنگ',
   heroCallBtn: '📞 24/7 ہیلپ لائن',
-  metricJobsLabel: 'مکمل شدہ تصدیق شدہ کام',
-  metricArrivalLabel: 'اوسط آمد کا وقت',
-  metricSupportLabel: '24/7 ہنگامی سروس',
-  metricRatingLabel: 'کسٹمر اطمینان (1,500+ آراء)',
-  radarHubTitle: 'آن کال کاریگر دستہ · اسلام آباد و زون 5',
+  metricJobsLabel: '100% تصدیق شدہ کاریگر',
+  metricArrivalLabel: 'زون 5 آمد (15 تا 30 منٹ)',
+  metricSupportLabel: 'صفر ایڈوانس (کام کے بعد ادائیگی)',
+  metricRatingLabel: '7 دن کی مفت وارنٹی',
+  radarHubTitle: 'آن کال کاریگر دستہ · اسلام آباد و زون 5 ہب',
   coverageTitle: '⚡ اسلام آباد اور راولپنڈی کے سروس شدہ علاقے:',
   rateHeading: 'شفاف ریٹ لسٹ (طے شدہ قیمتیں)',
   rateSub: 'اسلام آباد اور جناح گارڈن کے لیے طے شدہ ریٹس — کسی بحث یا زیادہ چارجز کے بغیر۔',
@@ -766,13 +1055,13 @@ function applyCustomerLanguage() {
   const btnHdr = $('langToggleBtnHeader');
   if (btnHdr) btnHdr.textContent = isUr ? CUST_URDU.langBtnTextUr : CUST_URDU.langBtnTextEn;
 
-  if ($('topLocationPin')) $('topLocationPin').textContent = isUr ? CUST_URDU.topPin : '📍 Rawalpindi • Islamabad • Jinnah Garden & Zone 5 Belt · 15–25 min Rapid Dispatch';
+  if ($('topLocationPin')) $('topLocationPin').textContent = isUr ? CUST_URDU.topPin : '📍 Rawalpindi • Islamabad • Jinnah Garden & Zone 5 Hub · 15–30 min Rapid Dispatch';
   if ($('hdrCallBtn')) $('hdrCallBtn').textContent = isUr ? CUST_URDU.hdrCall : '📞 Call Now';
   if ($('hdrHome')) $('hdrHome').textContent = isUr ? CUST_URDU.hdrHome : 'Home';
   if ($('hdrServices')) $('hdrServices').textContent = isUr ? CUST_URDU.hdrServices : 'Services';
   if ($('hdrPricing')) $('hdrPricing').textContent = isUr ? CUST_URDU.hdrPricing : 'Pricing';
   if ($('hdrTerms')) $('hdrTerms').textContent = isUr ? CUST_URDU.hdrTerms : 'Terms';
-  if ($('hdrTech')) $('hdrTech').textContent = isUr ? CUST_URDU.hdrTech : 'Technician portal';
+  if ($('hdrTech')) $('hdrTech').textContent = isUr ? CUST_URDU.hdrTech : 'Join as a Pro';
   if ($('hdrWorkshop')) $('hdrWorkshop').textContent = isUr ? CUST_URDU.hdrWorkshop : 'Workshops';
 
   if ($('heroEyebrow')) $('heroEyebrow').textContent = isUr ? CUST_URDU.heroEyebrow : '🛡️ Certified & Background Checked Technicians';
@@ -781,11 +1070,11 @@ function applyCustomerLanguage() {
   if ($('heroBookBtn')) $('heroBookBtn').innerHTML = isUr ? `${CUST_URDU.heroBookBtn}` : '⚡ Book a Service Now <span aria-hidden="true">→</span>';
   if ($('heroWaBtn')) $('heroWaBtn').textContent = isUr ? CUST_URDU.heroWaBtn : '💬 WhatsApp Booking';
   if ($('heroCallBtn')) $('heroCallBtn').textContent = isUr ? CUST_URDU.heroCallBtn : '📞 24/7 Helpline';
-  if ($('metricJobsLabel')) $('metricJobsLabel').textContent = isUr ? CUST_URDU.metricJobsLabel : 'Verified Jobs Done';
-  if ($('metricArrivalLabel')) $('metricArrivalLabel').textContent = isUr ? CUST_URDU.metricArrivalLabel : 'Average Arrival Time';
-  if ($('metricSupportLabel')) $('metricSupportLabel').textContent = isUr ? CUST_URDU.metricSupportLabel : 'Emergency Dispatch';
-  if ($('metricRatingLabel')) $('metricRatingLabel').textContent = isUr ? CUST_URDU.metricRatingLabel : 'Customer Satisfaction';
-  if ($('radarHubTitle')) $('radarHubTitle').textContent = isUr ? CUST_URDU.radarHubTitle : 'Live Squad On-Call · Islamabad & Zone 5';
+  if ($('metricJobsLabel')) $('metricJobsLabel').textContent = isUr ? CUST_URDU.metricJobsLabel : 'CNIC & Police Vetted Pros';
+  if ($('metricArrivalLabel')) $('metricArrivalLabel').textContent = isUr ? CUST_URDU.metricArrivalLabel : 'Zone 5 Rapid Dispatch';
+  if ($('metricSupportLabel')) $('metricSupportLabel').textContent = isUr ? CUST_URDU.metricSupportLabel : 'Advance (Pay After Work)';
+  if ($('metricRatingLabel')) $('metricRatingLabel').textContent = isUr ? CUST_URDU.metricRatingLabel : 'Free Rework Warranty';
+  if ($('radarHubTitle')) $('radarHubTitle').textContent = isUr ? CUST_URDU.radarHubTitle : 'Live Squad On-Call · Islamabad & Zone 5 Hub';
   if ($('coverageTitle')) $('coverageTitle').textContent = isUr ? CUST_URDU.coverageTitle : '⚡ Trusted Service Areas Across Islamabad & Rawalpindi:';
 
   const pricingH2 = document.querySelector('#pricingSection h2');

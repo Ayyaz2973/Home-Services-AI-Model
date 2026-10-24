@@ -97,11 +97,12 @@ body.lang-ur .hero-metric-item:last-child{border-left:0}
 .section-heading p{margin:0;font-size:13px}
 .auto-refresh-note{margin:0 0 6px;font-size:13px}
 .service-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:34px}
-.service-tile{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;min-height:98px;transition:transform .18s,border-color .18s,box-shadow .18s;cursor:pointer}
-.service-tile:hover{transform:translateY(-3px);border-color:#acd9ce;box-shadow:0 10px 24px rgba(22,57,49,.06)}
+button.service-tile, .service-tile{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px;min-height:98px;transition:transform .18s,border-color .18s,box-shadow .18s;cursor:pointer;font:inherit;color:inherit;text-align:left;width:100%;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;outline:none}
+button.service-tile:hover, .service-tile:hover{transform:translateY(-3px);border-color:#acd9ce;box-shadow:0 10px 24px rgba(22,57,49,.06)}
+button.service-tile:focus-visible{outline:2px solid var(--brand-dark);outline-offset:2px}
 .service-icon{width:34px;height:34px;border-radius:10px;background:var(--brand-soft);display:grid;place-items:center;margin-bottom:9px;color:var(--brand-dark)}
 .service-icon .icon-svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;display:block}
-.service-tile b{font-size:13px}
+button.service-tile b, .service-tile b{font-size:13px}
 .trust-section{margin:0 0 34px}
 .trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .trust-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;gap:14px;align-items:flex-start}
